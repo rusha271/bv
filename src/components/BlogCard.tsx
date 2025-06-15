@@ -3,6 +3,7 @@
 import React from "react";
 import Image from "next/image";
 import { useThemeContext } from "@/contexts/ThemeContext";
+import { useDeviceType } from "@/utils/useDeviceType"; // Import the hook
 
 interface BlogCardProps {
   title: string;
@@ -22,10 +23,19 @@ const BlogCard: React.FC<BlogCardProps> = ({
   label = "VASTU TIP",
 }) => {
   const { theme } = useThemeContext();
+  const { isMobile, isTablet } = useDeviceType(); // Use the device type hook
+
+  // Responsive font sizes and padding
+  const titleFontSize = isMobile ? '1rem' : isTablet ? '1.1rem' : '1.25rem';
+  const descriptionFontSize = isMobile ? '0.85rem' : isTablet ? '0.9rem' : '1rem';
+  const detailsFontSize = isMobile ? '0.75rem' : isTablet ? '0.8rem' : '0.875rem';
+  const categoryFontSize = isMobile ? '0.65rem' : isTablet ? '0.7rem' : '0.75rem';
+  const labelFontSize = isMobile ? '0.65rem' : isTablet ? '0.7rem' : '0.75rem';
+  const padding = isMobile ? '1rem' : isTablet ? '1.25rem' : '1.5rem';
 
   return (
     <div
-      className="rounded-2xl shadow-md transition-all duration-300 overflow-hidden flex flex-col border group"
+      className="w-full rounded-2xl shadow-md transition-all duration-300 overflow-hidden flex flex-col border group"
       style={{
         background: theme.palette.background.paper,
         borderColor: theme.palette.divider,
@@ -50,6 +60,7 @@ const BlogCard: React.FC<BlogCardProps> = ({
         e.currentTarget.style.filter = "none";
       }}
     >
+      {/* Image Section */}
       <div className="relative w-full aspect-[4/2]">
         <Image
           src={image}
@@ -61,37 +72,47 @@ const BlogCard: React.FC<BlogCardProps> = ({
           }}
         />
       </div>
-      <div className="p-5 flex-1 flex flex-col">
+
+      {/* Content Section */}
+      <div className="flex-1 flex flex-col" style={{ padding }}>
         <h2
-          className="text-lg font-bold mb-2 leading-tight"
-          style={{ color: theme.palette.text.primary }}
+          className="font-bold mb-2 leading-tight"
+          style={{ color: theme.palette.text.primary, fontSize: titleFontSize }}
         >
           {title}
         </h2>
         <p
-          className="text-sm mb-1"
-          style={{ color: theme.palette.text.secondary }}
+          className="mb-1"
+          style={{ color: theme.palette.text.secondary, fontSize: descriptionFontSize }}
         >
           {description}
         </p>
         <p
-          className="text-xs mb-4"
-          style={{ color: theme.palette.text.secondary }}
+          className="mb-4"
+          style={{ color: theme.palette.text.secondary, fontSize: detailsFontSize }}
         >
           {details}
         </p>
+
+        {/* Bottom Section (Category and Label) */}
         <div className="flex items-center justify-between mt-auto pt-2">
-          <span
-            className="text-xs font-bold uppercase tracking-wide"
-            style={{ color: theme.palette.text.primary }}
-          >
-            {category}
-          </span>
+          <div className="flex gap-1">
+            {category.split(',').map((cat, index) => (
+              <span
+                key={index}
+                className="text-xs font-bold uppercase tracking-wide"
+                style={{ color: theme.palette.text.primary, fontSize: categoryFontSize }}
+              >
+                {cat.trim()}
+              </span>
+            ))}
+          </div>
           <span
             className="text-xs px-2 py-1 rounded font-semibold cursor-default select-none"
             style={{
-              background: theme.palette.background.default,
-              color: theme.palette.text.secondary,
+              background: theme.palette.primary.main,
+              color: theme.palette.primary.contrastText,
+              fontSize: labelFontSize,
               border: `1px solid ${theme.palette.divider}`,
             }}
           >
