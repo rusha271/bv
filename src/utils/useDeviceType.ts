@@ -1,31 +1,11 @@
 "use client";
-import { useEffect, useState } from "react";
+import { useMediaQuery, useTheme } from '@mui/material';
 
-export interface DeviceType {
-  isMobile: boolean;
-  isTablet: boolean;
-  isDesktop: boolean;
-  device: "mobile" | "tablet" | "desktop";
-}
+export const useDeviceType = () => {
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
+  const isTablet = useMediaQuery(theme.breakpoints.between('sm', 'md'));
+  const isDesktop = useMediaQuery(theme.breakpoints.up('md'));
 
-export function useDeviceType(): DeviceType {
-  const [device, setDevice] = useState<DeviceType['device']>("desktop");
-
-  useEffect(() => {
-    function updateDevice() {
-      if (window.innerWidth < 640) setDevice("mobile");
-      else if (window.innerWidth < 1024) setDevice("tablet");
-      else setDevice("desktop");
-    }
-    updateDevice();
-    window.addEventListener("resize", updateDevice);
-    return () => window.removeEventListener("resize", updateDevice);
-  }, []);
-
-  return {
-    isMobile: device === "mobile",
-    isTablet: device === "tablet",
-    isDesktop: device === "desktop",
-    device,
-  };
-} 
+  return { isMobile, isTablet, isDesktop };
+}; 

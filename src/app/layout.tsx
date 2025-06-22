@@ -5,6 +5,7 @@ import "../styles/jcrop.css";
 import CssBaseline from '@mui/material/CssBaseline';
 import { ThemeProvider } from '../contexts/ThemeContext';
 import { PlanetaryDataProvider } from '@/contexts/PlanetaryDataContext';
+import { LegalProvider } from '@/contexts/LegalContent';
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -34,7 +35,9 @@ export default function RootLayout({
         <ThemeProvider>
           <CssBaseline />
           <PlanetaryDataProvider>
-            {children}
+            <LegalProvider>
+              {children}
+            </LegalProvider>
           </PlanetaryDataProvider>
         </ThemeProvider>
       </body>
