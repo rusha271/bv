@@ -1,3 +1,5 @@
+"use client";
+
 import React, { useState } from 'react';
 import {
   Box,
@@ -194,7 +196,7 @@ export default function LogSigComponent({ open, onClose, prefillData }: LogSigPr
   };
 
   const handleFieldValidation = (field: keyof FormData) => {
-    const validation = validateForm(formData,	tabValue === 1);
+    const validation = validateForm(formData, tabValue === 1);
     if (validation.errors[field]) {
       setErrors((prev) => ({
         ...prev,

@@ -1,4 +1,4 @@
-"use client"
+"use client";
 
 import React, { useState } from 'react';
 import AppBar from '@mui/material/AppBar';
@@ -131,7 +131,6 @@ export default function Navbar() {
           </Toolbar>
         </AppBar>
       </HideOnScroll>
-      
       <LogSigComponent open={loginDialogOpen} onClose={handleLoginClose} />
     </>
   );

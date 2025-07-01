@@ -6,6 +6,8 @@ import CssBaseline from '@mui/material/CssBaseline';
 import { ThemeProvider } from '../contexts/ThemeContext';
 import { PlanetaryDataProvider } from '@/contexts/PlanetaryDataContext';
 import { LegalProvider } from '@/contexts/LegalContent';
+import Chatbot from '@/components/Chatbot';
+import { GoogleOAuthProvider } from '@react-oauth/google';
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -27,19 +29,47 @@ export default function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  // Select Client ID based on environment
+  const env = process.env.NODE_ENV || 'development';
+  const googleClientId =
+    env === 'production'
+      ? process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID_PROD || ''
+      : process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID_DEV || '';
+
+  // Debug log to verify Client ID
+  console.log('Environment:', env);
+  console.log('Google Client ID:', googleClientId ? 'Configured' : 'Missing');
+
+  if (!googleClientId) {
+    console.warn('Warning: Google Client ID is missing. Google OAuth will be disabled. Please configure your .env.local file.');
+  }
+
   return (
     <html lang="en">
-      <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
-      >
-        <ThemeProvider>
-          <CssBaseline />
-          <PlanetaryDataProvider>
-            <LegalProvider>
-              {children}
-            </LegalProvider>
-          </PlanetaryDataProvider>
-        </ThemeProvider>
+      <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
+        {googleClientId ? (
+          <GoogleOAuthProvider clientId={googleClientId}>
+            <ThemeProvider>
+              <CssBaseline />
+              <PlanetaryDataProvider>
+                <LegalProvider>
+                  {children}
+                  <Chatbot />
+                </LegalProvider>
+              </PlanetaryDataProvider>
+            </ThemeProvider>
+          </GoogleOAuthProvider>
+        ) : (
+          <ThemeProvider>
+            <CssBaseline />
+            <PlanetaryDataProvider>
+              <LegalProvider>
+                {children}
+                <Chatbot />
+              </LegalProvider>
+            </PlanetaryDataProvider>
+          </ThemeProvider>
+        )}
       </body>
     </html>
   );
