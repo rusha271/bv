@@ -23,7 +23,7 @@ import LogSigComponent from './LogSig';
 const menuItems = [
   { label: 'Home', href: '/' },
   { label: 'Blog', href: '/blog' },
-  { label: 'Contact Us', href: '#' },
+  { label: 'Contact Us', href: '/contact' },
 ];
 
 function HideOnScroll({ children }: { children: React.ReactElement }) {
