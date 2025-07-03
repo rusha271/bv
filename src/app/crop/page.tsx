@@ -14,6 +14,8 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import styles from './cropPage.module.css';
 import Disclaimer from '@/components/ui/Disclaimer';
 
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
+
 function FadeInSection({ children }: { children: React.ReactNode }) {
   return (
     <div className={styles.animateFadein}>

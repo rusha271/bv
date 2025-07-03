@@ -8,6 +8,7 @@ import { PlanetaryDataProvider } from '@/contexts/PlanetaryDataContext';
 import { LegalProvider } from '@/contexts/LegalContent';
 import Chatbot from '@/components/Chatbot';
 import { GoogleOAuthProvider } from '@react-oauth/google';
+import AutoPollingWatcher from '../utils/PollingWatcher';
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -47,6 +48,7 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
+      <AutoPollingWatcher />
         {googleClientId ? (
           <GoogleOAuthProvider clientId={googleClientId}>
             <ThemeProvider>
