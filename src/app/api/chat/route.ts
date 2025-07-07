@@ -21,13 +21,13 @@ let useFallbackMode = false;
 // Fallback responses
 const fallbackResponses: string[] = [
   "I'm here to help! What can I assist you with today?",
-  "Hello! I'm your AI assistant. How can I help you?",
+  "Hello! I'm your VastuMitra. How can I help you?",
   "Thanks for your message! I'm ready to help with any questions you have.",
   "Hi there! I'm here to chat and help you out. What's on your mind?",
-  "Greetings! I'm your friendly AI assistant. How may I help you today?",
+  "Greetings! I'm your friendly VastuMitra. How may I help you today?",
   "Hello! I'm ready to assist you with whatever you need.",
   "Hi! I'm here to help answer your questions and chat with you.",
-  "Welcome! I'm your AI assistant. What would you like to know?",
+  "Welcome! I'm your VastuMitra. What would you like to know?",
 ];
 
 // Initialize the model

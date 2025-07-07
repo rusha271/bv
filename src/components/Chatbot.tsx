@@ -26,6 +26,15 @@ import {
   Person as PersonIcon,
   Warning as WarningIcon,
 } from '@mui/icons-material';
+import Lottie from 'lottie-react'; // Import Lottie
+import happyAnimation from '../../public/smile.json'; // Example: Replace with your downloaded JSON files
+//import idleAnimation from './animations/idle.json';
+import thinkingAnimation from '../../public/thinking.json';
+import confusedAnimation from '../../public/confusion.json';
+import errorAnimation from '../../public/error.json';
+import excitedAnimation from '../../public/smile.json';
+// import sadAnimation from './animations/sad.json';
+import sleepingAnimation from '../../public/sleeping.json';
 
 interface Message {
   id: string;
@@ -42,6 +51,8 @@ const Chatbot: React.FC = () => {
   const [inputMessage, setInputMessage] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [chatCount, setChatCount] = useState<number>(0);
+  const [serverDown, setServerDown] = useState(false);
+  const [apiNotCalled, setApiNotCalled] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   const CHAT_LIMIT = 100;
@@ -68,7 +79,7 @@ const Chatbot: React.FC = () => {
     if (isOpen && messages.length === 0) {
       const welcomeMessage: Message = {
         id: 'welcome',
-        text: "Hello! I'm your AI assistant. Ask me anything, and I'll respond dynamically. You have 100 chats available.",
+        text: "Hello! I'm your VastuMitra. Ask me anything, and I'll respond dynamically. You have 100 chats available.",
         isUser: false,
         timestamp: new Date(),
       };
@@ -101,6 +112,8 @@ const Chatbot: React.FC = () => {
     setMessages((prev) => [...prev, userMessage]);
     setInputMessage('');
     setIsLoading(true);
+    setApiNotCalled(false);
+    setServerDown(false);
 
     try {
       const response = await fetch(`${API_BASE_URL}/api/chat`, {
@@ -112,10 +125,15 @@ const Chatbot: React.FC = () => {
       });
 
       if (!response.ok) {
-        throw new Error('Failed to get response from server');
+        setServerDown(true);
+        throw new Error('Server is down');
       }
 
       const data = await response.json();
+      if (data.response === "Sorry, I'm having trouble processing your message. Please try again.") {
+        setApiNotCalled(true);
+      }
+
       const botResponseText = data.response;
 
       const botMessage: Message = {
@@ -160,6 +178,14 @@ const Chatbot: React.FC = () => {
     return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
   };
 
+  const getAnimation = () => {
+    if (isLoading) return thinkingAnimation;
+    if (serverDown) return errorAnimation; // 404 animation for server down
+    if (apiNotCalled) return confusedAnimation; // Confusion animation for predefined text
+    if (inputMessage.trim()) return excitedAnimation; // Excited animation when typing
+    return sleepingAnimation; // Sleeping animation when not typing
+  };
+
   return (
     <>
       <Fab
@@ -187,8 +213,13 @@ const Chatbot: React.FC = () => {
           }}
         >
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-            <BotIcon color="primary" />
-            <Typography variant="h6">AI Assistant</Typography>
+            <Lottie
+              animationData={getAnimation()}
+              loop={true}
+              autoplay={true}
+              style={{ width: 40, height: 40 }} // Smaller icon size
+            />
+            <Typography variant="h6">VastuMitra</Typography>
           </Box>
           <IconButton onClick={handleClose} size="small">
             <CloseIcon />
@@ -243,9 +274,12 @@ const Chatbot: React.FC = () => {
                 }}
               >
                 {!message.isUser && (
-                  <Avatar sx={{ width: 32, height: 32, bgcolor: 'primary.main' }}>
-                    <BotIcon fontSize="small" />
-                  </Avatar>
+                  <Lottie
+                    animationData={getAnimation()}
+                    loop={true}
+                    autoplay={true}
+                    style={{ width: 32, height: 32 }} // Smaller avatar size
+                  />
                 )}
                 <Box
                   sx={{
@@ -283,9 +317,12 @@ const Chatbot: React.FC = () => {
 
             {isLoading && (
               <Box sx={{ display: 'flex', justifyContent: 'flex-start', gap: 1 }}>
-                <Avatar sx={{ width: 32, height: 32, bgcolor: 'primary.main' }}>
-                  <BotIcon fontSize="small" />
-                </Avatar>
+                <Lottie
+                  animationData={thinkingAnimation}
+                  loop={true}
+                  autoplay={true}
+                  style={{ width: 32, height: 32 }} // Smaller loading avatar size
+                />
                 <Box>
                   <Paper
                     sx={{

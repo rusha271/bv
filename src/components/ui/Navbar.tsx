@@ -72,7 +72,7 @@ export default function Navbar() {
                 style={{ borderRadius: 8 }}
                 priority
               />
-              <Typography variant="h6" fontWeight={700} sx={{ color: theme.palette.primary.main }}>
+              <Typography variant="h6" fontWeight={700} sx={{ color: theme.palette.primary.main }} onClick={() => window.location.href = '/'} style={{ cursor: 'pointer' }}>
                 Brahma Vastu
               </Typography>
             </Box>
