@@ -26,6 +26,7 @@ import {
   Person as PersonIcon,
   Warning as WarningIcon,
 } from '@mui/icons-material';
+<<<<<<< Updated upstream
 import Lottie from 'lottie-react'; // Import Lottie
 import happyAnimation from '../../public/smile.json'; // Example: Replace with your downloaded JSON files
 //import idleAnimation from './animations/idle.json';
@@ -35,6 +36,9 @@ import errorAnimation from '../../public/error.json';
 import excitedAnimation from '../../public/smile.json';
 // import sadAnimation from './animations/sad.json';
 import sleepingAnimation from '../../public/sleeping.json';
+=======
+import api from '@/utils/axios';
+>>>>>>> Stashed changes
 
 interface Message {
   id: string;
@@ -116,6 +120,7 @@ const Chatbot: React.FC = () => {
     setServerDown(false);
 
     try {
+<<<<<<< Updated upstream
       const response = await fetch(`${API_BASE_URL}/api/chat`, {
         method: 'POST',
         headers: {
@@ -134,6 +139,10 @@ const Chatbot: React.FC = () => {
         setApiNotCalled(true);
       }
 
+=======
+      const response = await api.post('/api/chat', { messages: [...messages, userMessage] });
+      const data = response.data;
+>>>>>>> Stashed changes
       const botResponseText = data.response;
 
       const botMessage: Message = {

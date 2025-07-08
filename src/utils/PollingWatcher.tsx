@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect } from 'react';
+import api from '@/utils/axios';
 
 export default function AutoPollingWatcher() {
   useEffect(() => {
@@ -12,8 +13,8 @@ export default function AutoPollingWatcher() {
     const interval = setInterval(async () => {
       try {
         for (const endpoint of endpoints) {
-          const res = await fetch(`${API_BASE_URL}${endpoint.replace('trigger-reload', 'should-reload')}`);
-          const data = await res.json();
+          const res = await api.get(endpoint.replace('trigger-reload', 'should-reload'));
+          const data = res.data;
           if (data?.reload) {
             window.location.reload();
             break;

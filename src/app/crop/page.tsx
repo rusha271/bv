@@ -13,8 +13,7 @@ import { Box, Typography, Container } from '@mui/material';
 import { useRouter, useSearchParams } from 'next/navigation';
 import styles from './cropPage.module.css';
 import Disclaimer from '@/components/ui/Disclaimer';
-
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
+import api from '@/utils/axios';
 
 function FadeInSection({ children }: { children: React.ReactNode }) {
   return (
