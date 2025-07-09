@@ -1,10 +1,11 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
-import { useVastuTips } from "@/contexts/VastuTipsContext";
+import React, { useEffect } from "react";
 import BlogCard from "@/components/BlogCard";
 import { useThemeContext } from "@/contexts/ThemeContext";
-import { useDeviceType } from "@/utils/useDeviceType"; // Import the hook
+import { useDeviceType } from "@/utils/useDeviceType";
+import { useAppDispatch, useAppSelector } from "@/store";
+import { fetchTips, clearTipsError } from "@/store/slices/blogSlice";
 
 const LoadingSpinner = () => {
   const { theme } = useThemeContext();
@@ -19,38 +20,58 @@ const LoadingSpinner = () => {
 };
 
 export default function BlogCardsList() {
-  const [loading, setLoading] = useState(true);
-  const vastuTips = useVastuTips();
+  const dispatch = useAppDispatch();
+  const { data: tips, loading, error } = useAppSelector((state) => state.blog.tips);
   const { theme } = useThemeContext();
   const { isMobile, isTablet } = useDeviceType();
 
   useEffect(() => {
-    const timer = setTimeout(() => setLoading(false), 500); // Simulate loading
-    return () => clearTimeout(timer);
-  }, []);
+    if (!tips || tips.length === 0) {
+      dispatch(fetchTips());
+    }
+  }, [dispatch, tips]);
+
+  const handleRetry = () => {
+    dispatch(clearTipsError());
+    dispatch(fetchTips());
+  };
+
+  if (loading) {
+    return <LoadingSpinner />;
+  }
+
+  if (error) {
+    return (
+      <div className="text-center py-8">
+        <p style={{ color: theme.palette.error.main }}>{error}</p>
+        <button
+          onClick={handleRetry}
+          className="mt-4 px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
+        >
+          Retry
+        </button>
+      </div>
+    );
+  }
 
   return (
     <div
       className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-x-6 gap-y-8"
       style={{
         background: theme.palette.background.default,
-        justifyItems: 'center', // Center the grid items
+        justifyItems: 'center',
       }}
     >
-      {loading ? (
-        <LoadingSpinner />
-      ) : (
-        vastuTips.map((tip) => (
-          <BlogCard
-            key={tip.id}
-            title={tip.title}
-            description={tip.description}
-            details={tip.details}
-            category={tip.category}
-            image={tip.image}
-          />
-        ))
-      )}
+      {tips && tips.map((tip) => (
+        <BlogCard
+          key={tip.id}
+          title={tip.title}
+          description={tip.content}
+          details={tip.content}
+          category={tip.category}
+          image={tip.image}
+        />
+      ))}
     </div>
   );
 };

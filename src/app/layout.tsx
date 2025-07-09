@@ -8,7 +8,7 @@ import { PlanetaryDataProvider } from '@/contexts/PlanetaryDataContext';
 import { LegalProvider } from '@/contexts/LegalContent';
 import Chatbot from '@/components/Chatbot';
 import { GoogleOAuthProvider } from '@react-oauth/google';
-import AutoPollingWatcher from '../utils/PollingWatcher';
+import ReduxProvider from '@/components/providers/ReduxProvider';
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -48,9 +48,20 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
-      <AutoPollingWatcher />
-        {googleClientId ? (
-          <GoogleOAuthProvider clientId={googleClientId}>
+        <ReduxProvider>
+          {googleClientId ? (
+            <GoogleOAuthProvider clientId={googleClientId}>
+              <ThemeProvider>
+                <CssBaseline />
+                <PlanetaryDataProvider>
+                  <LegalProvider>
+                    {children}
+                    <Chatbot />
+                  </LegalProvider>
+                </PlanetaryDataProvider>
+              </ThemeProvider>
+            </GoogleOAuthProvider>
+          ) : (
             <ThemeProvider>
               <CssBaseline />
               <PlanetaryDataProvider>
@@ -60,18 +71,8 @@ export default function RootLayout({
                 </LegalProvider>
               </PlanetaryDataProvider>
             </ThemeProvider>
-          </GoogleOAuthProvider>
-        ) : (
-          <ThemeProvider>
-            <CssBaseline />
-            <PlanetaryDataProvider>
-              <LegalProvider>
-                {children}
-                <Chatbot />
-              </LegalProvider>
-            </PlanetaryDataProvider>
-          </ThemeProvider>
-        )}
+          )}
+        </ReduxProvider>
       </body>
     </html>
   );
