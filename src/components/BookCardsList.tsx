@@ -6,6 +6,8 @@ import { useDeviceType } from '@/utils/useDeviceType';
 import { useAppDispatch, useAppSelector } from '@/store';
 import { fetchBooks, clearBooksError } from '@/store/slices/blogSlice';
 import { Book } from '@/utils/blogApi';
+import ErrorDisplay from '@/components/ui/ErrorDisplay';
+import { CircularProgress, Box, Typography } from '@mui/material';
 
 interface BookCardProps {
   book: Book;
@@ -103,26 +105,37 @@ export default function BookCardsList() {
 
   if (loading) {
     return (
-      <div className="text-center py-8">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
-        <p className="mt-4" style={{ color: theme.palette.text.secondary }}>
+      <Box 
+        display="flex" 
+        flexDirection="column"
+        justifyContent="center" 
+        alignItems="center" 
+        py={4}
+        width="100%"
+      >
+        <CircularProgress 
+          size={48}
+          sx={{ color: theme.palette.primary.main, mb: 2 }}
+        />
+        <Typography 
+          variant="body2" 
+          color="text.secondary"
+        >
           Loading books...
-        </p>
-      </div>
+        </Typography>
+      </Box>
     );
   }
 
   if (error) {
     return (
-      <div className="text-center py-8">
-        <p style={{ color: theme.palette.error.main }}>{error}</p>
-        <button
-          onClick={handleRetry}
-          className="mt-4 px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
-        >
-          Retry
-        </button>
-      </div>
+      <ErrorDisplay
+        error={error}
+        title="Failed to load books"
+        onRetry={handleRetry}
+        variant="paper"
+        retryText="Retry"
+      />
     );
   }
 

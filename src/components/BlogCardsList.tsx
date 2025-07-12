@@ -6,16 +6,24 @@ import { useThemeContext } from "@/contexts/ThemeContext";
 import { useDeviceType } from "@/utils/useDeviceType";
 import { useAppDispatch, useAppSelector } from "@/store";
 import { fetchTips, clearTipsError } from "@/store/slices/blogSlice";
+import ErrorDisplay from "@/components/ui/ErrorDisplay";
+import { CircularProgress, Box } from "@mui/material";
 
 const LoadingSpinner = () => {
   const { theme } = useThemeContext();
   return (
-    <div className="flex justify-center items-center w-full py-16 col-span-full">
-      <div
-        className="animate-spin rounded-full h-12 w-12 border-t-4 border-b-4"
-        style={{ borderColor: theme.palette.primary.main }}
-      ></div>
-    </div>
+    <Box 
+      display="flex" 
+      justifyContent="center" 
+      alignItems="center" 
+      py={4}
+      width="100%"
+    >
+      <CircularProgress 
+        size={48}
+        sx={{ color: theme.palette.primary.main }}
+      />
+    </Box>
   );
 };
 
@@ -42,15 +50,13 @@ export default function BlogCardsList() {
 
   if (error) {
     return (
-      <div className="text-center py-8">
-        <p style={{ color: theme.palette.error.main }}>{error}</p>
-        <button
-          onClick={handleRetry}
-          className="mt-4 px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
-        >
-          Retry
-        </button>
-      </div>
+      <ErrorDisplay
+        error={error}
+        title="Failed to load tips"
+        onRetry={handleRetry}
+        variant="paper"
+        retryText="Retry"
+      />
     );
   }
 

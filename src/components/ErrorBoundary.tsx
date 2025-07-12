@@ -1,6 +1,7 @@
 'use client';
 
 import React from 'react';
+import ErrorDisplay from '@/components/ui/ErrorDisplay';
 
 interface ErrorBoundaryProps {
   children: React.ReactNode;
@@ -33,18 +34,13 @@ class ErrorBoundary extends React.Component<ErrorBoundaryProps, ErrorBoundarySta
       }
 
       return (
-        <div className="text-center py-8">
-          <h2 className="text-lg font-semibold mb-4">Something went wrong</h2>
-          <p className="text-gray-600 mb-4">
-            {this.state.error?.message || 'An unexpected error occurred'}
-          </p>
-          <button
-            onClick={() => this.setState({ hasError: false, error: undefined })}
-            className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
-          >
-            Try Again
-          </button>
-        </div>
+        <ErrorDisplay
+          error={this.state.error?.message || 'An unexpected error occurred'}
+          title="Something went wrong"
+          variant="paper"
+          onRetry={() => this.setState({ hasError: false, error: undefined })}
+          retryText="Try Again"
+        />
       );
     }
 
