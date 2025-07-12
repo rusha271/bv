@@ -4,7 +4,6 @@ import React from 'react';
 import { Box, Divider, Stack, Typography } from '@mui/material';
 import { useDeviceType } from '../../utils/useDeviceType';
 import { useGoogleLogin } from '@react-oauth/google';
-import FacebookLogin from 'react-facebook-login/dist/facebook-login-render-props';
 import AppleSignin from 'react-apple-signin-auth';
 
 interface SocialAuthProps {
@@ -24,11 +23,6 @@ interface GoogleResponse {
   credential: string;
 }
 
-interface FacebookResponse {
-  email?: string;
-  name?: string;
-}
-
 interface AppleResponse {
   user?: {
     email?: string;
@@ -44,10 +38,6 @@ export const SocialAuth = ({ setFormData, setTabValue }: SocialAuthProps) => {
     env === 'production'
       ? process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID_PROD || ''
       : process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID_DEV || '';
-  const facebookAppId =
-    env === 'production'
-      ? process.env.NEXT_PUBLIC_FACEBOOK_APP_ID_PROD || ''
-      : process.env.NEXT_PUBLIC_FACEBOOK_APP_ID_DEV || '';
   const appleClientId =
     env === 'production'
       ? process.env.NEXT_PUBLIC_APPLE_CLIENT_ID_PROD || ''
@@ -88,18 +78,6 @@ export const SocialAuth = ({ setFormData, setTabValue }: SocialAuthProps) => {
     },
     flow: 'implicit', // Ensure correct flow
   });
-
-  const handleFacebookResponse = (response: FacebookResponse) => {
-    setFormData((prev) => ({
-      ...prev,
-      email: response.email || '',
-      fullName: response.name || '',
-      password: '',
-      confirmPassword: '',
-      phone: '',
-    }));
-    setTabValue(1);
-  };
 
   const handleAppleSuccess = (response: AppleResponse) => {
     setFormData((prev) => ({
@@ -143,35 +121,6 @@ export const SocialAuth = ({ setFormData, setTabValue }: SocialAuthProps) => {
           <img src="/icons/google.svg" alt="Google" style={{ width: 20, height: 20 }} />
           {isMobile ? 'Continue with Google' : 'Google'}
         </button>
-        <FacebookLogin
-          appId={facebookAppId}
-          autoLoad={false}
-          fields="name,email,picture"
-          callback={handleFacebookResponse}
-          render={(renderProps) => (
-            <button
-              onClick={renderProps.onClick}
-              style={{
-                width: isMobile ? '100%' : undefined,
-                border: '1px solid #e0e0e0',
-                borderRadius: 16,
-                padding: '10px 0',
-                background: '#fff',
-                color: '#666',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                gap: 8,
-                fontWeight: 500,
-                fontSize: 16,
-                cursor: 'pointer',
-              }}
-            >
-              <img src="/icons/facebook.svg" alt="Facebook" style={{ width: 20, height: 20 }} />
-              {isMobile ? 'Continue with Facebook' : 'Facebook'}
-            </button>
-          )}
-        />
         <AppleSignin
           authOptions={{
             clientId: appleClientId,

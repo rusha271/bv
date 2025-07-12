@@ -3,14 +3,12 @@ import Box from '@mui/material/Box';
 import IconButton from '@mui/material/IconButton';
 import Tooltip from '@mui/material/Tooltip';
 import EmailIcon from '@mui/icons-material/Email';
-import FacebookIcon from '@mui/icons-material/Facebook';
 import InstagramIcon from '@mui/icons-material/Instagram';
 import WhatsAppIcon from '@mui/icons-material/WhatsApp';
 import { useTheme } from '@mui/material/styles';
 
 const icons = [
   { icon: <EmailIcon />, label: 'Email', href: '#' },
-  { icon: <FacebookIcon />, label: 'Facebook', href: '#' },
   { icon: <InstagramIcon />, label: 'Instagram', href: '#' },
   { icon: <WhatsAppIcon />, label: 'WhatsApp', href: '#' },
 ];

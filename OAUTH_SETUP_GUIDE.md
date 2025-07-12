@@ -38,10 +38,6 @@ Replace the placeholder values in your `.env.local` file:
 NEXT_PUBLIC_GOOGLE_CLIENT_ID_DEV=your_development_client_id_here
 NEXT_PUBLIC_GOOGLE_CLIENT_ID_PROD=your_production_client_id_here
 
-# Facebook App IDs (Optional)
-NEXT_PUBLIC_FACEBOOK_APP_ID_DEV=your_facebook_app_id_for_development_here
-NEXT_PUBLIC_FACEBOOK_APP_ID_PROD=your_facebook_app_id_for_production_here
-
 # Apple Sign In (Optional)
 NEXT_PUBLIC_APPLE_CLIENT_ID_DEV=your_apple_client_id_for_development_here
 NEXT_PUBLIC_APPLE_CLIENT_ID_PROD=your_apple_client_id_for_production_here
@@ -65,14 +61,6 @@ Once you have your Google Client ID, update the `AuthComponent.tsx` file to re-e
   // useOneTap // Temporarily disabled to avoid FedCM issues
 />
 ```
-
-## Facebook OAuth Setup (Optional)
-
-1. Go to [Facebook Developers](https://developers.facebook.com/)
-2. Create a new app
-3. Add Facebook Login product
-4. Configure OAuth settings
-5. Add your domain to allowed domains
 
 ## Apple Sign In Setup (Optional)
 
