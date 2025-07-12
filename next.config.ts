@@ -11,6 +11,21 @@ const nextConfig: NextConfig = {
     ignoreDuringBuilds: true,
   },
 
+  // ✅ Optimize for Vercel deployment
+  output: 'standalone',
+  
+  // ✅ Enable experimental features for better performance
+  experimental: {
+    serverComponentsExternalPackages: ['@xenova/transformers'],
+    optimizePackageImports: ['@mui/material', '@mui/icons-material'],
+  },
+
+  // ✅ Configure images for better performance
+  images: {
+    domains: ['localhost'],
+    unoptimized: false,
+  },
+
   webpack: (config, { isServer }) => {
     // Handle WebAssembly files for transformers.js
     config.experiments = {
@@ -86,28 +101,48 @@ const nextConfig: NextConfig = {
       };
     }
 
+    // ✅ Optimize bundle size for Vercel
+    if (!isServer) {
+      config.optimization = {
+        ...config.optimization,
+        splitChunks: {
+          chunks: 'all',
+          cacheGroups: {
+            vendor: {
+              test: /[\\/]node_modules[\\/]/,
+              name: 'vendors',
+              chunks: 'all',
+            },
+            mui: {
+              test: /[\\/]node_modules[\\/]@mui[\\/]/,
+              name: 'mui',
+              chunks: 'all',
+            },
+          },
+        },
+      };
+    }
+
     return config;
   },
 
   // Configuration for external packages
   serverExternalPackages: ['@xenova/transformers'],
 
-  // Turbopack configuration
-  experimental: {
-    turbo: {
-      rules: {
-        '*.wasm': {
-          loaders: ['file-loader'],
-          as: '*.wasm',
-        },
-        '*.onnx': {
-          loaders: ['file-loader'],
-          as: '*.onnx',
-        },
-        '*.bin': {
-          loaders: ['file-loader'],
-          as: '*.bin',
-        },
+  // Turbopack configuration (updated format)
+  turbopack: {
+    rules: {
+      '*.wasm': {
+        loaders: ['file-loader'],
+        as: '*.wasm',
+      },
+      '*.onnx': {
+        loaders: ['file-loader'],
+        as: '*.onnx',
+      },
+      '*.bin': {
+        loaders: ['file-loader'],
+        as: '*.bin',
       },
     },
   },
