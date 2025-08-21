@@ -5,6 +5,8 @@ import { Box, Typography, Slider, FormControlLabel, Switch, Button, Paper, TextF
 import DownloadIcon from '@mui/icons-material/Download';
 import html2canvas from 'html2canvas';
 import Image from 'next/image';
+import UserDetailsForm from './UserDetailsForm';
+
 
 interface ChakraEditorProps {
   floorPlanImageUrl: string | null;
@@ -15,6 +17,7 @@ export const ChakraEditor: React.FC<ChakraEditorProps> = ({ floorPlanImageUrl })
   const [zoom, setZoom] = useState(1);
   const [chakraOpacity, setChakraOpacity] = useState(1);
   const [showCenterMark, setShowCenterMark] = useState(true);
+  const [showUserForm, setShowUserForm] = useState(false);
 
   const floorPlanRef = useRef<HTMLDivElement>(null);
   const [isDragging, setIsDragging] = useState(false);
@@ -24,29 +27,29 @@ export const ChakraEditor: React.FC<ChakraEditorProps> = ({ floorPlanImageUrl })
   useEffect(() => {
     const floorPlanElement = floorPlanRef.current;
     if (!floorPlanElement) return;
-
+  
     const handleMouseDown = (e: MouseEvent) => {
       setIsDragging(true);
       setStartDrag({ x: e.clientX - position.x, y: e.clientY - position.y });
       floorPlanElement.style.cursor = 'grabbing';
     };
-
+  
     const handleMouseMove = (e: MouseEvent) => {
       if (!isDragging) return;
       setPosition({ x: e.clientX - startDrag.x, y: e.clientY - startDrag.y });
     };
-
+  
     const handleMouseUp = () => {
       setIsDragging(false);
       if (floorPlanElement) {
         floorPlanElement.style.cursor = 'grab';
       }
     };
-
+  
     floorPlanElement.addEventListener('mousedown', handleMouseDown);
     window.addEventListener('mousemove', handleMouseMove);
     window.addEventListener('mouseup', handleMouseUp);
-
+  
     return () => {
       if (floorPlanElement) {
         floorPlanElement.removeEventListener('mousedown', handleMouseDown);
@@ -59,27 +62,67 @@ export const ChakraEditor: React.FC<ChakraEditorProps> = ({ floorPlanImageUrl })
   const handleDownload = async () => {
     const chakraViewerElement = document.getElementById('chakra-viewer-container');
     if (chakraViewerElement) {
-      // Ensure all images are loaded
-      const images = chakraViewerElement.getElementsByTagName('img');
-      await Promise.all(
-        Array.from(images).map((img) =>
-          new Promise((resolve) => {
-            if (img.complete) resolve(img);
-            else img.onload = () => resolve(img);
-          })
-        )
-      );
+      const tempContainer = document.createElement('div');
+      tempContainer.style.position = 'absolute';
+      tempContainer.style.left = '-9999px';
+      tempContainer.style.width = '1000px';
+      tempContainer.style.height = '1000px';
+      tempContainer.style.backgroundColor = '#f0f0f0';
   
-      const canvas = await html2canvas(chakraViewerElement, {
+      const chakraImg = document.createElement('img');
+      chakraImg.src = '/images/Shakti Chakra_Size.png';
+      chakraImg.style.position = 'absolute';
+      chakraImg.style.opacity = chakraOpacity.toString();
+      chakraImg.style.transform = `rotate(-${rotation}deg) scale(${zoom})`; // Apply correct rotation
+      chakraImg.style.transformOrigin = 'center center';
+      chakraImg.style.width = '100%';
+      chakraImg.style.height = '100%';
+  
+      const floorPlanImg = document.createElement('img');
+      floorPlanImg.src = floorPlanImageUrl || '/floorplan.png';
+      floorPlanImg.style.position = 'absolute';
+      floorPlanImg.style.maxWidth = '50%';
+      floorPlanImg.style.maxHeight = '50%';
+      floorPlanImg.style.top = '50%';
+      floorPlanImg.style.left = '50%';
+      floorPlanImg.style.transform = 'translate(-50%, -50%)';
+      floorPlanImg.style.opacity = '0.75';
+      floorPlanImg.style.objectFit = 'contain';
+  
+      if (showCenterMark) {
+        const centerMark = document.createElement('div');
+        centerMark.style.position = 'absolute';
+        centerMark.style.top = '50%';
+        centerMark.style.left = '50%';
+        centerMark.style.width = '15px';
+        centerMark.style.height = '15px';
+        centerMark.style.backgroundColor = 'red';
+        centerMark.style.borderRadius = '50%';
+        centerMark.style.transform = 'translate(-50%, -50%)';
+        tempContainer.appendChild(centerMark);
+      }
+  
+      tempContainer.appendChild(chakraImg);
+      tempContainer.appendChild(floorPlanImg);
+      document.body.appendChild(tempContainer);
+  
+      await Promise.all([
+        new Promise((resolve) => (chakraImg.onload = resolve)),
+        new Promise((resolve) => (floorPlanImg.onload = resolve)),
+      ]);
+  
+      const canvas = await html2canvas(tempContainer, {
         backgroundColor: null,
         logging: true,
         useCORS: true,
-        allowTaint: true, // Allow tainted canvases if needed
+        allowTaint: true,
       });
       const link = document.createElement('a');
       link.href = canvas.toDataURL('image/png');
       link.download = 'floorplan-chakra.png';
       link.click();
+  
+      document.body.removeChild(tempContainer);
     }
   };
 
@@ -103,8 +146,8 @@ export const ChakraEditor: React.FC<ChakraEditorProps> = ({ floorPlanImageUrl })
           display: 'flex',
           justifyContent: 'center',
           alignItems: 'center',
-          height: { xs: 400, md: '100%' }, // Further increased height for better visibility
-          minHeight: { xs: 500, md: 'auto' }, // Increased minHeight for smaller screens
+          height: { xs: 400, md: '100%' },
+          minHeight: { xs: 500, md: 'auto' },
           backgroundColor: '#f0f0f0',
           borderRadius: '8px',
           cursor: isDragging ? 'grabbing' : 'grab',
@@ -135,9 +178,9 @@ export const ChakraEditor: React.FC<ChakraEditorProps> = ({ floorPlanImageUrl })
               top: 0,
               left: 0,
               opacity: chakraOpacity,
-              transform: `rotate(${rotation}deg)`,
+              transform: `rotate(-${rotation}deg)`,
               transition: 'transform 0.3s ease-out, opacity 0.3s ease-out',
-              transformOrigin: 'center center',
+              transformOrigin: 'center center', // Ensure rotation is from the center
               pointerEvents: 'none',
               objectFit: 'contain',
             }}
@@ -150,8 +193,8 @@ export const ChakraEditor: React.FC<ChakraEditorProps> = ({ floorPlanImageUrl })
               alt="Floor Plan"
               style={{
                 position: 'absolute',
-                maxWidth: '50%', // Increased maxWidth for better visibility
-                maxHeight: '50%', // Increased maxHeight for better visibility
+                maxWidth: '50%',
+                maxHeight: '50%',
                 width: 'auto',
                 height: 'auto',
                 objectFit: 'contain',
@@ -168,8 +211,8 @@ export const ChakraEditor: React.FC<ChakraEditorProps> = ({ floorPlanImageUrl })
             <Box
               sx={{
                 position: 'absolute',
-                width: '60%', // Increased width for better visibility
-                height: '60%', // Increased height for better visibility
+                width: '60%',
+                height: '60%',
                 top: '50%',
                 left: '50%',
                 transform: 'translate(-50%, -50%)',
@@ -197,8 +240,8 @@ export const ChakraEditor: React.FC<ChakraEditorProps> = ({ floorPlanImageUrl })
                 position: 'absolute',
                 top: '50%',
                 left: '50%',
-                width: '15px', // Increased size for better visibility
-                height: '15px', // Increased size for better visibility
+                width: '15px',
+                height: '15px',
                 backgroundColor: 'red',
                 borderRadius: '50%',
                 transform: 'translate(-50%, -50%)',
@@ -231,7 +274,7 @@ export const ChakraEditor: React.FC<ChakraEditorProps> = ({ floorPlanImageUrl })
           <Typography variant="body2" gutterBottom>Rotate the Chakra</Typography>
           <TextField
             value={rotation}
-            onChange={(e) => setRotation(Number(e.target.value))}
+            onChange={(e) => setRotation(Number(e.target.value) % 360)} // Normalize to 0-359 degrees
             type="number"
             size="small"
             InputProps={{ endAdornment: <Typography sx={{ ml: 0.5 }}>°</Typography> }}
@@ -239,7 +282,7 @@ export const ChakraEditor: React.FC<ChakraEditorProps> = ({ floorPlanImageUrl })
           />
           <Slider
             value={rotation}
-            onChange={(_event, newValue) => setRotation(newValue as number)}
+            onChange={(_event, newValue) => setRotation((newValue as number) % 360)} // Normalize to 0-359 degrees
             aria-labelledby="chakra-rotation-slider"
             min={0}
             max={360}
@@ -319,6 +362,28 @@ export const ChakraEditor: React.FC<ChakraEditorProps> = ({ floorPlanImageUrl })
             sx={{ fontSize: '0.9rem' }}
           />
         </Box>
+        
+        {/* <Box sx={{ mb: 2 }}>
+          <Button
+            variant="contained"
+            onClick={() => setShowUserForm(!showUserForm)}
+            fullWidth
+            sx={{
+              backgroundColor: '#FDD835',
+              color: '#000',
+              '&:hover': { backgroundColor: '#FDD835', opacity: 0.9 },
+              boxShadow: 'none',
+              textTransform: 'none',
+              fontWeight: 'bold',
+              fontSize: '1rem',
+              py: 1,
+              borderRadius: '8px',
+            }}
+          >
+            {showUserForm ? 'Hide User Form' : 'Show User Form'}
+          </Button>
+        </Box>
+        {showUserForm && <UserDetailsForm />} */}
 
         <Button
           variant="contained"
@@ -329,7 +394,7 @@ export const ChakraEditor: React.FC<ChakraEditorProps> = ({ floorPlanImageUrl })
             mt: 'auto',
             backgroundColor: '#FDD835',
             color: '#000',
-            '&:hover': { backgroundColor: '#FDD835', opacity: 0.9, },
+            '&:hover': { backgroundColor: '#FDD835', opacity: 0.9 },
             boxShadow: 'none',
             textTransform: 'none',
             fontWeight: 'bold',
@@ -345,4 +410,4 @@ export const ChakraEditor: React.FC<ChakraEditorProps> = ({ floorPlanImageUrl })
   );
 };
 
-export default ChakraEditor; 
+export default ChakraEditor;

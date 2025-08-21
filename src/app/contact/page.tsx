@@ -7,6 +7,8 @@ import Navbar from '@/components/ui/Navbar';
 import Footer from '@/components/ui/Footer';
 import Box from '@mui/material/Box';
 import { Phone, Mail, MapPin, Clock, Star, Calendar, Play, X } from 'lucide-react';
+import { toast } from 'react-hot-toast';
+import apiService from '@/utils/apiService';
 
 function FadeInSection({ children }: { children: React.ReactNode }) {
   return (
@@ -26,6 +28,8 @@ function TeamMemberBox({ member, imageOnRight = false }: { member: any, imageOnR
   const { isMobile } = useDeviceType();
   const [isClicked, setIsClicked] = useState(false);
   const videoRef = useRef<HTMLVideoElement>(null);
+  const [isLoading, setIsLoading] = useState(false);
+
 
   const handleClose = (e: React.MouseEvent) => {
     e.stopPropagation();
@@ -291,6 +295,8 @@ function ConsultantBox({ member, imageOnRight = false }: { member: any, imageOnR
   );
 }
 
+const today = new Date().toISOString().split("T")[0];
+
 export default function ModernContactPage() {
   const { theme } = useThemeContext();
   const { isMobile, isTablet } = useDeviceType();
@@ -300,7 +306,8 @@ export default function ModernContactPage() {
     email: '',
     phone: '',
     consultationType: '',
-    message: ''
+    message: '',
+    preferred_date:'',
   });
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
@@ -310,10 +317,43 @@ export default function ModernContactPage() {
     });
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    console.log('Form submitted:', formData);
-    // Handle form submission
+  
+    // Prepare the data for the API call
+    const contactData = {
+      name: formData.name,
+      email: formData.email,
+      phone: formData.phone,
+      subject: formData.consultationType || 'General Consultation', // Use consultationType as subject
+      message: formData.message || 'No additional details provided',
+      preferred_date : formData.preferred_date || today
+    };
+  
+    try {
+      // Send the data to the contact endpoint
+      const response = await apiService.contact.sendMessage(contactData);
+      if (response.success) {
+        toast.success('Consultation request submitted successfully!');
+        // Optionally reset the form
+        setFormData({
+          name: '',
+          email: '',
+          phone: '',
+          consultationType: '',
+          message: '',
+          preferred_date:'',
+        });
+        // Optionally redirect or perform other actions
+        // router.push('/thank-you'); // Uncomment and adjust if you have a thank-you page
+      } else {
+        toast.error(response.message || 'Failed to submit the request.');
+      }
+    } catch (error: any) {
+      console.error('API Error:', error);
+      const errorMessage = error.message || 'An error occurred while submitting the request.';
+      toast.error(errorMessage);
+    }
   };
 
   const teamMembers = [
@@ -528,108 +568,136 @@ export default function ModernContactPage() {
 
         {/* Request Consultation Form */}
         <FadeInSection>
-          <div
-            className="max-w-2xl mx-auto p-8 rounded-2xl shadow-lg"
-            style={{
-              background: theme.palette.background.paper,
-              border: `2px solid ${theme.palette.divider}`
-            }}
+        <div
+          className="max-w-2xl mx-auto p-8 rounded-2xl shadow-lg"
+          style={{
+            background: theme.palette.background.paper,
+            border: `2px solid ${theme.palette.divider}`,
+          }}
+        >
+          <h3
+            className="text-2xl font-bold mb-6 text-center"
+            style={{ color: theme.palette.primary.main }}
           >
-            <h3
-              className="text-2xl font-bold mb-6 text-center"
-              style={{ color: theme.palette.primary.main }}
-            >
-              Request Consultation
-            </h3>
+            Request Consultation
+          </h3>
+          <div className="space-y-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <input
+                type="text"
+                name="name"
+                placeholder="Full Name"
+                value={formData.name}
+                onChange={handleInputChange}
+                className="w-full p-3 rounded-lg border-2 transition-all duration-200 focus:border-blue-500 focus:outline-none"
+                style={{
+                  borderColor: theme.palette.divider,
+                  background: theme.palette.background.default,
+                  color: theme.palette.text.primary,
+                }}
+              />
+              <input
+                type="email"
+                name="email"
+                placeholder="Email Address"
+                value={formData.email}
+                onChange={handleInputChange}
+                className="w-full p-3 rounded-lg border-2 transition-all duration-200 focus:border-blue-500 focus:outline-none"
+                style={{
+                  borderColor: theme.palette.divider,
+                  background: theme.palette.background.default,
+                  color: theme.palette.text.primary,
+                }}
+              />
+            </div>
             <div className="space-y-4">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <input
-                  type="text"
-                  name="name"
-                  placeholder="Full Name"
-                  value={formData.name}
+                  type="preferred_date"
+                  name="preferred_date"
+                  defaultValue={today}
+                  placeholder="Preferred Date"
+                  value={formData.preferred_date || today}
                   onChange={handleInputChange}
+                  min={today}
                   className="w-full p-3 rounded-lg border-2 transition-all duration-200 focus:border-blue-500 focus:outline-none"
                   style={{
                     borderColor: theme.palette.divider,
                     background: theme.palette.background.default,
-                    color: theme.palette.text.primary
+                    color: theme.palette.text.primary,
+                    colorScheme: theme.palette.mode === 'dark' ? 'dark' : 'light',
                   }}
                 />
                 <input
-                  type="email"
-                  name="email"
-                  placeholder="Email Address"
-                  value={formData.email}
+                  type="tel"
+                  name="phone"
+                  placeholder="Phone Number"
+                  value={formData.phone}
                   onChange={handleInputChange}
                   className="w-full p-3 rounded-lg border-2 transition-all duration-200 focus:border-blue-500 focus:outline-none"
                   style={{
                     borderColor: theme.palette.divider,
                     background: theme.palette.background.default,
-                    color: theme.palette.text.primary
+                    color: theme.palette.text.primary,
                   }}
                 />
               </div>
-              <input
-                type="tel"
-                name="phone"
-                placeholder="Phone Number"
-                value={formData.phone}
-                onChange={handleInputChange}
-                className="w-full p-3 rounded-lg border-2 transition-all duration-200 focus:border-blue-500 focus:outline-none"
-                style={{
-                  borderColor: theme.palette.divider,
-                  background: theme.palette.background.default,
-                  color: theme.palette.text.primary
-                }}
-              />
-              <select
-                name="consultationType"
-                value={formData.consultationType}
-                onChange={handleInputChange}
-                className="w-full p-3 rounded-lg border-2 transition-all duration-200 focus:border-blue-500 focus:outline-none"
-                style={{
-                  borderColor: theme.palette.divider,
-                  background: theme.palette.background.default,
-                  color: theme.palette.text.primary
-                }}
-              >
-                <option value="">Select Consultation Type</option>
-                <option value="residential">Residential Vastu</option>
-                <option value="commercial">Commercial Vastu</option>
-                <option value="plot">Plot Selection</option>
-                <option value="remedial">Remedial Solutions</option>
-                <option value="online">Online Consultation</option>
-              </select>
-              <textarea
-                name="message"
-                placeholder="Tell us about your requirements..."
-                value={formData.message}
-                onChange={handleInputChange}
-                rows={4}
-                className="w-full p-3 rounded-lg border-2 transition-all duration-200 focus:border-blue-500 focus:outline-none resize-none"
-                style={{
-                  borderColor: theme.palette.divider,
-                  background: theme.palette.background.default,
-                  color: theme.palette.text.primary
-                }}
-              />
-              <button
-                onClick={handleSubmit}
-                className="w-full py-4 px-6 rounded-lg font-semibold text-lg transition-all duration-200 transform hover:scale-105 hover:shadow-lg"
-                style={{
-                  background: theme.palette.primary.main,
-                  color: theme.palette.primary.contrastText,
-                }}
-              >
-                <Calendar className="w-5 h-5 inline-block mr-2" />
-                Book Consultation
-              </button>
             </div>
+            <select
+              name="consultationType"
+              value={formData.consultationType}
+              onChange={handleInputChange}
+              className="w-full p-3 rounded-lg border-2 transition-all duration-200 focus:border-blue-500 focus:outline-none"
+              style={{
+                borderColor: theme.palette.divider,
+                background: theme.palette.background.default,
+                color: theme.palette.text.primary,
+              }}
+            >
+              <option value="">Select Consultation Type</option>
+              <option value="Residential Vastu">Residential Vastu</option>
+              <option value="Commercial Vastu">Commercial Vastu</option>
+              <option value="Plot Selection">Plot Selection</option>
+              <option value="Remedial Solutions">Remedial Solutions</option>
+              <option value="Online Consultation">Online Consultation</option>
+            </select>
+            <textarea
+              name="message"
+              placeholder="Tell us about your requirements..."
+              value={formData.message}
+              onChange={handleInputChange}
+              rows={4}
+              className="w-full p-3 rounded-lg border-2 transition-all duration-200 focus:border-blue-500 focus:outline-none resize-none"
+              style={{
+                borderColor: theme.palette.divider,
+                background: theme.palette.background.default,
+                color: theme.palette.text.primary,
+              }}
+            />
+            <button
+              onClick={handleSubmit}
+              className="w-full py-4 px-6 rounded-lg font-semibold text-lg transition-all duration-200 transform hover:scale-105 hover:shadow-lg"
+              style={{
+                background: theme.palette.primary.main,
+                color: theme.palette.primary.contrastText,
+              }}
+            >
+              <Calendar className="w-5 h-5 inline-block mr-2" />
+              Book Consultation
+            </button>
           </div>
-        </FadeInSection>
+        </div>
+      </FadeInSection>
       </main>
       <Footer />
     </div>
   );
 }
+
+function setErrors(errors: any) {
+  throw new Error('Function not implemented.');
+}
+function setIsLoading(arg0: boolean) {
+  throw new Error('Function not implemented.');
+}
+

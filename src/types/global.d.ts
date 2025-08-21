@@ -10,11 +10,11 @@ declare global {
     FB?: {
       login: (callback: (response: any) => void, options: any) => void;
     };
-    AppleID?: {
-      auth: {
-        signIn: () => Promise<any>;
-      };
-    };
+    // AppleID?: {
+    //   auth: {
+    //     signIn: () => Promise<any>;
+    //   };
+    // };
   }
 }
 

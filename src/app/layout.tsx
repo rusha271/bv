@@ -1,5 +1,4 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import "../styles/jcrop.css";
 import CssBaseline from '@mui/material/CssBaseline';
@@ -7,18 +6,9 @@ import { ThemeProvider } from '../contexts/ThemeContext';
 import { PlanetaryDataProvider } from '@/contexts/PlanetaryDataContext';
 import { LegalProvider } from '@/contexts/LegalContent';
 import Chatbot from '@/components/Chatbot';
-import { GoogleOAuthProvider } from '@react-oauth/google';
-import AutoPollingWatcher from '../utils/PollingWatcher';
-
-const geistSans = Geist({
-  variable: "--font-geist-sans",
-  subsets: ["latin"],
-});
-
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
-  subsets: ["latin"],
-});
+import ClientOnly from '@/components/ClientOnly';
+import ReduxProvider from '@/components/providers/ReduxProvider';
+import Toast from "@/components/ui/Toast";
 
 export const metadata: Metadata = {
   title: "Brahma Vastu",
@@ -30,48 +20,23 @@ export default function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  // Select Client ID based on environment
-  const env = process.env.NODE_ENV || 'development';
-  const googleClientId =
-    env === 'production'
-      ? process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID_PROD || ''
-      : process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID_DEV || '';
-
-  // Debug log to verify Client ID
-  console.log('Environment:', env);
-  console.log('Google Client ID:', googleClientId ? 'Configured' : 'Missing');
-
-  if (!googleClientId) {
-    console.warn('Warning: Google Client ID is missing. Google OAuth will be disabled. Please configure your .env.local file.');
-  }
-
   return (
     <html lang="en">
-      <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
-      <AutoPollingWatcher />
-        {googleClientId ? (
-          <GoogleOAuthProvider clientId={googleClientId}>
-            <ThemeProvider>
-              <CssBaseline />
-              <PlanetaryDataProvider>
-                <LegalProvider>
-                  {children}
-                  <Chatbot />
-                </LegalProvider>
-              </PlanetaryDataProvider>
-            </ThemeProvider>
-          </GoogleOAuthProvider>
-        ) : (
+      <body>
+        <ReduxProvider>
           <ThemeProvider>
             <CssBaseline />
             <PlanetaryDataProvider>
               <LegalProvider>
                 {children}
-                <Chatbot />
+                <ClientOnly>
+                  <Chatbot />
+                </ClientOnly>
               </LegalProvider>
             </PlanetaryDataProvider>
           </ThemeProvider>
-        )}
+        </ReduxProvider>
+        <Toast />
       </body>
     </html>
   );

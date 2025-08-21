@@ -1,0 +1,646 @@
+import { api } from './apiClient';
+
+// Types for API responses
+export interface ApiResponse<T = any> {
+  status: string;
+  success: boolean;
+  data?: T;
+  message?: string;
+  error?: string;
+}
+
+// Authentication Types
+export interface LoginRequest {
+  email: string;
+  password: string;
+}
+
+export interface RegisterRequest {
+  email: string;
+  password: string;
+  name: string;
+}
+
+export interface AuthResponse {
+  access_token: string;
+  token_type: string;
+  user: {
+    id: string;
+    email: string;
+    name: string;
+    role: string;
+  };
+}
+
+// User Types
+export interface User {
+  id: string;
+  email: string;
+  name: string;
+  role: string;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface UpdateUserRequest {
+  name?: string;
+  email?: string;
+}
+
+// File Types
+export interface FileUploadResponse {
+  id: string;
+  filename: string;
+  url: string;
+  size: number;
+  type: string;
+}
+
+// Floorplan Types
+export interface Floorplan {
+  id: string;
+  name: string;
+  description?: string;
+  image_url: string;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface CreateFloorplanRequest {
+  name: string;
+  description?: string;
+  image_file: File;
+}
+
+// Chat Types
+export interface ChatMessage {
+  id: string;
+  content: string;
+  role: 'user' | 'assistant';
+  timestamp: string;
+}
+
+export interface ChatRequest {
+  message: string;
+  context?: string;
+}
+
+export interface ChatResponse {
+  message: string;
+  context?: string;
+}
+
+// Blog Types
+export interface BlogPost {
+  id: string;
+  title: string;
+  content: string;
+  author: string;
+  published_at: string;
+  tags: string[];
+}
+
+export interface CreateBlogRequest {
+  title: string;
+  content: string;
+  tags?: string[];
+}
+
+// Legal Types
+export interface LegalDocument {
+  id: string;
+  type: 'terms' | 'privacy' | 'disclaimer';
+  title: string;
+  content: string;
+  version: string;
+  updated_at: string;
+}
+
+// Analytics Types
+export interface AnalyticsData {
+  page_views: number;
+  unique_visitors: number;
+  session_duration: number;
+  bounce_rate: number;
+}
+
+// Contact Types
+export interface ContactRequest {
+  name: string;
+  email: string;
+  subject: string;
+  message: string;
+}
+
+// Vastu Types
+export interface VastuAnalysis {
+  id: string;
+  property_type: string;
+  direction: string;
+  recommendations: string[];
+  score: number;
+  created_at: string;
+}
+
+export interface VastuRequest {
+  property_type: string;
+  direction: string;
+  floor_plan?: File;
+}
+
+// Role Types
+export interface Role {
+  id: string;
+  name: string;
+  permissions: string[];
+  created_at: string;
+}
+
+export interface CreateRoleRequest {
+  name: string;
+  permissions: string[];
+}
+
+// Book Types
+export interface Book {
+  id: number;
+  title: string;
+  author: string;
+  summary: string;
+  image: string;
+  rating: number;
+  pages: number;
+  price?: number;
+  publication_year?: number;
+  publisher?: string;
+  category?: string;
+  isbn?: string;
+}
+
+export interface BookCreate {
+  title: string;
+  author: string;
+  summary: string;
+  image: string;
+  rating?: number;
+  pages?: number;
+  price?: number;
+  publication_year?: number;
+  publisher?: string;
+  category?: string;
+  isbn?: string;
+}
+
+export interface BookUpdate extends Partial<BookCreate> {}
+
+// Video Types
+export interface Video {
+  id: number;
+  title: string;
+  description: string;
+  url: string;
+  thumbnail: string;
+  duration: string;
+  views: number;
+  category?: string;
+  upload_date?: string;
+}
+
+export interface VideoCreate {
+  title: string;
+  description: string;
+  url: string;
+  thumbnail: string;
+  duration?: string;
+  category?: string;
+}
+
+export interface VideoUpdate extends Partial<VideoCreate> {}
+
+// Tip Types
+export interface Tip {
+  id: number;
+  title: string;
+  content: string;
+  category: string;
+  image: string;
+}
+
+// API Service Class
+class ApiService {
+  // Authentication Endpoints (/api/auth)
+  auth = {
+    login: async (data: LoginRequest): Promise<AuthResponse> => {
+      return api.post<AuthResponse>('/api/auth/login', data);
+    },
+
+    register: async (data: RegisterRequest): Promise<AuthResponse> => {
+      return api.post<AuthResponse>('/api/auth/register', data);
+    },
+
+    logout: async (): Promise<ApiResponse> => {
+      return api.post<ApiResponse>('/api/auth/logout');
+    },
+
+    refresh: async (): Promise<AuthResponse> => {
+      return api.post<AuthResponse>('/api/auth/refresh');
+    },
+
+    me: async (): Promise<User> => {
+      return api.get<User>('/api/auth/me');
+    },
+
+    forgotPassword: async (email: string): Promise<ApiResponse> => {
+      return api.post<ApiResponse>('/api/auth/forgot-password', { email });
+    },
+
+    resetPassword: async (token: string, new_password: string): Promise<ApiResponse> => {
+      return api.post<ApiResponse>('/api/auth/reset-password', { token, new_password });
+    },
+
+    verifyEmail: async (token: string): Promise<ApiResponse> => {
+      return api.post<ApiResponse>('/api/auth/verify-email', { token });
+    },
+
+    resendVerification: async (): Promise<ApiResponse> => {
+      return api.post<ApiResponse>('/api/auth/resend-verification');
+    }
+  };
+
+  // Users Endpoints (/api/users)
+  users = {
+    getAll: async (): Promise<User[]> => {
+      return api.get<User[]>('/api/users');
+    },
+
+    getById: async (id: string): Promise<User> => {
+      return api.get<User>(`/api/users/${id}`);
+    },
+
+    update: async (id: string, data: UpdateUserRequest): Promise<User> => {
+      return api.put<User>(`/api/users/${id}`, data);
+    },
+
+    delete: async (id: string): Promise<ApiResponse> => {
+      return api.delete<ApiResponse>(`/api/users/${id}`);
+    },
+
+    updateProfile: async (data: UpdateUserRequest): Promise<User> => {
+      return api.put<User>('/api/users/profile', data);
+    },
+
+    changePassword: async (current_password: string, new_password: string): Promise<ApiResponse> => {
+      return api.post<ApiResponse>('/api/users/change-password', { current_password, new_password });
+    }
+  };
+
+  // Files Endpoints (/api/files)
+  files = {
+    upload: async (file: File): Promise<FileUploadResponse> => {
+      const formData = new FormData();
+      formData.append('file', file);
+      // Use apiClient directly for file upload
+      return api.post<FileUploadResponse>('/api/files/upload', formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
+      });
+    },
+
+    uploadMultiple: async (files: File[]): Promise<FileUploadResponse[]> => {
+      const formData = new FormData();
+      files.forEach((file) => {
+        formData.append('files', file);
+      });
+      // Use apiClient directly for file upload
+      return api.post<FileUploadResponse[]>('/api/files/upload-multiple', formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
+      });
+    },
+
+    getById: async (id: string): Promise<FileUploadResponse> => {
+      return api.get<FileUploadResponse>(`/api/files/${id}`);
+    },
+
+    delete: async (id: string): Promise<ApiResponse> => {
+      return api.delete<ApiResponse>(`/api/files/${id}`);
+    },
+
+    getMyFiles: async (): Promise<FileUploadResponse[]> => {
+      return api.get<FileUploadResponse[]>('/api/files/my-files');
+    }
+  };
+
+  // Floorplan Endpoints (/api/floorplan)
+  floorplan = {
+    getAll: async (): Promise<Floorplan[]> => {
+      return api.get<Floorplan[]>('/api/floorplan');
+    },
+
+    getById: async (id: string): Promise<Floorplan> => {
+      return api.get<Floorplan>(`/api/floorplan/${id}`);
+    },
+
+    create: async (data: CreateFloorplanRequest): Promise<Floorplan> => {
+      const formData = new FormData();
+      formData.append('name', data.name);
+      if (data.description) formData.append('description', data.description);
+      formData.append('image_file', data.image_file);
+      // Use apiClient directly for file upload
+      return api.post<Floorplan>('/api/floorplan', formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
+      });
+    },
+
+    update: async (id: string, data: Partial<CreateFloorplanRequest>): Promise<Floorplan> => {
+      const formData = new FormData();
+      if (data.name) formData.append('name', data.name);
+      if (data.description) formData.append('description', data.description);
+      if (data.image_file) formData.append('image_file', data.image_file);
+      // Use apiClient directly for file upload
+      return api.put<Floorplan>(`/api/floorplan/${id}`, formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
+      });
+    },
+
+    delete: async (id: string): Promise<ApiResponse> => {
+      return api.delete<ApiResponse>(`/api/floorplan/${id}`);
+    },
+
+    analyze: async (id: string): Promise<VastuAnalysis> => {
+      return api.post<VastuAnalysis>(`/api/floorplan/${id}/analyze`);
+    }
+  };
+
+  // Chat Endpoints (/api/chat)
+  chat = {
+    sendMessage: async (data: ChatRequest): Promise<ChatResponse> => {
+      return api.post<ChatResponse>('/api/chat/send', data);
+    },
+
+    getHistory: async (): Promise<ChatMessage[]> => {
+      return api.get<ChatMessage[]>('/api/chat/history');
+    },
+
+    clearHistory: async (): Promise<ApiResponse> => {
+      return api.delete<ApiResponse>('/api/chat/history');
+    },
+
+    getConversation: async (conversationId: string): Promise<ChatMessage[]> => {
+      return api.get<ChatMessage[]>(`/api/chat/conversation/${conversationId}`);
+    },
+
+    getConversations: async (): Promise<{ id: string; title: string; last_message: string; created_at: string }[]> => {
+      return api.get('/api/chat/conversations');
+    }
+  };
+
+  // Blog Endpoints (/api/blog)
+  blog = {
+    getAll: async (): Promise<BlogPost[]> => {
+      return api.get<BlogPost[]>('/api/blog');
+    },
+
+    getById: async (id: string): Promise<BlogPost> => {
+      return api.get<BlogPost>(`/api/blog/${id}`);
+    },
+
+    create: async (data: CreateBlogRequest): Promise<BlogPost> => {
+      return api.post<BlogPost>('/api/blog', data);
+    },
+
+    update: async (id: string, data: Partial<CreateBlogRequest>): Promise<BlogPost> => {
+      return api.put<BlogPost>(`/api/blog/${id}`, data);
+    },
+
+    delete: async (id: string): Promise<ApiResponse> => {
+      return api.delete<ApiResponse>(`/api/blog/${id}`);
+    },
+
+    getByTag: async (tag: string): Promise<BlogPost[]> => {
+      return api.get<BlogPost[]>(`/api/blog/tag/${tag}`);
+    },
+
+    search: async (query: string): Promise<BlogPost[]> => {
+      return api.get<BlogPost[]>(`/api/blog/search?q=${encodeURIComponent(query)}`);
+    }
+  };
+
+  // Legal Endpoints (/api/legal)
+  legal = {
+    getTerms: async (): Promise<LegalDocument> => {
+      return api.get<LegalDocument>('/api/legal/terms');
+    },
+
+    getPrivacy: async (): Promise<LegalDocument> => {
+      return api.get<LegalDocument>('/api/legal/privacy');
+    },
+
+    getDisclaimer: async (): Promise<LegalDocument> => {
+      return api.get<LegalDocument>('/api/legal/disclaimer');
+    },
+
+    updateTerms: async (content: string): Promise<LegalDocument> => {
+      return api.put<LegalDocument>('/api/legal/terms', { content });
+    },
+
+    updatePrivacy: async (content: string): Promise<LegalDocument> => {
+      return api.put<LegalDocument>('/api/legal/privacy', { content });
+    },
+
+    updateDisclaimer: async (content: string): Promise<LegalDocument> => {
+      return api.put<LegalDocument>('/api/legal/disclaimer', { content });
+    }
+  };
+
+  // Analytics Endpoints (/api/analytics)
+  analytics = {
+    getDashboard: async (): Promise<AnalyticsData> => {
+      return api.get<AnalyticsData>('/api/analytics/dashboard');
+    },
+
+    getPageViews: async (startDate?: string, endDate?: string): Promise<{ date: string; views: number }[]> => {
+      const params = new URLSearchParams();
+      if (startDate) params.append('start_date', startDate);
+      if (endDate) params.append('end_date', endDate);
+      return api.get(`/api/analytics/page-views?${params.toString()}`);
+    },
+
+    trackEvent: async (event: string, properties?: Record<string, any>): Promise<ApiResponse> => {
+      return api.post<ApiResponse>('/api/analytics/track', { event, properties });
+    },
+
+    getUserAnalytics: async (): Promise<{ total_users: number; active_users: number; new_users: number }> => {
+      return api.get('/api/analytics/users');
+    }
+  };
+
+  // Contact Endpoints (/api/contact)
+  contact = {
+    sendMessage: async (data: ContactRequest): Promise<ApiResponse> => {
+      return api.post<ApiResponse>('/api/contact/consultation/simple', data);
+    },
+
+    getMessages: async (): Promise<ContactRequest[]> => {
+      return api.get<ContactRequest[]>('/api/contact/messages');
+    },
+
+    getMessageById: async (id: string): Promise<ContactRequest> => {
+      return api.get<ContactRequest>(`/api/contact/messages/${id}`);
+    },
+
+    deleteMessage: async (id: string): Promise<ApiResponse> => {
+      return api.delete<ApiResponse>(`/api/contact/messages/${id}`);
+    }
+  };
+
+  // Vastu Endpoints (/api/vastu)
+  vastu = {
+    analyze: async (data: VastuRequest): Promise<VastuAnalysis> => {
+      const formData = new FormData();
+      formData.append('property_type', data.property_type);
+      formData.append('direction', data.direction);
+      if (data.floor_plan) formData.append('floor_plan', data.floor_plan);
+      // Use apiClient directly for file upload
+      return api.post<VastuAnalysis>('/api/vastu/analyze', formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
+      });
+    },
+
+    getAnalysis: async (id: string): Promise<VastuAnalysis> => {
+      return api.get<VastuAnalysis>(`/api/vastu/analysis/${id}`);
+    },
+
+    getMyAnalyses: async (): Promise<VastuAnalysis[]> => {
+      return api.get<VastuAnalysis[]>('/api/vastu/my-analyses');
+    },
+
+    deleteAnalysis: async (id: string): Promise<ApiResponse> => {
+      return api.delete<ApiResponse>(`/api/vastu/analysis/${id}`);
+    },
+
+    getRecommendations: async (property_type: string, direction: string): Promise<string[]> => {
+      return api.get<string[]>(`/api/vastu/recommendations?property_type=${property_type}&direction=${direction}`);
+    }
+  };
+
+  // Books API
+  books = {
+    getAll: async (): Promise<Book[]> => {
+      return api.get<Book[]>("/api/blog/books");
+    },
+    getById: async (id: number): Promise<Book> => {
+      return api.get<Book>(`/api/blog/books/${id}`);
+    },
+    create: async (data: FormData): Promise<Book> => {
+      return api.post<Book>("/api/blog/books", data);
+    },
+    update: async (id: number, data: BookUpdate): Promise<Book> => {
+      return api.put<Book>(`/api/blog/books/${id}`, data);
+    },
+    delete: async (id: number): Promise<ApiResponse> => {
+      return api.delete<ApiResponse>(`/api/blog/books/${id}`);
+    },
+  };
+
+  // Videos API
+  videos = {
+    getAll: async (): Promise<Video[]> => {
+      return api.get<Video[]>("/api/blog/videos");
+    },
+    getById: async (id: number): Promise<Video> => {
+      return api.get<Video>(`/api/blog/videos/${id}`);
+    },
+    create: async (data: FormData): Promise<Video> => {
+      return api.post<Video>("/api/blog/videos", data, {
+        headers: {
+          "Content-Type": "multipart/form-data", // important for FormData
+        },
+        transformRequest: [(formData) => formData], // don't JSON.stringify
+      });
+    },
+    update: async (id: number, data: FormData | VideoUpdate): Promise<Video> => {
+      const isFormData = data instanceof FormData;
+      return api.put<Video>(`/api/blog/videos/${id}`, data);
+    },
+    delete: async (id: number): Promise<ApiResponse> => {
+      return api.delete<ApiResponse>(`/api/blog/videos/${id}`);
+    },
+  }
+
+  // Tips API
+  // (GET only, as per backend)
+  tips = {
+    getAll: async (): Promise<Tip[]> => {
+      return api.get<Tip[]>("/api/blog/tips");
+    },
+    create: async (
+      formData: FormData,
+      config: { headers: { "Content-Type": string } } = { headers: { "Content-Type": "multipart/form-data" } }
+    ): Promise<Tip> => {
+      return api.post<Tip>("/api/blog/tips", formData, config);
+    },    
+  };
+
+  // Roles Endpoints (/api/roles)
+  roles = {
+    getAll: async (): Promise<Role[]> => {
+      return api.get<Role[]>('/api/roles');
+    },
+
+    getById: async (id: string): Promise<Role> => {
+      return api.get<Role>(`/api/roles/${id}`);
+    },
+
+    create: async (data: CreateRoleRequest): Promise<Role> => {
+      return api.post<Role>('/api/roles', data);
+    },
+
+    update: async (id: string, data: Partial<CreateRoleRequest>): Promise<Role> => {
+      return api.put<Role>(`/api/roles/${id}`, data);
+    },
+
+    delete: async (id: string): Promise<ApiResponse> => {
+      return api.delete<ApiResponse>(`/api/roles/${id}`);
+    },
+
+    assignRole: async (userId: string, roleId: string): Promise<ApiResponse> => {
+      return api.post<ApiResponse>('/api/roles/assign', { user_id: userId, role_id: roleId });
+    },
+
+    removeRole: async (userId: string, roleId: string): Promise<ApiResponse> => {
+      return api.delete<ApiResponse>(`/api/roles/assign?user_id=${userId}&role_id=${roleId}`);
+    }
+  };
+}
+
+// Create and export the API service instance
+export const apiService = new ApiService();
+
+// Export individual services for convenience
+export const {
+  auth,
+  users,
+  files,
+  floorplan,
+  chat,
+  blog,
+  legal,
+  analytics,
+  contact,
+  vastu,
+  roles,
+  books,
+  videos,
+  tips
+} = apiService;
+
+export default apiService;

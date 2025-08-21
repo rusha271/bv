@@ -1,18 +1,18 @@
 import React from 'react';
 import Box from '@mui/material/Box';
 import IconButton from '@mui/material/IconButton';
-import Tooltip from '@mui/material/Tooltip';
-import EmailIcon from '@mui/icons-material/Email';
-import FacebookIcon from '@mui/icons-material/Facebook';
+import Tooltip from '@mui/material/Tooltip';  
+import LinkedInIcon from '@mui/icons-material/LinkedIn';
 import InstagramIcon from '@mui/icons-material/Instagram';
 import WhatsAppIcon from '@mui/icons-material/WhatsApp';
+import YouTubeIcon from '@mui/icons-material/YouTube';
 import { useTheme } from '@mui/material/styles';
 
 const icons = [
-  { icon: <EmailIcon />, label: 'Email', href: '#' },
-  { icon: <FacebookIcon />, label: 'Facebook', href: '#' },
-  { icon: <InstagramIcon />, label: 'Instagram', href: '#' },
+  { icon: <LinkedInIcon />, label: 'Linked In', href: 'https://www.linkedin.com/in/karishmakori/?originalSubdomain=in' },
+  { icon: <InstagramIcon />, label: 'Instagram', href: 'https://www.instagram.com/karishmajkori?igsh=MWg2c2F0b3Uycm1wZw==' },
   { icon: <WhatsAppIcon />, label: 'WhatsApp', href: '#' },
+  { icon:<YouTubeIcon/> , label:'YouTube' , href:'#'}
 ];
 
 export default function SocialIcons({ direction = 'row' }: { direction?: 'row' | 'column' }) {

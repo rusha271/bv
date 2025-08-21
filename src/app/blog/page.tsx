@@ -1,12 +1,20 @@
 "use client";
 
 import React, { useState } from 'react';
-import { VastuTipsProvider } from '@/contexts/VastuTipsContext';
 import Navbar from '@/components/ui/Navbar';
 import Footer from '@/components/ui/Footer';
 import dynamic from 'next/dynamic';
+import PostUploadSection from '@/components/PostUploadSection';
 const BlogCardsList = dynamic(() => import('@/components/BlogCardsList'), {
-  ssr: false,
+  ssr: true,
+  loading: () => <div style={{ height: '200px', textAlign: 'center' }}>Loading...</div>,
+});
+const VideoCardsList = dynamic(() => import('@/components/VideoCardsList'), {
+  ssr: true,
+  loading: () => <div style={{ height: '200px', textAlign: 'center' }}>Loading...</div>,
+});
+const BookCardsList = dynamic(() => import('@/components/BookCardsList'), {
+  ssr: true,
   loading: () => <div style={{ height: '200px', textAlign: 'center' }}>Loading...</div>,
 });
 import { useThemeContext } from '@/contexts/ThemeContext';
@@ -71,24 +79,12 @@ function BlogTabs() {
       <Box sx={{ mt: 2, minHeight: 300, px: { xs: 2, sm: 2, md: 4 }, overflowX: 'hidden' }}>
         {tab === 0 && (
           <FadeInSection>
-            <div
-              style={{ color: theme.palette.text.secondary, background: theme.palette.background.paper }}
-              className="text-center text-lg rounded-xl shadow p-8 dark:bg-zinc-900/80"
-            >
-              <p>Video content coming soon!</p>
-              <p className="mt-2 text-sm">Stay tuned for exciting Vastu video tutorials.</p>
-            </div>
+            <VideoCardsList />
           </FadeInSection>
         )}
         {tab === 1 && (
           <FadeInSection>
-            <div
-              style={{ color: theme.palette.text.secondary, background: theme.palette.background.paper }}
-              className="text-center text-lg rounded-xl shadow p-8 dark:bg-zinc-900/80"
-            >
-              <p>Books content coming soon!</p>
-              <p className="mt-2 text-sm">Explore our upcoming collection of Vastu books.</p>
-            </div>
+            <BookCardsList />
           </FadeInSection>
         )}
         {tab === 2 && (
@@ -98,13 +94,7 @@ function BlogTabs() {
         )}
         {tab === 3 && (
           <FadeInSection>
-            <div
-              style={{ color: theme.palette.text.secondary, background: theme.palette.background.paper }}
-              className="text-center text-lg rounded-xl shadow p-8 dark:bg-zinc-900/80"
-            >
-              <p>Posts content coming soon!</p>
-              <p className="mt-2 text-sm">Check back for insightful Vastu blog posts.</p>
-            </div>
+            <PostUploadSection />
           </FadeInSection>
         )}
       </Box>
@@ -117,37 +107,39 @@ export default function BlogPage() {
   const sectionTitleSize = isMobile ? '1.25rem' : isTablet ? '1.75rem' : '2.25rem';
 
   return (
-    <VastuTipsProvider>
-      <div
-        className="relative min-h-screen flex flex-col"
-        style={{ background: theme.palette.background.default }}
-      >
-        {/* Animated gradient background */}
-        <div className="absolute inset-0 -z-10 animate-gradient bg-gradient-to-br from-blue-100 via-yellow-50 to-pink-100 dark:from-zinc-900 dark:via-zinc-800 dark:to-zinc-900" />
-        <Navbar />
-        {/* Main content container */}
-        <main
-          className="flex-1 w-full max-w-6xl mx-auto rounded-xl shadow-md px-4 py-6 sm:px-6 sm:py-8 lg:px-8 lg:py-10 box-border"
+    <div
+      className="relative min-h-screen flex flex-col"
+      style={{ background: theme.palette.background.default }}
+    >
+      {/* Animated gradient background */}
+      <div className="absolute inset-0 -z-10 animate-gradient bg-gradient-to-br from-blue-100 via-yellow-50 to-pink-100 dark:from-zinc-900 dark:via-zinc-800 dark:to-zinc-900" />
+      <Navbar />
+      {/* Main content container */}
+      <main
+        className="flex-1 w-full max-w-6xl mx-auto rounded-xl shadow-md px-4 py-6 sm:px-6 sm:py-8 lg:px-8 lg:py-10 box-border"
 
+        style={{
+          background: theme.palette.background.paper,
+          borderColor: theme.palette.divider,
+          color: theme.palette.text.primary,
+          minHeight: '80vh', // Prevent shifting by reserving height
+          marginTop: isMobile ? '4.5rem' : '5.5rem',
+          marginBottom: isMobile ? '1.5rem' : '2.5rem',
+        }}
+      >
+        <h2
+          className="font-bold mb-4 text-center"
           style={{
-            background: theme.palette.background.paper,
-            borderColor: theme.palette.divider,
-            color: theme.palette.text.primary,
-            minHeight: '80vh', // Prevent shifting by reserving height
-            marginTop: isMobile ? '4.5rem' : '5.5rem',
-            marginBottom: isMobile ? '1.5rem' : '2.5rem',
+            color: theme.palette.primary.main,
+            fontSize: sectionTitleSize,
+            fontFamily: '"Roboto", sans-serif', // Fallback font
           }}
         >
-          <h2
-            className="font-bold mb-4 text-center"
-            style={{ color: theme.palette.primary.main, fontSize: sectionTitleSize }}
-          >
-            Explore Vastu Resources
-          </h2>
-          <BlogTabs />
-        </main>
-        <Footer />
-      </div>
-    </VastuTipsProvider>
+          Explore Vastu Resources
+        </h2>
+        <BlogTabs />
+      </main>
+      <Footer />
+    </div>
   );
 }

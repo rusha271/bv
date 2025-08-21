@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   Box,
   Dialog,
@@ -15,12 +15,30 @@ import {
   Tab,
   Stack,
   Link,
+  Alert,
+  CircularProgress,
+  FormControlLabel,
+  Checkbox,
+  Divider,
+  useTheme,
 } from '@mui/material';
-import { X, Eye, EyeOff, Mail, Lock, User, Phone } from 'lucide-react';
+import { 
+  Close as CloseIcon, 
+  Visibility, 
+  VisibilityOff, 
+  Email, 
+  Lock, 
+  Person, 
+  Phone 
+} from '@mui/icons-material';
 import { useDeviceType } from '../../utils/useDeviceType';
 import { useLegal } from '../../contexts/LegalContent';
 import { LegalDocument } from './LegalDocument';
 import { SocialAuth } from './AuthComponent';
+import { toast } from 'react-hot-toast';
+import { useRouter } from 'next/navigation';
+import * as Yup from 'yup';
+import { useAuth } from '@/utils/useApi';
 
 // TypeScript Interfaces
 interface FormData {
@@ -31,105 +49,86 @@ interface FormData {
   phone: string;
 }
 
-interface ValidationSchema {
-  [key: string]: {
-    required?: boolean;
-    email?: boolean;
-    min?: number;
-    pattern?: RegExp;
-    oneOf?: string[];
-    message?: string;
-  };
-}
-
 interface LogSigProps {
   open: boolean;
   onClose: () => void;
   prefillData?: Partial<FormData>;
+  redirectUrl?: string;
 }
 
+// Yup Validation Schemas
+const loginSchema = Yup.object().shape({
+  email: Yup.string()
+    .email('Please enter a valid email address')
+    .required('Email is required'),
+  password: Yup.string()
+    .min(12, 'Password must be at least 12 characters long')
+    .matches(
+      /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]/,
+      'Password must contain at least one uppercase letter, one lowercase letter, one number, and one special character'
+    )
+    .required('Password is required'),
+});
+
+const signupSchema = Yup.object().shape({
+  fullName: Yup.string()
+    .min(2, 'Full name must be at least 2 characters long')
+    .matches(/^\S+$/, 'Full name cannot contain spaces')
+    .required('Full name is required'),
+  email: Yup.string()
+    .email('Please enter a valid email address')
+    .required('Email is required'),
+  phone: Yup.string()
+    .matches(/^[+]?[\d\s-()]{10,15}$/, 'Please enter a valid phone number (10-15 digits)')
+    .optional(),
+  password: Yup.string()
+    .min(12, 'Password must be at least 12 characters long')
+    .matches(
+      /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]/,
+      'Password must contain at least one uppercase letter, one lowercase letter, one number, and one special character'
+    )
+    .required('Password is required'),
+  confirmPassword: Yup.string()
+    .oneOf([Yup.ref('password')], 'Passwords must match')
+    .required('Please confirm your password'),
+});
+
 // Validation Functions
-const createValidationSchema = (isSignup = false): ValidationSchema => {
-  const schema: ValidationSchema = {
-    email: {
-      required: true,
-      email: true,
-      message: 'Please enter a valid email address',
-    },
-    password: {
-      required: true,
-      min: 6,
-      message: 'Password must be at least 6 characters long',
-    },
-  };
-
-  if (isSignup) {
-    schema.fullName = {
-      required: true,
-      min: 2,
-      message: 'Full name must be at least 2 characters long',
-    };
-    schema.confirmPassword = {
-      required: true,
-      oneOf: ['password'],
-      message: 'Passwords must match',
-    };
-    schema.phone = {
-      required: false,
-      pattern: /^[+]?[\d\s-()]{10,15}$/,
-      message: 'Please enter a valid phone number',
-    };
+const validateField = async (
+  field: string,
+  value: string,
+  formData: FormData,
+  isSignup: boolean
+): Promise<string | null> => {
+  try {
+    const schema = isSignup ? signupSchema : loginSchema;
+    await schema.validateAt(field, formData);
+    return null;
+  } catch (error) {
+    if (error instanceof Yup.ValidationError) {
+      return error.message;
+    }
+    return 'Validation error';
   }
-
-  return schema;
 };
 
-const validateField = (field: string, value: string, schema: ValidationSchema, formData: FormData): string | null => {
-  const fieldSchema = schema[field];
-  if (!fieldSchema) return null;
-
-  if (fieldSchema.required && (!value || value.trim() === '')) {
-    return `${field.charAt(0).toUpperCase() + field.slice(1)} is required`;
+const validateForm = async (formData: FormData, isSignup: boolean) => {
+  try {
+    const schema = isSignup ? signupSchema : loginSchema;
+    await schema.validate(formData, { abortEarly: false });
+    return { errors: {}, isValid: true };
+  } catch (error) {
+    if (error instanceof Yup.ValidationError) {
+      const errors: { [key: string]: string } = {};
+      error.inner.forEach((err) => {
+        if (err.path) {
+          errors[err.path] = err.message;
+        }
+      });
+      return { errors, isValid: false };
+    }
+    return { errors: { general: 'Validation failed' }, isValid: false };
   }
-
-  if (value) {
-    if (fieldSchema.email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value)) {
-      return fieldSchema.message || 'Invalid email format';
-    }
-
-    if (fieldSchema.min && value.length < fieldSchema.min) {
-      return fieldSchema.message || `Must be at least ${fieldSchema.min} characters`;
-    }
-
-    if (fieldSchema.pattern && !fieldSchema.pattern.test(value)) {
-      return fieldSchema.message || 'Invalid format';
-    }
-
-    if (fieldSchema.oneOf && fieldSchema.oneOf.includes('password')) {
-      if (value !== formData.password) {
-        return fieldSchema.message || 'Values do not match';
-      }
-    }
-  }
-
-  return null;
-};
-
-const validateForm = (formData: FormData, isSignup: boolean) => {
-  const schema = createValidationSchema(isSignup);
-  const errors: { [key: string]: string } = {};
-
-  Object.keys(schema).forEach((field) => {
-    const error = validateField(field, formData[field as keyof FormData], schema, formData);
-    if (error) {
-      errors[field] = error;
-    }
-  });
-
-  return {
-    errors,
-    isValid: Object.keys(errors).length === 0,
-  };
 };
 
 // TabPanel Component
@@ -153,9 +152,12 @@ function TabPanel({ children, value, index }: TabPanelProps) {
 }
 
 // Main Login/Signup Component
-export default function LogSigComponent({ open, onClose, prefillData }: LogSigProps) {
+export default function LogSigComponent({ open, onClose, prefillData, redirectUrl }: LogSigProps) {
   const { isMobile } = useDeviceType();
   const { showTerms, showPrivacy, setShowTerms, setShowPrivacy } = useLegal();
+  const theme = useTheme();
+  const router = useRouter();
+  const { login, register } = useAuth(); // Add useAuth hook
 
   const [tabValue, setTabValue] = useState(0);
   const [showPassword, setShowPassword] = useState(false);
@@ -195,12 +197,12 @@ export default function LogSigComponent({ open, onClose, prefillData }: LogSigPr
     }
   };
 
-  const handleFieldValidation = (field: keyof FormData) => {
-    const validation = validateForm(formData, tabValue === 1);
-    if (validation.errors[field]) {
+  const handleFieldValidation = async (field: keyof FormData) => {
+    const error = await validateField(field, formData[field], formData, tabValue === 1);
+    if (error) {
       setErrors((prev) => ({
         ...prev,
-        [field]: validation.errors[field],
+        [field]: error,
       }));
     } else {
       setErrors((prev) => {
@@ -214,19 +216,36 @@ export default function LogSigComponent({ open, onClose, prefillData }: LogSigPr
   const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
 
-    const validation = validateForm(formData, tabValue === 1);
+    const isSignup = tabValue === 1;
+    const validation = await validateForm(formData, isSignup);
     setErrors(validation.errors);
 
     if (!validation.isValid) return;
 
     setIsLoading(true);
 
-    // Simulate API call
-    setTimeout(() => {
-      setIsLoading(false);
-      alert(tabValue === 0 ? 'Login successful!' : 'Account created successfully!');
+    try {
+      if (isSignup) {
+        await register(formData.fullName, formData.email, formData.password);
+        toast.success('Signup successful!');
+        router.push(redirectUrl || '/');
+      } else {
+        console.log('Sending login request:', { email: formData.email });
+        await login(formData.email, formData.password);
+
+        console.log('Login successful');
+
+        toast.success('Login successful!');
+        router.push(redirectUrl || '/');
+      }
       onClose();
-    }, 1500);
+    } catch (error: any) {
+      console.error('API Error:', error);
+      const errorMessage = error.response?.data?.detail || error.message || 'Failed to authenticate. Please try again.';
+      toast.error(errorMessage);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -265,7 +284,7 @@ export default function LogSigComponent({ open, onClose, prefillData }: LogSigPr
                 color: 'white',
               }}
             >
-              <X size={20} />
+              <CloseIcon />
             </IconButton>
             <Typography variant={isMobile ? 'h5' : 'h4'} fontWeight="bold" gutterBottom>
               🏠 Brahma Vastu
@@ -309,7 +328,7 @@ export default function LogSigComponent({ open, onClose, prefillData }: LogSigPr
                   InputProps={{
                     startAdornment: (
                       <InputAdornment position="start">
-                        <Mail size={20} color="#666" />
+                        <Email sx={{ color: 'text.secondary' }} />
                       </InputAdornment>
                     ),
                   }}
@@ -333,13 +352,13 @@ export default function LogSigComponent({ open, onClose, prefillData }: LogSigPr
                   InputProps={{
                     startAdornment: (
                       <InputAdornment position="start">
-                        <Lock size={20} color="#666" />
+                        <Lock sx={{ color: 'text.secondary' }} />
                       </InputAdornment>
                     ),
                     endAdornment: (
                       <InputAdornment position="end">
                         <IconButton onClick={() => setShowPassword(!showPassword)} edge="end">
-                          {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+                          {showPassword ? <VisibilityOff /> : <Visibility />}
                         </IconButton>
                       </InputAdornment>
                     ),
@@ -381,17 +400,17 @@ export default function LogSigComponent({ open, onClose, prefillData }: LogSigPr
               <Stack spacing={isMobile ? 2.5 : 3}>
                 <TextField
                   fullWidth
-                  label="Full Name"
+                  label="Full Name (No Spaces)"
                   value={formData.fullName}
                   onChange={handleInputChange('fullName')}
                   onBlur={() => handleFieldValidation('fullName')}
                   error={!!errors.fullName}
-                  helperText={errors.fullName}
+                  helperText={errors.fullName || 'Use underscores or camelCase instead of spaces'}
                   size={isMobile ? 'small' : 'medium'}
                   InputProps={{
                     startAdornment: (
                       <InputAdornment position="start">
-                        <User size={20} color="#666" />
+                        <Person sx={{ color: 'text.secondary' }} />
                       </InputAdornment>
                     ),
                   }}
@@ -415,7 +434,7 @@ export default function LogSigComponent({ open, onClose, prefillData }: LogSigPr
                   InputProps={{
                     startAdornment: (
                       <InputAdornment position="start">
-                        <Mail size={20} color="#666" />
+                        <Email sx={{ color: 'text.secondary' }} />
                       </InputAdornment>
                     ),
                   }}
@@ -433,12 +452,12 @@ export default function LogSigComponent({ open, onClose, prefillData }: LogSigPr
                   onChange={handleInputChange('phone')}
                   onBlur={() => handleFieldValidation('phone')}
                   error={!!errors.phone}
-                  helperText={errors.phone}
+                  helperText={errors.phone || '10-15 digits, can include +, spaces, -, ()'}
                   size={isMobile ? 'small' : 'medium'}
                   InputProps={{
                     startAdornment: (
                       <InputAdornment position="start">
-                        <Phone size={20} color="#666" />
+                        <Phone sx={{ color: 'text.secondary' }} />
                       </InputAdornment>
                     ),
                   }}
@@ -457,18 +476,18 @@ export default function LogSigComponent({ open, onClose, prefillData }: LogSigPr
                   onChange={handleInputChange('password')}
                   onBlur={() => handleFieldValidation('password')}
                   error={!!errors.password}
-                  helperText={errors.password}
+                  helperText={errors.password || '12+ chars with uppercase, lowercase, number & symbol'}
                   size={isMobile ? 'small' : 'medium'}
                   InputProps={{
                     startAdornment: (
                       <InputAdornment position="start">
-                        <Lock size={20} color="#666" />
+                        <Lock sx={{ color: 'text.secondary' }} />
                       </InputAdornment>
                     ),
                     endAdornment: (
                       <InputAdornment position="end">
                         <IconButton onClick={() => setShowPassword(!showPassword)} edge="end">
-                          {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+                          {showPassword ? <VisibilityOff /> : <Visibility />}
                         </IconButton>
                       </InputAdornment>
                     ),
@@ -493,13 +512,13 @@ export default function LogSigComponent({ open, onClose, prefillData }: LogSigPr
                   InputProps={{
                     startAdornment: (
                       <InputAdornment position="start">
-                        <Lock size={20} color="#666" />
+                        <Lock sx={{ color: 'text.secondary' }} />
                       </InputAdornment>
                     ),
                     endAdornment: (
                       <InputAdornment position="end">
                         <IconButton onClick={() => setShowConfirmPassword(!showConfirmPassword)} edge="end">
-                          {showConfirmPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+                          {showConfirmPassword ? <VisibilityOff /> : <Visibility />}
                         </IconButton>
                       </InputAdornment>
                     ),

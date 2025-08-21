@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import AppBar from '@mui/material/AppBar';
 import Toolbar from '@mui/material/Toolbar';
 import Typography from '@mui/material/Typography';
@@ -19,6 +19,9 @@ import ListItemButton from '@mui/material/ListItemButton';
 import ListItemText from '@mui/material/ListItemText';
 import ThemeSwitcher from './ThemeSwitcher';
 import LogSigComponent from './LogSig';
+import { useRouter } from 'next/navigation';
+import { usePathname } from 'next/navigation';
+import { useAuth } from '@/utils/useApi';
 
 const menuItems = [
   { label: 'Home', href: '/' },
@@ -36,9 +39,41 @@ function HideOnScroll({ children }: { children: React.ReactElement }) {
 }
 
 export default function Navbar() {
+  const router = useRouter();
   const { mode, toggleTheme, theme } = useThemeContext();
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [loginDialogOpen, setLoginDialogOpen] = useState(false);
+  const pathname = usePathname();
+  const { user, getCurrentUser } = useAuth();
+
+  // Check if user is logged in and is admin
+  const isAdmin = user && user.role?.name === 'admin';
+
+  useEffect(() => {
+    // Try to get current user on component mount
+    const token = localStorage.getItem('auth_token');
+    if (token) {
+      getCurrentUser().then((user) => {
+        console.log('User state updated:', user);
+      }).catch(() => {
+        // If token is invalid, remove it
+        localStorage.removeItem('auth_token');
+      });
+    }
+  }, [getCurrentUser]);
+
+  // Refresh user state when login dialog closes
+  useEffect(() => {
+    if (!loginDialogOpen) {
+      const token = localStorage.getItem('auth_token');
+      if (token) {
+        getCurrentUser().catch(() => {
+          // If token is invalid, remove it
+          localStorage.removeItem('auth_token');
+        });
+      }
+    }
+  }, [loginDialogOpen, getCurrentUser]);
 
   const handleLoginClick = () => {
     setLoginDialogOpen(true);
@@ -46,6 +81,14 @@ export default function Navbar() {
 
   const handleLoginClose = () => {
     setLoginDialogOpen(false);
+    // Refresh user state after login dialog closes
+    const token = localStorage.getItem('auth_token');
+    if (token) {
+      getCurrentUser().catch(() => {
+        // If token is invalid, remove it
+        localStorage.removeItem('auth_token');
+      });
+    }
   };
 
   return (
@@ -82,6 +125,21 @@ export default function Navbar() {
                   {item.label}
                 </Button>
               ))}
+              {isAdmin && (
+                <Button 
+                  href="/dashboard" 
+                  sx={{ 
+                    color: theme.palette.text.primary, 
+                    fontWeight: 600,
+                    backgroundColor: theme.palette.mode === 'dark' ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.05)',
+                    '&:hover': {
+                      backgroundColor: theme.palette.mode === 'dark' ? 'rgba(255,255,255,0.15)' : 'rgba(0,0,0,0.1)',
+                    }
+                  }}
+                >
+                  Admin Dashboard
+                </Button>
+              )}
               <Button
                 onClick={handleLoginClick}
                 sx={{
@@ -131,7 +189,7 @@ export default function Navbar() {
           </Toolbar>
         </AppBar>
       </HideOnScroll>
-      <LogSigComponent open={loginDialogOpen} onClose={handleLoginClose} />
+      <LogSigComponent open={loginDialogOpen} onClose={handleLoginClose} redirectUrl={pathname}/>
     </>
   );
 }
