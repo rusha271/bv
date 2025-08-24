@@ -75,7 +75,17 @@ export default function Footer() {
           mt: 1,
         }}
       >
-        Copyrights © 2025 Brahma Vastu – All rights reserved.
+        Copyrights © {new Date().getFullYear()} Brahma Vastu – All rights reserved.
+      </Typography>
+      <Typography
+        variant="body2"
+        sx={{
+          fontSize: copyrightFontSize,
+          color: theme.palette.text.secondary,
+          mt: 1,
+        }}
+      >
+        Made with ❤️ by Divya Vastu
       </Typography>
     </Box>
   );

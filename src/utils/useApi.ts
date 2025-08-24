@@ -1,5 +1,6 @@
 import { useState, useCallback } from 'react';
-import { apiService } from './apiService';
+import { apiService, VastuRequest, FloorPlanUpload } from './apiService';
+import { validateImageFormat, getImageMimeType, base64ToFile } from './imageUtils';
 
 // Generic hook for API calls with loading and error states
 export const useApiCall = <T = any, P = any>(
@@ -31,94 +32,38 @@ export const useApiCall = <T = any, P = any>(
   return { data, loading, error, execute };
 };
 
-// Authentication hooks
-export const useAuth = () => {
-  const [user, setUser] = useState<any>(null);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-
-  const login = useCallback(async (email: string, password: string) => {
-    setLoading(true);
-    setError(null);
-    try {
-      const response = await apiService.auth.login({ email, password });
-      localStorage.setItem('auth_token', response.access_token);
-      setUser(response.user);
-      return response;
-    } catch (err: any) {
-      const errorMessage = err.message || 'Login failed';
-      setError(errorMessage);
-      throw err;
-    } finally {
-      setLoading(false);
-    }
-  }, []);
-
-  const register = useCallback(async (name: string, email: string, password: string) => {
-    setLoading(true);
-    setError(null);
-    try {
-      const response = await apiService.auth.register({ name, email, password });
-      localStorage.setItem('auth_token', response.access_token);
-      setUser(response.user);
-      return response;
-    } catch (err: any) {
-      const errorMessage = err.message || 'Registration failed';
-      setError(errorMessage);
-      throw err;
-    } finally {
-      setLoading(false);
-    }
-  }, []);
-
-  const logout = useCallback(async () => {
-    try {
-      await apiService.auth.logout();
-    } catch (err) {
-      console.error('Logout error:', err);
-    } finally {
-      localStorage.removeItem('auth_token');
-      setUser(null);
-    }
-  }, []);
-
-  const getCurrentUser = useCallback(async () => {
-    setLoading(true);
-    try {
-      const user = await apiService.auth.me();
-      setUser(user);
-      return user;
-    } catch (err: any) {
-      setError(err.message || 'Failed to get user');
-      throw err;
-    } finally {
-      setLoading(false);
-    }
-  }, []);
-
-  return {
-    user,
-    loading,
-    error,
-    login,
-    register,
-    logout,
-    getCurrentUser,
-  };
-};
-
 // File upload hook
 export const useFileUpload = () => {
   const [uploading, setUploading] = useState(false);
   const [uploadedFiles, setUploadedFiles] = useState<any[]>([]);
   const [error, setError] = useState<string | null>(null);
+  const [progress, setProgress] = useState<number>(0);
 
   const uploadFile = useCallback(async (file: File) => {
     setUploading(true);
     setError(null);
+    setProgress(0);
+    
     try {
-      const result = await apiService.files.upload(file);
+      // Convert File to base64 for API
+      const reader = new FileReader();
+      const base64Data = await new Promise<string>((resolve, reject) => {
+        reader.onload = () => resolve(reader.result as string);
+        reader.onerror = reject;
+        reader.readAsDataURL(file);
+      });
+
+      const format = file.type.split('/')[1]; // e.g., 'png', 'jpeg'
+      
+      const uploadData = {
+        image_data: base64Data,
+        image_format: format,
+        original_filename: file.name,
+      };
+
+      const result = await apiService.files.upload(uploadData);
       setUploadedFiles(prev => [...prev, result]);
+      setProgress(100);
       return result;
     } catch (err: any) {
       const errorMessage = err.message || 'Upload failed';
@@ -126,15 +71,52 @@ export const useFileUpload = () => {
       throw err;
     } finally {
       setUploading(false);
+      setTimeout(() => setProgress(0), 1000);
     }
   }, []);
+
+  const uploadBase64Image = useCallback(async (
+    base64Data: string, 
+    originalFilename: string, 
+    format: string
+  ) => {
+    setUploading(true);
+    setError(null);
+    setProgress(0);
+    
+    try {
+      if (!validateImageFormat(format)) {
+        throw new Error(`Unsupported image format: ${format}`);
+      }
+
+      const mimeType = getImageMimeType(format);
+      const file = base64ToFile(base64Data, originalFilename, mimeType);
+      
+      const maxSize = 10 * 1024 * 1024; // 10MB
+      if (file.size > maxSize) {
+        throw new Error(`File size too large. Maximum allowed: ${maxSize / (1024 * 1024)}MB`);
+      }
+
+      setProgress(50);
+      
+      const result = await uploadFile(file);
+      return result;
+    } catch (err: any) {
+      const errorMessage = err.message || 'Base64 upload failed';
+      setError(errorMessage);
+      throw err;
+    }
+  }, [uploadFile]);
 
   const uploadMultipleFiles = useCallback(async (files: File[]) => {
     setUploading(true);
     setError(null);
+    setProgress(0);
+    
     try {
       const results = await apiService.files.uploadMultiple(files);
       setUploadedFiles(prev => [...prev, ...results]);
+      setProgress(100);
       return results;
     } catch (err: any) {
       const errorMessage = err.message || 'Upload failed';
@@ -142,15 +124,29 @@ export const useFileUpload = () => {
       throw err;
     } finally {
       setUploading(false);
+      setTimeout(() => setProgress(0), 1000);
     }
+  }, []);
+
+  const removeFile = useCallback((fileId: string) => {
+    setUploadedFiles(prev => prev.filter(file => file.id !== fileId));
+  }, []);
+
+  const clearFiles = useCallback(() => {
+    setUploadedFiles([]);
+    setError(null);
   }, []);
 
   return {
     uploading,
     uploadedFiles,
     error,
+    progress,
     uploadFile,
+    uploadBase64Image,
     uploadMultipleFiles,
+    removeFile,
+    clearFiles,
   };
 };
 
@@ -164,7 +160,7 @@ export const useChat = () => {
     setSending(true);
     setError(null);
     try {
-      const response = await apiService.chat.sendMessage({ message, context });
+      const response = await apiService.chat.sendMessage({ message, context, prompt: context });
       const newMessage = {
         id: Date.now().toString(),
         content: message,
@@ -194,7 +190,8 @@ export const useChat = () => {
       setMessages(history);
       return history;
     } catch (err: any) {
-      setError(err.message || 'Failed to load chat history');
+      const errorMessage = err.message || 'Failed to load chat history';
+      setError(errorMessage);
       throw err;
     }
   }, []);
@@ -204,7 +201,8 @@ export const useChat = () => {
       await apiService.chat.clearHistory();
       setMessages([]);
     } catch (err: any) {
-      setError(err.message || 'Failed to clear history');
+      const errorMessage = err.message || 'Failed to clear chat history';
+      setError(errorMessage);
       throw err;
     }
   }, []);
@@ -219,22 +217,58 @@ export const useChat = () => {
   };
 };
 
+export const useFloorPlanUpload = () => {
+  const [uploading, setUploading] = useState(false);
+  const [analysis, setAnalysis] = useState<any>(null);
+  const [error, setError] = useState<string | null>(null);
+
+  const uploadFloorplan = useCallback(async (imageFile: File) => {
+    setUploading(true);
+    setError(null);
+    try {
+      const format = imageFile.type.split('/')[1]; // e.g., 'png', 'jpeg'
+      if (!validateImageFormat(format)) {
+        throw new Error(`Unsupported image format: ${format}`);
+      }
+
+      const result = await apiService.floorplan.uploadFloorplan(imageFile);
+      setAnalysis(result);
+      return result;
+    } catch (err: any) {
+      const errorMessage = err.message || 'Upload failed';
+      setError(errorMessage);
+      throw err;
+    } finally {
+      setUploading(false);
+    }
+  }, []);
+
+  return {
+    uploading,
+    analysis,
+    error,
+    uploadFloorplan,
+  };
+};
+
 // Vastu analysis hook
 export const useVastuAnalysis = () => {
   const [analyzing, setAnalyzing] = useState(false);
   const [analyses, setAnalyses] = useState<any[]>([]);
   const [error, setError] = useState<string | null>(null);
 
-  const analyze = useCallback(async (propertyType: string, direction: string, floorPlan?: File) => {
+  const analyze = useCallback(async (propertyType: string, direction: string, floorPlanFile?: File) => {
     setAnalyzing(true);
     setError(null);
     try {
-      const result = await apiService.vastu.analyze({
+      const requestData: VastuRequest = {
         property_type: propertyType,
-        direction,
-        floor_plan: floorPlan,
-      });
-      setAnalyses(prev => [...prev, result]);
+        direction: direction
+      };
+      
+      const result = await apiService.vastu.analyze(requestData);
+      // Handle file separately if needed
+      setAnalyses(prev => [result, ...prev]);
       return result;
     } catch (err: any) {
       const errorMessage = err.message || 'Analysis failed';
@@ -251,7 +285,8 @@ export const useVastuAnalysis = () => {
       setAnalyses(results);
       return results;
     } catch (err: any) {
-      setError(err.message || 'Failed to load analyses');
+      const errorMessage = err.message || 'Failed to load analyses';
+      setError(errorMessage);
       throw err;
     }
   }, []);
@@ -311,12 +346,17 @@ export const useContact = () => {
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
 
-  const sendMessage = useCallback(async (name: string, email: string, subject: string, message: string) => {
+  const sendMessage = useCallback(async (data: {
+    name: string;
+    email: string;
+    subject: string;
+    message: string;
+  }) => {
     setSending(true);
     setError(null);
     setSuccess(false);
     try {
-      await apiService.contact.sendMessage({ name, email, subject, message });
+      await apiService.contact.sendMessage(data);
       setSuccess(true);
     } catch (err: any) {
       const errorMessage = err.message || 'Failed to send message';
@@ -344,9 +384,9 @@ export const useAnalytics = () => {
   const loadDashboard = useCallback(async () => {
     setLoading(true);
     try {
-      const result = await apiService.analytics.getDashboard();
-      setData(result);
-      return result;
+      const results = await apiService.analytics.getDashboard();
+      setData(results);
+      return results;
     } catch (err: any) {
       setError(err.message || 'Failed to load analytics');
       throw err;
@@ -355,10 +395,10 @@ export const useAnalytics = () => {
     }
   }, []);
 
-  const trackEvent = useCallback(async (event: string, properties?: Record<string, any>) => {
+  const trackEvent = useCallback(async (event: string, properties?: any) => {
     try {
       await apiService.analytics.trackEvent(event, properties);
-    } catch (err) {
+    } catch (err: any) {
       console.error('Failed to track event:', err);
     }
   }, []);
@@ -373,7 +413,6 @@ export const useAnalytics = () => {
 };
 
 export default {
-  useAuth,
   useFileUpload,
   useChat,
   useVastuAnalysis,

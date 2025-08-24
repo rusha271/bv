@@ -127,16 +127,19 @@ export default function BlogPage() {
           marginBottom: isMobile ? '1.5rem' : '2.5rem',
         }}
       >
-        <h2
-          className="font-bold mb-4 text-center"
-          style={{
-            color: theme.palette.primary.main,
-            fontSize: sectionTitleSize,
-            fontFamily: '"Roboto", sans-serif', // Fallback font
-          }}
-        >
-          Explore Vastu Resources
-        </h2>
+        <style jsx>{`
+          h2 {
+            color: ${theme.palette.primary.main};
+            font-size: 1.25rem;
+            font-family: 'Roboto', sans-serif;
+            font-weight: bold;
+            margin-bottom: 1rem;
+            text-align: center;
+          }
+          @media (min-width: 640px) { h2 { font-size: 1.75rem; } }
+          @media (min-width: 1024px) { h2 { font-size: 2.25rem; } }
+        `}</style>
+        <h2>Explore Vastu Resources</h2>
         <BlogTabs />
       </main>
       <Footer />

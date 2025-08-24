@@ -108,6 +108,7 @@ export default function PostUploadSection({ onUpload }: { onUpload?: () => void 
     control: tipControl,
     handleSubmit: handleTipSubmit,
     reset: resetTip,
+    setValue: setTipValue,
     formState: { errors: tipErrors },
   } = useForm({
     resolver: yupResolver(tipSchema),
@@ -122,6 +123,36 @@ export default function PostUploadSection({ onUpload }: { onUpload?: () => void 
     }
   };
 
+  const handleVideoFile = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      setVideoValue('video', file);
+      setVideoPreview(URL.createObjectURL(file));
+      
+      // Generate thumbnail from video
+      const video = document.createElement('video');
+      video.src = URL.createObjectURL(file);
+      video.currentTime = 1;
+      video.onloadeddata = () => {
+        const canvas = document.createElement('canvas');
+        canvas.width = video.videoWidth;
+        canvas.height = video.videoHeight;
+        const ctx = canvas.getContext('2d');
+        if (ctx) {
+          ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+          setVideoThumbnail(canvas.toDataURL('image/png'));
+        }
+      };
+    }
+  };
+
+  const handleTipImage = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      setTipValue('image', file);
+    }
+  };
+
   const onBookSubmit = async (data: any) => {
     setLoading(true);
     setError('');
@@ -130,7 +161,7 @@ export default function PostUploadSection({ onUpload }: { onUpload?: () => void 
       formData.append('title', data.title);
       formData.append('author', data.author);
       formData.append('summary', data.summary);
-      formData.append('pdf', data.pdf);
+      formData.append('pdf', data.pdf); // Back to original field name
       if (data.rating) formData.append('rating', String(data.rating));
       if (data.pages) formData.append('pages', String(data.pages));
       if (data.price) formData.append('price', String(data.price));
@@ -138,6 +169,12 @@ export default function PostUploadSection({ onUpload }: { onUpload?: () => void 
       if (data.publisher) formData.append('publisher', data.publisher);
       if (data.category) formData.append('category', data.category);
       if (data.isbn) formData.append('isbn', data.isbn);
+  
+      // Debug: Log FormData contents
+      console.log('Book FormData contents:');
+      for (let [key, value] of formData.entries()) {
+        console.log(key, value instanceof File ? `File: ${value.name} (${value.size} bytes)` : value);
+      }
   
       const response = await apiService.books.create(formData as any);
       if (response) {
@@ -171,19 +208,38 @@ export default function PostUploadSection({ onUpload }: { onUpload?: () => void 
       formData.append('description', data.description);
   
       if (!(data.video instanceof File)) throw new Error('Video file is not a valid File object');
-      formData.append('video', data.video);
+      console.log('Video file details:', {
+        name: data.video.name,
+        size: data.video.size,
+        type: data.video.type
+      });
+      formData.append('video', data.video); // Back to original field name
   
-      if (!videoThumbnail) throw new Error('Thumbnail is required');
-      const res = await fetch(videoThumbnail);
-      const blob = await res.blob();
-      formData.append('thumbnail', blob, 'thumbnail.png');
-      console.log('blob',blob)
+      // Create thumbnail file from canvas
+      if (videoThumbnail) {
+        // Convert base64 to blob and create a file
+        const response = await fetch(videoThumbnail);
+        const blob = await response.blob();
+        const thumbnailFile = new File([blob], 'thumbnail.png', { type: 'image/png' });
+        formData.append('thumbnail', thumbnailFile);
+        console.log('Thumbnail file created:', {
+          name: thumbnailFile.name,
+          size: thumbnailFile.size,
+          type: thumbnailFile.type
+        });
+      }
   
       if (data.category) {
         formData.append('category', data.category);
       }
   
-      // 🔥 Call API
+      // Debug: Log FormData contents
+      console.log('Video FormData contents:');
+      for (let [key, value] of formData.entries()) {
+        console.log(key, value instanceof File ? `File: ${value.name} (${value.size} bytes)` : value);
+      }
+  
+      // Call API
       const response = await apiService.videos.create(formData);
   
       if (response) {
@@ -217,10 +273,21 @@ export default function PostUploadSection({ onUpload }: { onUpload?: () => void 
       formData.append("content", data.content);
       formData.append("category", data.category);
       if (data.image) {
-        formData.append("image", data.image);
+        formData.append("image", data.image); // Back to original field name
+        console.log('Image file details:', {
+          name: data.image.name,
+          size: data.image.size,
+          type: data.image.type
+        });
       }
   
-      const response = await apiService.tips.create(formData); // ✅ now only 1 argument
+      // Debug: Log FormData contents
+      console.log('Tip FormData contents:');
+      for (let [key, value] of formData.entries()) {
+        console.log(key, value instanceof File ? `File: ${value.name} (${value.size} bytes)` : value);
+      }
+  
+      const response = await apiService.tips.create(formData);
       if (response) {
         setSuccess("Tip uploaded successfully!");
         resetTip();
@@ -397,27 +464,7 @@ export default function PostUploadSection({ onUpload }: { onUpload?: () => void 
                     <input
                       type="file"
                       accept="video/*"
-                      onChange={(e) => {
-                        const file = e.target.files?.[0];
-                        if (file) {
-                          onChange(file); // Update form state with the file
-                          setVideoPreview(URL.createObjectURL(file));
-                          // Generate thumbnail
-                          const video = document.createElement('video');
-                          video.src = URL.createObjectURL(file);
-                          video.currentTime = 1;
-                          video.onloadeddata = () => {
-                            const canvas = document.createElement('canvas');
-                            canvas.width = video.videoWidth;
-                            canvas.height = video.videoHeight;
-                            const ctx = canvas.getContext('2d');
-                            if (ctx) {
-                              ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
-                              setVideoThumbnail(canvas.toDataURL('image/png'));
-                            }
-                          };
-                        }
-                      }}
+                      onChange={handleVideoFile}
                       style={{ display: 'block', marginBottom: 8 }}
                     />
                     {videoErrors.video && (
@@ -500,10 +547,7 @@ export default function PostUploadSection({ onUpload }: { onUpload?: () => void 
                     fullWidth
                     error={!!tipErrors.image}
                     helperText={tipErrors.image?.message}
-                    onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
-                      const file = e.target.files?.[0];
-                      field.onChange(file);
-                    }}
+                    onChange={handleTipImage}
                   />
                 )}
               />

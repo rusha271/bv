@@ -10,9 +10,10 @@ import ImageCropper from '@/components/ui/ImageCropper';
 import Vastu3DAnimation from '@/components/ui/Vastu3DAnimation';
 import ZodiacSignsDisplay from '@/components/ui/ZodiacSignsDisplay';
 import { Box, Typography, Container } from '@mui/material';
-import { useRouter, useSearchParams } from 'next/navigation';
+import { useRouter } from 'next/navigation';
 import styles from './cropPage.module.css';
 import Disclaimer from '@/components/ui/Disclaimer';
+import { sessionStorageManager } from '@/utils/sessionStorage';
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
 
@@ -24,19 +25,26 @@ export default function CropPage() {
   const { theme } = useThemeContext();
   const { isMobile, isTablet } = useDeviceType();
   const router = useRouter();
-  const searchParams = useSearchParams();
-  const imageUrl = searchParams.get('image');
 
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [croppedUrl, setCroppedUrl] = useState<string | null>(null);
-  const [cropData, setCropData] = useState<any>(null); // Store cropData to access area and centroid
+  const [cropData, setCropData] = useState<any>(null);
+  const [sessionData, setSessionData] = useState<any>(null);
 
   useEffect(() => {
-    if (!imageUrl) {
-      setErrorMessage('No image found. Please upload a floor plan from the home page.');
+    // Clean up expired sessions
+    sessionStorageManager.cleanupExpiredSessions();
+    
+    // Get session data
+    const data = sessionStorageManager.getSessionData();
+    if (!data || !data.originalImage) {
+      setErrorMessage('No floor plan session found. Please upload a floor plan from the home page.');
+      return;
     }
-    console.log('CropPage: imageUrl', imageUrl);
-  }, [imageUrl]);
+    
+    setSessionData(data);
+    console.log('CropPage: Session data loaded', data);
+  }, []);
 
   const handleCrop = useCallback((cropData: any, userInteracted: boolean, croppedImageUrl?: string) => {
     if (cropData && userInteracted && croppedImageUrl) {
@@ -51,54 +59,40 @@ export default function CropPage() {
   }, []);
 
   const handleNext = () => {
-    if (!imageUrl) {
+    if (!sessionData?.originalImage) {
       setErrorMessage('Please upload an image before proceeding.');
-      console.log('handleNext: No imageUrl, showing error');
+      console.log('handleNext: No session data, showing error');
       return;
     }
+    
     if (!croppedUrl && !cropData) {
-      // If no cropping is done, use the original imageUrl
-      console.log('handleNext: Using original imageUrl', imageUrl);
-      fetch(imageUrl)
-        .then((res) => res.blob())
-        .then((blob) => {
-          const blobUrl = URL.createObjectURL(blob);
-          const queryParams = new URLSearchParams({
-            image: blobUrl,
-            area: '0',
-            centroidX: '0',
-            centroidY: '0',
-          });
-          router.push(`/chakra-overlay?${queryParams.toString()}`);
-        })
-        .catch((error) => {
-          console.error('Error creating blob URL:', error);
-          setErrorMessage('Error processing the image. Please try again.');
-        });
+      // If no cropping is done, use the original image
+      console.log('handleNext: Using original image');
+      const originalBlobUrl = sessionData.originalImage.blobUrl;
+      
+      // Store cropped data as original (no crop)
+      sessionStorageManager.storeCroppedImage(originalBlobUrl, {
+        area: 0,
+        centroid: { x: 0, y: 0 }
+      });
+      
+      router.push('/chakra-overlay');
       return;
     }
+    
     if (!croppedUrl) {
       setErrorMessage('Please crop the image before proceeding.');
       console.log('handleNext: No croppedUrl, showing error');
       return;
     }
+    
     console.log('handleNext: Using croppedUrl', croppedUrl);
-    fetch(croppedUrl)
-      .then((res) => res.blob())
-      .then((blob) => {
-        const blobUrl = URL.createObjectURL(blob);
-        const queryParams = new URLSearchParams({
-          image: blobUrl,
-          area: cropData?.area?.toString() || '0',
-          centroidX: cropData?.centroid?.x?.toString() || '0',
-          centroidY: cropData?.centroid?.y?.toString() || '0',
-        });
-        router.push(`/chakra-overlay?${queryParams.toString()}`);
-      })
-      .catch((error) => {
-        console.error('Error creating blob URL:', error);
-        setErrorMessage('Error processing the image. Please try again.');
-      });
+    
+    // Store the cropped image in session
+    sessionStorageManager.storeCroppedImage(croppedUrl, cropData);
+    
+    // Navigate to chakra overlay
+    router.push('/chakra-overlay');
   };
 
   const sectionTitleSize = isMobile ? '1.5rem' : isTablet ? '2rem' : '2.5rem';
@@ -126,24 +120,24 @@ export default function CropPage() {
               </Typography>
               <button
                 onClick={handleNext}
-                className={`${styles.nextButton} ${styles.relativeOverflowHidden} ${styles.groupTransition} ${styles.groupHover} ${imageUrl ? styles.buttonEnabled : styles.buttonDisabled}`}
+                className={`${styles.nextButton} ${styles.relativeOverflowHidden} ${styles.groupTransition} ${styles.groupHover} ${sessionData ? styles.buttonEnabled : styles.buttonDisabled}`}
                 style={{
                   background: `linear-gradient(135deg, ${theme.palette.primary.main}, ${theme.palette.primary.dark})`,
                   color: theme.palette.primary.contrastText,
                   padding: buttonPadding,
                   fontSize: buttonFontSize,
                   boxShadow: theme.palette.mode === 'dark' ? '0 8px 32px rgba(59, 130, 246, 0.3)' : '0 8px 32px rgba(59, 130, 246, 0.2)',
-                  cursor: imageUrl ? 'pointer' : 'not-allowed',
-                  opacity: imageUrl ? 1 : 0.6,
+                  cursor: sessionData ? 'pointer' : 'not-allowed',
+                  opacity: sessionData ? 1 : 0.6,
                 }}
                 onMouseEnter={(e) => {
-                  if (imageUrl) {
+                  if (sessionData) {
                     e.currentTarget.style.transform = 'translateY(-2px)';
                     e.currentTarget.style.boxShadow = theme.palette.mode === 'dark' ? '0 12px 40px rgba(59, 130, 246, 0.4)' : '0 12px 40px rgba(59, 130, 246, 0.3)';
                   }
                 }}
                 onMouseLeave={(e) => {
-                  if (imageUrl) {
+                  if (sessionData) {
                     e.currentTarget.style.transform = 'translateY(0)';
                     e.currentTarget.style.boxShadow = theme.palette.mode === 'dark' ? '0 8px 32px rgba(59, 130, 246, 0.3)' : '0 8px 32px rgba(59, 130, 246, 0.2)';
                   }
@@ -191,8 +185,8 @@ export default function CropPage() {
               },
             }}
           >
-            {imageUrl ? (
-              <ImageCropper imageUrl={imageUrl} onCropComplete={handleCrop} />
+            {sessionData?.originalImage ? (
+              <ImageCropper imageUrl={sessionData.originalImage.blobUrl} onCropComplete={handleCrop} />
             ) : (
               <Typography variant="body1" color="text.secondary" sx={{ textAlign: 'center', mt: 4 }}>
                 No image to display

@@ -38,7 +38,7 @@ import { SocialAuth } from './AuthComponent';
 import { toast } from 'react-hot-toast';
 import { useRouter } from 'next/navigation';
 import * as Yup from 'yup';
-import { useAuth } from '@/utils/useApi';
+import { useAuth } from '@/contexts/AuthContext';
 
 // TypeScript Interfaces
 interface FormData {
@@ -157,7 +157,7 @@ export default function LogSigComponent({ open, onClose, prefillData, redirectUr
   const { showTerms, showPrivacy, setShowTerms, setShowPrivacy } = useLegal();
   const theme = useTheme();
   const router = useRouter();
-  const { login, register } = useAuth(); // Add useAuth hook
+  const { login, register } = useAuth();
 
   const [tabValue, setTabValue] = useState(0);
   const [showPassword, setShowPassword] = useState(false);
@@ -171,6 +171,7 @@ export default function LogSigComponent({ open, onClose, prefillData, redirectUr
   });
   const [errors, setErrors] = useState<{ [key: string]: string }>({});
   const [isLoading, setIsLoading] = useState(false);
+  const [rememberMe, setRememberMe] = useState(false);
 
   const handleTabChange = (event: React.SyntheticEvent, newValue: number) => {
     setTabValue(newValue);
@@ -226,12 +227,12 @@ export default function LogSigComponent({ open, onClose, prefillData, redirectUr
 
     try {
       if (isSignup) {
-        await register(formData.fullName, formData.email, formData.password);
+        await register(formData.fullName, formData.email, formData.password, rememberMe);
         toast.success('Signup successful!');
         router.push(redirectUrl || '/');
       } else {
         console.log('Sending login request:', { email: formData.email });
-        await login(formData.email, formData.password);
+        await login(formData.email, formData.password, rememberMe);
 
         console.log('Login successful');
 
@@ -367,6 +368,23 @@ export default function LogSigComponent({ open, onClose, prefillData, redirectUr
                     '& .MuiOutlinedInput-root': {
                       borderRadius: 2,
                     },
+                  }}
+                />
+
+                <FormControlLabel
+                  control={
+                    <Checkbox
+                      checked={rememberMe}
+                      onChange={(e) => setRememberMe(e.target.checked)}
+                      color="primary"
+                    />
+                  }
+                  label="Remember me"
+                  sx={{ 
+                    alignSelf: 'flex-start',
+                    '& .MuiFormControlLabel-label': {
+                      fontSize: isMobile ? '0.875rem' : '1rem',
+                    }
                   }}
                 />
 

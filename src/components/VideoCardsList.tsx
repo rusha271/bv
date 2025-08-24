@@ -5,7 +5,7 @@ import { useThemeContext } from '@/contexts/ThemeContext';
 import { useDeviceType } from '@/utils/useDeviceType';
 import { useAppDispatch, useAppSelector } from '@/store';
 import { fetchVideos, clearVideosError } from '@/store/slices/blogSlice';
-import { Video } from '@/utils/blogApi';
+import { Video } from '@/utils/apiService';
 
 interface VideoCardProps {
   video: Video;

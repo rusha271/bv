@@ -1,5 +1,5 @@
 import { createSlice, createAsyncThunk, PayloadAction } from '@reduxjs/toolkit';
-import { blogApi, ChatRequest, ChatResponse } from '@/utils/blogApi';
+import { apiService, ChatRequest, ChatResponse } from '@/utils/apiService';
 
 // Helper function to generate stable IDs
 const generateId = (prefix: string, index: number) => `${prefix}-${index}-${Date.now()}`;
@@ -9,7 +9,7 @@ export const sendChatMessage = createAsyncThunk(
   'chat/sendMessage',
   async (chatRequest: ChatRequest, { rejectWithValue }) => {
     try {
-      const response = await blogApi.chatWithAI(chatRequest);
+      const response = await apiService.chat.sendMessage(chatRequest);
       return {
         request: chatRequest,
         response: response,

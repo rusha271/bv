@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { useThemeContext } from '@/contexts/ThemeContext';
 import { useDeviceType } from '@/utils/useDeviceType';
 import Navbar from '@/components/ui/Navbar';
@@ -295,20 +295,29 @@ function ConsultantBox({ member, imageOnRight = false }: { member: any, imageOnR
   );
 }
 
-const today = new Date().toISOString().split("T")[0];
-
 export default function ModernContactPage() {
   const { theme } = useThemeContext();
   const { isMobile, isTablet } = useDeviceType();
   const sectionTitleSize = isMobile ? '1.5rem' : isTablet ? '2rem' : '2.5rem';
+  const [mounted, setMounted] = useState(false);
+  const [today, setToday] = useState('');
+  const [minDateTime, setMinDateTime] = useState('');
   const [formData, setFormData] = useState({
     name: '',
     email: '',
     phone: '',
     consultationType: '',
     message: '',
-    preferred_date:'',
+    preferred_date: '',
   });
+
+  // Set today's date only on client side to prevent hydration mismatch
+  useEffect(() => {
+    const now = new Date();
+    setToday(now.toISOString().split("T")[0]);
+    setMinDateTime(now.toISOString().slice(0, 16));
+    setMounted(true);
+  }, []);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
     setFormData({
@@ -327,7 +336,7 @@ export default function ModernContactPage() {
       phone: formData.phone,
       subject: formData.consultationType || 'General Consultation', // Use consultationType as subject
       message: formData.message || 'No additional details provided',
-      preferred_date : formData.preferred_date || today
+      preferred_date: formData.preferred_date || minDateTime || new Date().toISOString()
     };
   
     try {
@@ -612,14 +621,13 @@ export default function ModernContactPage() {
             </div>
             <div className="space-y-4">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {mounted ? (
                 <input
-                  type="preferred_date"
+                  type="datetime-local"
                   name="preferred_date"
-                  defaultValue={today}
-                  placeholder="Preferred Date"
-                  value={formData.preferred_date || today}
+                  value={formData.preferred_date || minDateTime}
                   onChange={handleInputChange}
-                  min={today}
+                  min={minDateTime}
                   className="w-full p-3 rounded-lg border-2 transition-all duration-200 focus:border-blue-500 focus:outline-none"
                   style={{
                     borderColor: theme.palette.divider,
@@ -628,6 +636,20 @@ export default function ModernContactPage() {
                     colorScheme: theme.palette.mode === 'dark' ? 'dark' : 'light',
                   }}
                 />
+              ) : (
+                <input
+                  type="text"
+                  placeholder="Loading date picker..."
+                  disabled
+                  className="w-full p-3 rounded-lg border-2 transition-all duration-200 focus:border-blue-500 focus:outline-none"
+                  style={{
+                    borderColor: theme.palette.divider,
+                    background: theme.palette.background.default,
+                    color: theme.palette.text.primary,
+                    opacity: 0.6,
+                  }}
+                />
+              )}
                 <input
                   type="tel"
                   name="phone"

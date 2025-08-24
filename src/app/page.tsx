@@ -11,6 +11,8 @@ import dynamic from 'next/dynamic';
 import { useThemeContext } from '@/contexts/ThemeContext';
 import * as tf from '@tensorflow/tfjs';
 import { useRouter } from 'next/navigation';
+import apiService from '@/utils/apiService';
+import { sessionStorageManager } from '@/utils/sessionStorage';
 
 const ProductTour = dynamic(() => import('@/components/ui/ProductTour'), { ssr: false });
 
@@ -347,28 +349,28 @@ export default function Home() {
       setVerificationDetails(null);
       setIsVerifying(true);
       setErrorDialogOpen(false); // Close dialog on new submission
-
+  
       const file = data.floorPlan[0];
       if (!file) {
         throw new Error("No file selected");
       }
-
+  
       // Check file size (optional - add reasonable limits)
       if (file.size > 10 * 1024 * 1024) { // 10MB limit
         throw new Error("File size too large. Please upload an image smaller than 10MB.");
       }
-
+  
       const reader = new FileReader();
-
+  
       reader.onload = async (e) => {
         try {
           if (!e.target?.result) {
             throw new Error("Failed to read file");
           }
-
+  
           const img = new Image();
           img.src = e.target.result as string;
-          
+  
           img.onload = async () => {
             try {
               // Enhanced verification
@@ -378,55 +380,70 @@ export default function Home() {
               
               if (!result.isValid) {
                 setVerificationError(result.details);
-                setErrorDialogOpen(true); // Open error dialog
+                setErrorDialogOpen(true);
                 setIsVerifying(false);
                 setSubmitted(false);
               } else {
-                // Create a blob URL for the verified image
-                const blob = await fetch(img.src).then(r => r.blob());
-                const blobUrl = URL.createObjectURL(blob);
-                
-                // Navigate to crop page with the blob URL
-                router.push(`/crop?image=${encodeURIComponent(blobUrl)}`);
-                setIsVerifying(false);
-                setSubmitted(false);
+                // Upload the floor plan using API service
+                try {
+                  const uploadResult = await apiService.floorplan.uploadFloorplan(file);
+                  console.log('Floor plan uploaded successfully:', uploadResult);
+                  
+                  // Create a blob URL for the verified image
+                  const blob = await fetch(img.src).then(r => r.blob());
+                  const blobUrl = URL.createObjectURL(blob);
+                  
+                  // Store in session storage for efficient data flow
+                  sessionStorageManager.storeOriginalFloorPlan(file, uploadResult.id, blobUrl);
+                  
+                  // Navigate to crop page (no need to pass data via URL)
+                  router.push('/crop');
+                  setIsVerifying(false);
+                  setSubmitted(false);
+                } catch (uploadError) {
+                  console.error('Error uploading floor plan:', uploadError);
+                  setVerificationError("Failed to upload floor plan. Please try again.");
+                  setErrorDialogOpen(true);
+                  setIsVerifying(false);
+                  setSubmitted(false);
+                }
               }
             } catch (error) {
               console.error('Error verifying floor plan:', error);
               setVerificationError("Error analyzing the image. Please try again with a clearer floor plan image.");
-              setErrorDialogOpen(true); // Open error dialog on unexpected error
+              setErrorDialogOpen(true);
               setIsVerifying(false);
               setSubmitted(false);
             }
           };
-
+  
           img.onerror = () => {
             setVerificationError("Could not load image. Please try again with a valid image file.");
-            setErrorDialogOpen(true); // Open error dialog on image load error
+            setErrorDialogOpen(true);
             setIsVerifying(false);
             setSubmitted(false);
           };
         } catch (error) {
           console.error('Error in file reader:', error);
           setVerificationError("Error reading the file. Please try again.");
-          setErrorDialogOpen(true); // Open error dialog on file reader error
+          setErrorDialogOpen(true);
           setIsVerifying(false);
           setSubmitted(false);
         }
       };
-
+  
       reader.onerror = () => {
         setVerificationError("Error reading the file. Please try again.");
-        setErrorDialogOpen(true); // Open error dialog on file reader error
+        setErrorDialogOpen(true);
         setIsVerifying(false);
         setSubmitted(false);
       };
-
+  
       reader.readAsDataURL(file);
     } catch (error) {
       console.error('Error in form submission:', error);
       setVerificationError(error instanceof Error ? error.message : "An error occurred. Please try again.");
-      setErrorDialogOpen(true); // Open error dialog on submission error
+      setErrorDialogOpen(true);
       setIsVerifying(false);
       setSubmitted(false);
     }
@@ -624,6 +641,26 @@ export default function Home() {
         >
           <PlayCircleOutlineIcon fontSize="small" />
         </IconButton>
+      </Box>
+      <Box
+        component="footer"
+        sx={{
+          position: "fixed",
+          bottom: 0,
+          left: 0,
+          zIndex: 10,
+          py: 1,
+          px: 2,
+          bgcolor: "transparent",
+          color: "#fff",
+          textAlign: "left",
+          fontSize: "0.95rem",
+          fontWeight: 400,
+          letterSpacing: 0.5,
+          textShadow: "0 1px 4px rgba(0,0,0,0.3)",
+        }}
+      >
+        Made with ❤️ by Divya Vastu
       </Box>
       <Box
         component="footer"

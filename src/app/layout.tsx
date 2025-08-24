@@ -3,12 +3,15 @@ import "./globals.css";
 import "../styles/jcrop.css";
 import CssBaseline from '@mui/material/CssBaseline';
 import { ThemeProvider } from '../contexts/ThemeContext';
+import { AuthProvider } from '../contexts/AuthContext';
 import { PlanetaryDataProvider } from '@/contexts/PlanetaryDataContext';
 import { LegalProvider } from '@/contexts/LegalContent';
 import Chatbot from '@/components/Chatbot';
 import ClientOnly from '@/components/ClientOnly';
 import ReduxProvider from '@/components/providers/ReduxProvider';
 import Toast from "@/components/ui/Toast";
+import GuestAccountManager from '@/components/GuestAccountManager';
+import GuestBanner from '@/components/GuestBanner';
 
 export const metadata: Metadata = {
   title: "Brahma Vastu",
@@ -26,14 +29,19 @@ export default function RootLayout({
         <ReduxProvider>
           <ThemeProvider>
             <CssBaseline />
-            <PlanetaryDataProvider>
-              <LegalProvider>
-                {children}
-                <ClientOnly>
-                  <Chatbot />
-                </ClientOnly>
-              </LegalProvider>
-            </PlanetaryDataProvider>
+            <AuthProvider>
+              <GuestAccountManager>
+                <PlanetaryDataProvider>
+                  <LegalProvider>
+                    <GuestBanner />
+                    {children}
+                    <ClientOnly>
+                      <Chatbot />
+                    </ClientOnly>
+                  </LegalProvider>
+                </PlanetaryDataProvider>
+              </GuestAccountManager>
+            </AuthProvider>
           </ThemeProvider>
         </ReduxProvider>
         <Toast />

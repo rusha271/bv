@@ -1,5 +1,14 @@
 import { api } from './apiClient';
 
+const fileToBase64 = (file: File): Promise<string> => {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.readAsDataURL(file);
+    reader.onload = () => resolve(reader.result as string);
+    reader.onerror = error => reject(error);
+  });
+};
+
 // Types for API responses
 export interface ApiResponse<T = any> {
   status: string;
@@ -57,6 +66,25 @@ export interface FileUploadResponse {
 }
 
 // Floorplan Types
+export interface FloorPlanAnalysis {
+  id: string;
+  user_id: number;
+  file_id: number;
+  image_data?: string;
+  original_image_url?: string;
+  status: 'pending' | 'completed' | 'failed';
+  created_at: string;
+  updated_at: string;
+}
+
+export interface FloorPlanUpload {
+  image_data: string;
+  image_format: string;
+  original_filename: string;
+}
+
+
+
 export interface Floorplan {
   id: string;
   name: string;
@@ -81,11 +109,13 @@ export interface ChatMessage {
 }
 
 export interface ChatRequest {
+  prompt?: string; // Make prompt optional since it's not always required
   message: string;
   context?: string;
 }
 
 export interface ChatResponse {
+  response: string;
   message: string;
   context?: string;
 }
@@ -264,6 +294,19 @@ class ApiService {
 
     resendVerification: async (): Promise<ApiResponse> => {
       return api.post<ApiResponse>('/api/auth/resend-verification');
+    },
+
+    // Guest Account Endpoints
+    createGuest: async (): Promise<AuthResponse> => {
+      return api.post<AuthResponse>('/api/auth/guest/create');
+    },
+
+    upgradeGuest: async (data: RegisterRequest): Promise<AuthResponse> => {
+      return api.post<AuthResponse>('/api/auth/guest/upgrade', data);
+    },
+
+    isGuest: async (): Promise<{ is_guest: boolean }> => {
+      return api.get<{ is_guest: boolean }>('/api/auth/guest/check');
     }
   };
 
@@ -296,13 +339,10 @@ class ApiService {
 
   // Files Endpoints (/api/files)
   files = {
-    upload: async (file: File): Promise<FileUploadResponse> => {
-      const formData = new FormData();
-      formData.append('file', file);
-      // Use apiClient directly for file upload
-      return api.post<FileUploadResponse>('/api/files/upload', formData, {
+    upload: async (data: FloorPlanUpload): Promise<FileUploadResponse> => {
+      return api.post<FileUploadResponse>('/api/floorplan/upload', data, {
         headers: {
-          'Content-Type': 'multipart/form-data',
+          'Content-Type': 'application/json',
         },
       });
     },
@@ -312,7 +352,6 @@ class ApiService {
       files.forEach((file) => {
         formData.append('files', file);
       });
-      // Use apiClient directly for file upload
       return api.post<FileUploadResponse[]>('/api/files/upload-multiple', formData, {
         headers: {
           'Content-Type': 'multipart/form-data',
@@ -333,46 +372,64 @@ class ApiService {
     }
   };
 
+  
   // Floorplan Endpoints (/api/floorplan)
   floorplan = {
+    // ADD THIS NEW METHOD
+    uploadFloorplan: async (imageFile: File): Promise<FloorPlanAnalysis> => {
+      try {
+        const base64Data = await fileToBase64(imageFile);
+        const uploadData: FloorPlanUpload = {
+          image_data: base64Data,
+          image_format: imageFile.type.split("/")[1], // e.g. "jpeg" or "png"
+          original_filename: imageFile.name
+        };
+        return api.post<FloorPlanAnalysis>('/api/floorplan/upload', uploadData, {
+          headers: { "Content-Type": "application/json" }
+        });
+      } catch (error) {
+        throw new Error(`Failed to convert image to base64: ${error}`);
+      }
+    },
+    
+  
+    // KEEP ALL YOUR EXISTING METHODS
     getAll: async (): Promise<Floorplan[]> => {
       return api.get<Floorplan[]>('/api/floorplan');
     },
-
+  
     getById: async (id: string): Promise<Floorplan> => {
       return api.get<Floorplan>(`/api/floorplan/${id}`);
     },
-
+  
     create: async (data: CreateFloorplanRequest): Promise<Floorplan> => {
       const formData = new FormData();
       formData.append('name', data.name);
       if (data.description) formData.append('description', data.description);
       formData.append('image_file', data.image_file);
-      // Use apiClient directly for file upload
       return api.post<Floorplan>('/api/floorplan', formData, {
         headers: {
           'Content-Type': 'multipart/form-data',
         },
       });
     },
-
+  
     update: async (id: string, data: Partial<CreateFloorplanRequest>): Promise<Floorplan> => {
       const formData = new FormData();
       if (data.name) formData.append('name', data.name);
       if (data.description) formData.append('description', data.description);
       if (data.image_file) formData.append('image_file', data.image_file);
-      // Use apiClient directly for file upload
       return api.put<Floorplan>(`/api/floorplan/${id}`, formData, {
         headers: {
           'Content-Type': 'multipart/form-data',
         },
       });
     },
-
+  
     delete: async (id: string): Promise<ApiResponse> => {
       return api.delete<ApiResponse>(`/api/floorplan/${id}`);
     },
-
+  
     analyze: async (id: string): Promise<VastuAnalysis> => {
       return api.post<VastuAnalysis>(`/api/floorplan/${id}/analyze`);
     }

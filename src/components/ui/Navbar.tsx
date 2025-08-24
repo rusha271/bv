@@ -21,7 +21,17 @@ import ThemeSwitcher from './ThemeSwitcher';
 import LogSigComponent from './LogSig';
 import { useRouter } from 'next/navigation';
 import { usePathname } from 'next/navigation';
-import { useAuth } from '@/utils/useApi';
+import { useAuth } from '@/contexts/AuthContext';
+import Avatar from '@mui/material/Avatar';
+import Menu from '@mui/material/Menu';
+import MenuItem from '@mui/material/MenuItem';
+import ListItemIcon from '@mui/material/ListItemIcon';
+import Divider from '@mui/material/Divider';
+import AccountCircle from '@mui/icons-material/AccountCircle';
+import Dashboard from '@mui/icons-material/Dashboard';
+import Payment from '@mui/icons-material/Payment';
+import Logout from '@mui/icons-material/Logout';
+import Person from '@mui/icons-material/Person';
 
 const menuItems = [
   { label: 'Home', href: '/' },
@@ -43,37 +53,46 @@ export default function Navbar() {
   const { mode, toggleTheme, theme } = useThemeContext();
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [loginDialogOpen, setLoginDialogOpen] = useState(false);
+  const [userMenuAnchor, setUserMenuAnchor] = useState<null | HTMLElement>(null);
   const pathname = usePathname();
-  const { user, getCurrentUser } = useAuth();
+  const { user, isAuthenticated, logout } = useAuth();
 
   // Check if user is logged in and is admin
-  const isAdmin = user && user.role?.name === 'admin';
+  const isAdmin = isAuthenticated && user?.role?.name === 'admin';
 
-  useEffect(() => {
-    // Try to get current user on component mount
-    const token = localStorage.getItem('auth_token');
-    if (token) {
-      getCurrentUser().then((user) => {
-        console.log('User state updated:', user);
-      }).catch(() => {
-        // If token is invalid, remove it
-        localStorage.removeItem('auth_token');
-      });
-    }
-  }, [getCurrentUser]);
+  // User menu handlers
+  const handleUserMenuOpen = (event: React.MouseEvent<HTMLElement>) => {
+    setUserMenuAnchor(event.currentTarget);
+  };
 
-  // Refresh user state when login dialog closes
-  useEffect(() => {
-    if (!loginDialogOpen) {
-      const token = localStorage.getItem('auth_token');
-      if (token) {
-        getCurrentUser().catch(() => {
-          // If token is invalid, remove it
-          localStorage.removeItem('auth_token');
-        });
-      }
+  const handleUserMenuClose = () => {
+    setUserMenuAnchor(null);
+  };
+
+  const handleLogout = async () => {
+    try {
+      await logout();
+      handleUserMenuClose();
+      router.push('/');
+    } catch (error) {
+      console.error('Logout error:', error);
     }
-  }, [loginDialogOpen, getCurrentUser]);
+  };
+
+  const handleProfileClick = () => {
+    handleUserMenuClose();
+    router.push('/profile');
+  };
+
+  const handleDashboardClick = () => {
+    handleUserMenuClose();
+    router.push('/dashboard');
+  };
+
+  const handlePaymentsClick = () => {
+    handleUserMenuClose();
+    router.push('/payments');
+  };
 
   const handleLoginClick = () => {
     setLoginDialogOpen(true);
@@ -81,14 +100,6 @@ export default function Navbar() {
 
   const handleLoginClose = () => {
     setLoginDialogOpen(false);
-    // Refresh user state after login dialog closes
-    const token = localStorage.getItem('auth_token');
-    if (token) {
-      getCurrentUser().catch(() => {
-        // If token is invalid, remove it
-        localStorage.removeItem('auth_token');
-      });
-    }
   };
 
   return (
@@ -140,24 +151,52 @@ export default function Navbar() {
                   Admin Dashboard
                 </Button>
               )}
-              <Button
-                onClick={handleLoginClick}
-                sx={{
-                  color: theme.palette.mode === 'dark' ? '#fff' : theme.palette.primary.contrastText,
-                  background: theme.palette.mode === 'dark' ? theme.palette.primary.main : theme.palette.primary.dark,
-                  fontWeight: 600,
-                  ml: 2,
-                  px: 3,
-                  borderRadius: 2,
-                  boxShadow: 2,
-                  '&:hover': {
-                    background: theme.palette.mode === 'dark' ? theme.palette.primary.light : theme.palette.primary.main,
-                    color: '#fff',
-                  },
-                }}
-              >
-                Log in
-              </Button>
+              {isAuthenticated ? (
+                <Box display="flex" alignItems="center" gap={1}>
+                  <IconButton
+                    onClick={handleUserMenuOpen}
+                    sx={{
+                      p: 0.5,
+                      border: `2px solid ${theme.palette.primary.main}`,
+                      '&:hover': {
+                        borderColor: theme.palette.primary.dark,
+                      },
+                    }}
+                  >
+                    <Avatar
+                      sx={{
+                        width: 36,
+                        height: 36,
+                        bgcolor: theme.palette.primary.main,
+                        color: theme.palette.primary.contrastText,
+                        fontSize: '0.9rem',
+                        fontWeight: 600,
+                      }}
+                    >
+                      {user?.name ? user.name.charAt(0).toUpperCase() : 'U'}
+                    </Avatar>
+                  </IconButton>
+                </Box>
+              ) : (
+                <Button
+                  onClick={handleLoginClick}
+                  sx={{
+                    color: theme.palette.mode === 'dark' ? '#fff' : theme.palette.primary.contrastText,
+                    background: theme.palette.mode === 'dark' ? theme.palette.primary.main : theme.palette.primary.dark,
+                    fontWeight: 600,
+                    ml: 2,
+                    px: 3,
+                    borderRadius: 2,
+                    boxShadow: 2,
+                    '&:hover': {
+                      background: theme.palette.mode === 'dark' ? theme.palette.primary.light : theme.palette.primary.main,
+                      color: '#fff',
+                    },
+                  }}
+                >
+                  Log in
+                </Button>
+              )}
               <ThemeSwitcher toggleTheme={toggleTheme} mode={mode} />
             </Box>
             <Box display={{ xs: 'flex', md: 'none' }}>
@@ -174,11 +213,52 @@ export default function Navbar() {
                         </ListItemButton>
                       </ListItem>
                     ))}
-                    <ListItem disablePadding>
-                      <ListItemButton onClick={handleLoginClick}>
-                        <ListItemText primary="Log in" sx={{ color: theme.palette.text.primary }} />
-                      </ListItemButton>
-                    </ListItem>
+                    {isAuthenticated ? (
+                      <>
+                        <Divider sx={{ my: 1 }} />
+                        <ListItem disablePadding>
+                          <ListItemButton onClick={handleProfileClick}>
+                            <ListItemIcon>
+                              <Person />
+                            </ListItemIcon>
+                            <ListItemText primary="Profile" sx={{ color: theme.palette.text.primary }} />
+                          </ListItemButton>
+                        </ListItem>
+                        {isAdmin && (
+                          <ListItem disablePadding>
+                            <ListItemButton onClick={handleDashboardClick}>
+                              <ListItemIcon>
+                                <Dashboard />
+                              </ListItemIcon>
+                              <ListItemText primary="Admin Dashboard" sx={{ color: theme.palette.text.primary }} />
+                            </ListItemButton>
+                          </ListItem>
+                        )}
+                        <ListItem disablePadding>
+                          <ListItemButton onClick={handlePaymentsClick}>
+                            <ListItemIcon>
+                              <Payment />
+                            </ListItemIcon>
+                            <ListItemText primary="Payments & PDFs" sx={{ color: theme.palette.text.primary }} />
+                          </ListItemButton>
+                        </ListItem>
+                        <Divider sx={{ my: 1 }} />
+                        <ListItem disablePadding>
+                          <ListItemButton onClick={handleLogout}>
+                            <ListItemIcon>
+                              <Logout />
+                            </ListItemIcon>
+                            <ListItemText primary="Logout" sx={{ color: theme.palette.text.primary }} />
+                          </ListItemButton>
+                        </ListItem>
+                      </>
+                    ) : (
+                      <ListItem disablePadding>
+                        <ListItemButton onClick={handleLoginClick}>
+                          <ListItemText primary="Log in" sx={{ color: theme.palette.text.primary }} />
+                        </ListItemButton>
+                      </ListItem>
+                    )}
                   </List>
                   <Box mt={2} display="flex" justifyContent="center">
                     <ThemeSwitcher toggleTheme={toggleTheme} mode={mode} />
@@ -189,6 +269,53 @@ export default function Navbar() {
           </Toolbar>
         </AppBar>
       </HideOnScroll>
+
+      {/* User Menu */}
+      <Menu
+        anchorEl={userMenuAnchor}
+        open={Boolean(userMenuAnchor)}
+        onClose={handleUserMenuClose}
+        PaperProps={{
+          sx: {
+            mt: 1,
+            minWidth: 200,
+            boxShadow: theme.palette.mode === 'dark' ? '0 8px 32px rgba(0,0,0,0.4)' : '0 8px 32px rgba(0,0,0,0.1)',
+            borderRadius: 2,
+            border: theme.palette.mode === 'dark' ? '1px solid #333' : '1px solid #e0e0e0',
+          },
+        }}
+        transformOrigin={{ horizontal: 'right', vertical: 'top' }}
+        anchorOrigin={{ horizontal: 'right', vertical: 'bottom' }}
+      >
+        <MenuItem onClick={handleProfileClick}>
+          <ListItemIcon>
+            <Person fontSize="small" />
+          </ListItemIcon>
+          Profile
+        </MenuItem>
+        {isAdmin && (
+          <MenuItem onClick={handleDashboardClick}>
+            <ListItemIcon>
+              <Dashboard fontSize="small" />
+            </ListItemIcon>
+            Admin Dashboard
+          </MenuItem>
+        )}
+        <MenuItem onClick={handlePaymentsClick}>
+          <ListItemIcon>
+            <Payment fontSize="small" />
+          </ListItemIcon>
+          Payments & PDFs
+        </MenuItem>
+        <Divider />
+        <MenuItem onClick={handleLogout}>
+          <ListItemIcon>
+            <Logout fontSize="small" />
+          </ListItemIcon>
+          Logout
+        </MenuItem>
+      </Menu>
+
       <LogSigComponent open={loginDialogOpen} onClose={handleLoginClose} redirectUrl={pathname}/>
     </>
   );
