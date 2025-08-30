@@ -2,7 +2,7 @@
 
 import React, { useState } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
-import GuestUpgradeModal from './GuestUpgradeModal';
+// import GuestUpgradeModal from './GuestUpgradeModal';
 import LogSigComponent from './ui/LogSig';
 import { useRouter } from 'next/navigation';
 
@@ -50,14 +50,14 @@ export function GuestBanner() {
           </div>
           <div className="flex items-center space-x-3">
             <button
-              onClick={() => router.push('/logsig')}
-              className="bg-white text-blue-600 px-4 py-2 rounded-md text-sm font-medium hover:bg-gray-50 transition-colors"
+              onClick={() => setShowUpgradeModal(true)}
+              className="bg-white text-blue-600 px-3 py-1 rounded-lg shadow hover:bg-gray-50 transition"
             >
-              Upgrade Account
+              Upgrade Now
             </button>
+
             <button
               onClick={() => {
-                // Hide banner for this session
                 sessionStorage.setItem('guest_banner_dismissed', 'true');
                 window.location.reload();
               }}
@@ -71,10 +71,9 @@ export function GuestBanner() {
         </div>
       </div>
 
-      <GuestUpgradeModal
-        isOpen={showUpgradeModal}
-        onClose={() => setShowUpgradeModal(false)}
-      />
+      {showUpgradeModal && (
+        <LogSigComponent open={showUpgradeModal} onClose={() => setShowUpgradeModal(false)} />
+      )}
     </>
   );
 }

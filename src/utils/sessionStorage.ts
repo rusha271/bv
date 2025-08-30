@@ -22,6 +22,7 @@ export interface FloorPlanSessionData {
   metadata: {
     uploadedAt: string;
     lastModified: string;
+    expiresAt: string; // New field for expiration tracking
   };
 }
 
@@ -38,7 +39,15 @@ class SessionStorageManager {
     const existingData = sessionStorage.getItem(SESSION_KEYS.FLOOR_PLAN_DATA);
     if (existingData) {
       try {
-        return JSON.parse(existingData);
+        const parsedData = JSON.parse(existingData);
+        
+        // Check if session has expired
+        if (this.isSessionExpired(parsedData)) {
+          this.clearSession();
+          return null;
+        }
+        
+        return parsedData;
       } catch {
         // Invalid data, clear and return null
         this.clearSession();
@@ -49,8 +58,11 @@ class SessionStorageManager {
     return null;
   }
 
-  // Store original floor plan data
+  // Store original floor plan data with 1-hour expiration
   storeOriginalFloorPlan(file: File, analysisId: string, blobUrl: string): FloorPlanSessionData {
+    const now = new Date();
+    const expiresAt = new Date(now.getTime() + 60 * 60 * 1000); // 1 hour from now
+    
     const sessionData: FloorPlanSessionData = {
       sessionId: this.generateSessionId(),
       originalImage: {
@@ -59,8 +71,9 @@ class SessionStorageManager {
         analysisId
       },
       metadata: {
-        uploadedAt: new Date().toISOString(),
-        lastModified: new Date().toISOString()
+        uploadedAt: now.toISOString(),
+        lastModified: now.toISOString(),
+        expiresAt: expiresAt.toISOString()
       }
     };
 
@@ -148,9 +161,25 @@ class SessionStorageManager {
     return Math.floor((now.getTime() - uploadedAt.getTime()) / (1000 * 60));
   }
 
-  // Check if session is expired (older than 30 minutes)
-  isSessionExpired(): boolean {
-    return this.getSessionAge() > 30;
+  // Check if session is expired (1 hour = 60 minutes)
+  isSessionExpired(sessionData?: FloorPlanSessionData): boolean {
+    const data = sessionData || this.getSessionData();
+    if (!data) return true;
+    
+    const expiresAt = new Date(data.metadata.expiresAt);
+    const now = new Date();
+    return now.getTime() > expiresAt.getTime();
+  }
+
+  // Get time remaining until expiration in minutes
+  getTimeRemaining(): number {
+    const sessionData = this.getSessionData();
+    if (!sessionData) return 0;
+    
+    const expiresAt = new Date(sessionData.metadata.expiresAt);
+    const now = new Date();
+    const remainingMs = expiresAt.getTime() - now.getTime();
+    return Math.max(0, Math.floor(remainingMs / (1000 * 60)));
   }
 
   // Clean up expired sessions
@@ -159,11 +188,28 @@ class SessionStorageManager {
       this.clearSession();
     }
   }
+
+  // Extend session expiration by 1 hour
+  extendSession(): boolean {
+    const sessionData = this.getSessionData();
+    if (!sessionData) return false;
+    
+    const now = new Date();
+    const newExpiresAt = new Date(now.getTime() + 60 * 60 * 1000); // 1 hour from now
+    
+    sessionData.metadata.lastModified = now.toISOString();
+    sessionData.metadata.expiresAt = newExpiresAt.toISOString();
+    
+    if (typeof window !== 'undefined') {
+      sessionStorage.setItem(SESSION_KEYS.FLOOR_PLAN_DATA, JSON.stringify(sessionData));
+    }
+    
+    return true;
+  }
 }
 
 // Export singleton instance
 export const sessionStorageManager = new SessionStorageManager();
 
-// Export types and keys
+// Export keys
 export { SESSION_KEYS };
-export type { FloorPlanSessionData };

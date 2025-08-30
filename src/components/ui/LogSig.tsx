@@ -34,7 +34,6 @@ import {
 import { useDeviceType } from '../../utils/useDeviceType';
 import { useLegal } from '../../contexts/LegalContent';
 import { LegalDocument } from './LegalDocument';
-import { SocialAuth } from './AuthComponent';
 import { toast } from 'react-hot-toast';
 import { useRouter } from 'next/navigation';
 import * as Yup from 'yup';
@@ -409,7 +408,7 @@ export default function LogSigComponent({ open, onClose, prefillData, redirectUr
                     },
                   }}
                 >
-                  {isLoading ? 'Signing In...' : 'Sign In'}
+                  {isLoading ? 'Signing In' : 'Sign In'}
                 </Button>
               </Stack>
             </TabPanel>
@@ -569,7 +568,7 @@ export default function LogSigComponent({ open, onClose, prefillData, redirectUr
             </TabPanel>
           </form>
 
-          <SocialAuth setFormData={setFormData} setTabValue={setTabValue} />
+          {/* <SocialAuth setFormData={setFormData} setTabValue={setTabValue} /> */}
 
           <Box textAlign="center" sx={{ mt: 3 }}>
             <Typography variant="body2" color="text.secondary">

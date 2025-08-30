@@ -1,24 +1,61 @@
 // src/pages/cropPage.tsx
 'use client';
 
-import React, { useState, useCallback, useEffect } from 'react';
+import React, { useState, useCallback, useEffect, useRef } from 'react';
 import { useThemeContext } from '@/contexts/ThemeContext';
 import { useDeviceType } from '@/utils/useDeviceType';
 import Navbar from '@/components/ui/Navbar';
 import Footer from '@/components/ui/Footer';
 import ImageCropper from '@/components/ui/ImageCropper';
-import Vastu3DAnimation from '@/components/ui/Vastu3DAnimation';
-import ZodiacSignsDisplay from '@/components/ui/ZodiacSignsDisplay';
-import { Box, Typography, Container } from '@mui/material';
+import { Box, Typography, Container, Skeleton , CircularProgress } from '@mui/material';
 import { useRouter } from 'next/navigation';
 import styles from './cropPage.module.css';
 import Disclaimer from '@/components/ui/Disclaimer';
 import { sessionStorageManager } from '@/utils/sessionStorage';
+import { Dialog, DialogContent } from '@mui/material'; // Add Dialog and DialogContent if not already imported
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
+// const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
+
+// Lazy load components
+const Vastu3DAnimation = React.lazy(() => import('@/components/ui/Vastu3DAnimation'));
+const ZodiacSignsDisplay = React.lazy(() => import('@/components/ui/ZodiacSignsDisplay'));
 
 function FadeInSection({ children }: { children: React.ReactNode }) {
   return <div className={styles.animateFadein}>{children}</div>;
+}
+
+// Lazy loading hook
+function useLazyLoad() {
+  const [isVisible, setIsVisible] = useState(false);
+  const [isLoaded, setIsLoaded] = useState(false);
+  const ref = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          setIsVisible(true);
+          observer.disconnect();
+        }
+      },
+      {
+        threshold: 0.1,
+        rootMargin: '50px'
+      }
+    );
+
+    if (ref.current) {
+      observer.observe(ref.current);
+    }
+
+    return () => observer.disconnect();
+  }, []);
+
+  const handleLoad = () => {
+    setIsLoaded(true);
+  };
+
+  return { ref, isVisible, isLoaded, handleLoad };
 }
 
 export default function CropPage() {
@@ -30,6 +67,15 @@ export default function CropPage() {
   const [croppedUrl, setCroppedUrl] = useState<string | null>(null);
   const [cropData, setCropData] = useState<any>(null);
   const [sessionData, setSessionData] = useState<any>(null);
+  const [isProcessing, setIsProcessing] = useState(false);
+  const [processingError, setProcessingError] = useState<string | null>(null);
+  const [errorDialogOpen, setErrorDialogOpen] = useState(false);
+  const [hasCropped, setHasCropped] = useState(false);
+
+  // Lazy loading hooks for different sections
+  const vastuSection = useLazyLoad();
+  const zodiacSection = useLazyLoad();
+  const cropSection = useLazyLoad();
 
   useEffect(() => {
     // Clean up expired sessions
@@ -47,52 +93,79 @@ export default function CropPage() {
   }, []);
 
   const handleCrop = useCallback((cropData: any, userInteracted: boolean, croppedImageUrl?: string) => {
+    console.log('CropPage: handleCrop called with:', { cropData, userInteracted, croppedImageUrl });
+    
     if (cropData && userInteracted && croppedImageUrl) {
       setCroppedUrl(croppedImageUrl);
       setCropData(cropData); // Store cropData
-      console.log('CropPage: croppedUrl set to', croppedImageUrl, 'cropData:', cropData);
+      setHasCropped(true);
+      console.log('CropPage: croppedUrl set to', croppedImageUrl.substring(0, 50) + '...', 'cropData:', cropData);
     } else {
       setCroppedUrl(null);
       setCropData(null);
+      setHasCropped(false);
       console.log('CropPage: croppedUrl reset to null');
     }
   }, []);
 
-  const handleNext = () => {
-    if (!sessionData?.originalImage) {
-      setErrorMessage('Please upload an image before proceeding.');
-      console.log('handleNext: No session data, showing error');
-      return;
-    }
-    
-    if (!croppedUrl && !cropData) {
+  const handleNext = async () => {
+    try {
+      setIsProcessing(true);
+      setProcessingError(null);
+      setErrorDialogOpen(false);
+  
+      console.log('handleNext: Starting with croppedUrl:', croppedUrl ? 'exists' : 'null', 'cropData:', cropData);
+  
+      if (!sessionData?.originalImage) {
+        throw new Error('Please upload an image before proceeding.');
+      }
+      
+      // Check if user has cropped the image
+      if (croppedUrl && cropData) {
+        // User has cropped the image, use the cropped version
+        console.log('handleNext: Using cropped image', croppedUrl.substring(0, 50) + '...');
+        
+        // Convert cropped URL to blob and store
+        const response = await fetch(croppedUrl);
+        const croppedBlob = await response.blob();
+        
+        const croppedBlobUrl = URL.createObjectURL(croppedBlob);
+        
+        console.log('handleNext: Cropped blob created, size:', croppedBlob.size);
+        
+        // Store the cropped image in session
+        sessionStorageManager.storeCroppedImage(croppedBlobUrl, cropData);
+        
+        router.push('/chakra-overlay');
+        return;
+      }
+      
       // If no cropping is done, use the original image
-      console.log('handleNext: Using original image');
+      console.log('handleNext: Using original image (no crop)');
       const originalBlobUrl = sessionData.originalImage.blobUrl;
       
-      // Store cropped data as original (no crop)
-      sessionStorageManager.storeCroppedImage(originalBlobUrl, {
+      // Convert blob URL to blob for storage
+      const response = await fetch(originalBlobUrl);
+      const blob = await response.blob();
+      const newBlobUrl = URL.createObjectURL(blob);
+      
+      console.log('handleNext: Original blob created, size:', blob.size);
+      
+      // Store original image as cropped (no crop applied)
+      sessionStorageManager.storeCroppedImage(newBlobUrl, {
         area: 0,
         centroid: { x: 0, y: 0 }
       });
       
       router.push('/chakra-overlay');
-      return;
+      
+    } catch (error) {
+      console.error('Error processing crop:', error);
+      setProcessingError(error instanceof Error ? error.message : "An error occurred. Please try again.");
+      setErrorDialogOpen(true);
+    } finally {
+      setIsProcessing(false);
     }
-    
-    if (!croppedUrl) {
-      setErrorMessage('Please crop the image before proceeding.');
-      console.log('handleNext: No croppedUrl, showing error');
-      return;
-    }
-    
-    console.log('handleNext: Using croppedUrl', croppedUrl);
-    
-    // Store the cropped image in session
-    sessionStorageManager.storeCroppedImage(croppedUrl, cropData);
-    
-    // Navigate to chakra overlay
-    router.push('/chakra-overlay');
   };
 
   const sectionTitleSize = isMobile ? '1.5rem' : isTablet ? '2rem' : '2.5rem';
@@ -194,6 +267,24 @@ export default function CropPage() {
             )}
           </Box>
 
+          {/* Status indicator */}
+          {hasCropped && (
+            <Box sx={{ 
+              mb: 2, 
+              p: 2, 
+              borderRadius: 2, 
+              background: theme.palette.success.light + '20', 
+              border: `1px solid ${theme.palette.success.main}`,
+              display: 'flex',
+              alignItems: 'center',
+              gap: 1
+            }}>
+              <Typography variant="body2" sx={{ color: theme.palette.success.main, fontWeight: 600 }}>
+                ✅ Image cropped successfully! Ready to proceed.
+              </Typography>
+            </Box>
+          )}
+
           <Box className={styles.actionButtons}>
             <button
               onClick={handleNext}
@@ -214,7 +305,9 @@ export default function CropPage() {
                 e.currentTarget.style.boxShadow = theme.palette.mode === 'dark' ? '0 8px 32px rgba(59, 130, 246, 0.3)' : '0 8px 32px rgba(59, 130, 246, 0.2)';
               }}
             >
-              <span className={styles.buttonContent}>✨ Next Step</span>
+              <span className={styles.buttonContent}>
+                {hasCropped ? '✨ Proceed with Cropped Image' : '✨ Next Step'}
+              </span>
               <div className={styles.shimmerEffect} />
             </button>
           </Box>
@@ -252,7 +345,30 @@ export default function CropPage() {
           }}
         >
           <Box sx={{ display: 'flex', flexDirection: { xs: 'column', md: 'row' }, gap: 4, mb: 4 }}>
-            <Box sx={{ flex: 1, height: '100%' }}>{PageContent()}</Box>
+            <Box ref={cropSection.ref} sx={{ flex: 1, height: '100%' }}>  
+              {cropSection.isVisible ? (
+                PageContent()
+              ) : (
+                <Box sx={{ 
+                  width: '100%', 
+                  height: '500px', 
+                  display: 'flex', 
+                  alignItems: 'center', 
+                  justifyContent: 'center',
+                  background: theme.palette.background.paper,
+                  borderRadius: 2,
+                  border: `1px solid ${theme.palette.divider}`
+                }}>
+                  <Skeleton 
+                    variant="rectangular" 
+                    width="100%" 
+                    height="100%" 
+                    animation="wave"
+                    sx={{ borderRadius: 2 }}
+                  />
+                </Box>
+              )}
+            </Box>
             <Box sx={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 4 }}>
               <Box
                 sx={{ p: 3, borderRadius: 2, background: theme.palette.background.paper, border: `1px solid ${theme.palette.divider}`, boxShadow: theme.shadows[2] }}
@@ -281,15 +397,179 @@ export default function CropPage() {
               <Disclaimer />
             </Box>
           </Box>
-          <Box sx={{ width: '100%', mt: 4 }}>
-            <Vastu3DAnimation />
+          
+          {/* Lazy loaded Vastu3DAnimation */}
+          <Box ref={vastuSection.ref} sx={{ width: '100%', mt: 4 }}>
+            {vastuSection.isVisible ? (
+              <React.Suspense fallback={
+                <Box sx={{ 
+                  width: '100%', 
+                  height: '300px', 
+                  display: 'flex', 
+                  alignItems: 'center', 
+                  justifyContent: 'center',
+                  background: theme.palette.background.paper,
+                  borderRadius: 2,
+                  border: `1px solid ${theme.palette.divider}`,
+                  flexDirection: 'column'
+                }}>
+                  <CircularProgress 
+                    size={48}
+                    sx={{ color: theme.palette.primary.main, mb: 2 }}
+                  />
+                  <Typography 
+                    variant="body2" 
+                    color="text.secondary"
+                  >
+                    Loading Vastu animation...
+                  </Typography>
+                </Box>
+              }>
+                <Vastu3DAnimation />
+              </React.Suspense>
+            ) : (
+              <Box sx={{ 
+                width: '100%', 
+                height: '300px', 
+                display: 'flex', 
+                alignItems: 'center', 
+                justifyContent: 'center',
+                background: theme.palette.background.paper,
+                borderRadius: 2,
+                border: `1px solid ${theme.palette.divider}`,
+                flexDirection: 'column'
+              }}>
+                <CircularProgress 
+                  size={48}
+                  sx={{ color: theme.palette.primary.main, mb: 2 }}
+                />
+                <Typography 
+                  variant="body2" 
+                  color="text.secondary"
+                >
+                  Loading Vastu animation...
+                </Typography>
+              </Box>
+            )}
           </Box>
-          <Box sx={{ width: '100%', mt: 4 }}>
-            <ZodiacSignsDisplay />
+          
+          {/* Lazy loaded ZodiacSignsDisplay */}
+          <Box ref={zodiacSection.ref} sx={{ width: '100%', mt: 4 }}>
+            {zodiacSection.isVisible ? (
+              <React.Suspense fallback={
+                <Box sx={{ 
+                  width: '100%', 
+                  height: '400px', 
+                  display: 'flex', 
+                  alignItems: 'center', 
+                  justifyContent: 'center',
+                  background: theme.palette.background.paper,
+                  borderRadius: 2,
+                  border: `1px solid ${theme.palette.divider}`,
+                  flexDirection: 'column'
+                }}>
+                  <CircularProgress 
+                    size={48}
+                    sx={{ color: theme.palette.primary.main, mb: 2 }}
+                  />
+                  <Typography 
+                    variant="body2" 
+                    color="text.secondary"
+                  >
+                    Loading zodiac signs...
+                  </Typography>
+                </Box>
+              }>
+                <ZodiacSignsDisplay />
+              </React.Suspense>
+            ) : (
+              <Box sx={{ 
+                width: '100%', 
+                height: '400px', 
+                display: 'flex', 
+                alignItems: 'center', 
+                justifyContent: 'center',
+                background: theme.palette.background.paper,
+                borderRadius: 2,
+                border: `1px solid ${theme.palette.divider}`,
+                flexDirection: 'column'
+              }}>
+                <CircularProgress 
+                  size={48}
+                  sx={{ color: theme.palette.primary.main, mb: 2 }}
+                />
+                <Typography 
+                  variant="body2" 
+                  color="text.secondary"
+                >
+                  Loading zodiac signs...
+                </Typography>
+              </Box>
+            )}
           </Box>
         </Box>
       </Container>
       <Footer />
+      <Dialog
+        open={errorDialogOpen}
+        onClose={() => setErrorDialogOpen(false)}
+        maxWidth="sm"
+        fullWidth
+        PaperProps={{
+          sx: { 
+            borderRadius: 4, 
+            boxShadow: 12, 
+            background: theme.palette.background.paper 
+          },
+        }}
+      >
+        <DialogContent sx={{ p: 4, textAlign: 'center' }}>
+          <Typography variant="h5" fontWeight={700} color="error.main" mb={2}>
+            Processing Error
+          </Typography>
+          <Typography variant="body1" color="text.secondary" whiteSpace="pre-line" sx={{ mb: 3 }}>
+            {processingError}
+          </Typography>
+          <button
+            onClick={handleNext}
+            disabled={isProcessing}
+            className={`${styles.nextButton} ${styles.relativeOverflowHidden} ${styles.groupTransition} ${styles.groupHover} ${isProcessing ? styles.buttonDisabled : styles.buttonEnabled}`}
+            style={{
+              background: `linear-gradient(135deg, ${theme.palette.primary.main}, ${theme.palette.primary.dark})`,
+              color: theme.palette.primary.contrastText,
+              padding: buttonPadding,
+              fontSize: buttonFontSize,
+              boxShadow: theme.palette.mode === 'dark' ? '0 8px 32px rgba(59, 130, 246, 0.3)' : '0 8px 32px rgba(59, 130, 246, 0.2)',
+              opacity: isProcessing ? 0.6 : 1,
+              cursor: isProcessing ? 'not-allowed' : 'pointer',
+            }}
+            onMouseEnter={(e) => {
+              if (!isProcessing) {
+                e.currentTarget.style.transform = 'translateY(-2px)';
+                e.currentTarget.style.boxShadow = theme.palette.mode === 'dark' ? '0 12px 40px rgba(59, 130, 246, 0.4)' : '0 12px 40px rgba(59, 130, 246, 0.3)';
+              }
+            }}
+            onMouseLeave={(e) => {
+              if (!isProcessing) {
+                e.currentTarget.style.transform = 'translateY(0)';
+                e.currentTarget.style.boxShadow = theme.palette.mode === 'dark' ? '0 8px 32px rgba(59, 130, 246, 0.3)' : '0 8px 32px rgba(59, 130, 246, 0.2)';
+              }
+            }}
+          >
+            <span className={styles.buttonContent}>
+              {isProcessing ? (
+                <>
+                  <CircularProgress size={16} sx={{ mr: 1, color: 'inherit' }} />
+                  Processing...
+                </>
+              ) : (
+                '✨ Next Step'
+              )}
+            </span>
+            <div className={styles.shimmerEffect} />
+          </button>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

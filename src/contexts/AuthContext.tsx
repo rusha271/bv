@@ -229,7 +229,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       // Convert AuthResponse to AuthTokens format
       const authTokens: AuthTokens = {
         access_token: response.access_token,
-        refresh_token: response.access_token // Use access token as refresh token for now
+        refresh_token: response.refresh_token // Use access token as refresh token for now
       };
       
       storeTokens(authTokens, rememberMe);

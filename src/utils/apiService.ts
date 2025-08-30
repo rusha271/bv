@@ -32,6 +32,7 @@ export interface RegisterRequest {
 
 export interface AuthResponse {
   access_token: string;
+  refresh_token: string;
   token_type: string;
   user: {
     id: string;
@@ -46,7 +47,9 @@ export interface User {
   id: string;
   email: string;
   name: string;
-  role: string;
+  role: {
+    name: string;
+  };
   created_at: string;
   updated_at: string;
 }

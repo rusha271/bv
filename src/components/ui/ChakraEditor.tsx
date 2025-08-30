@@ -5,7 +5,9 @@ import { Box, Typography, Slider, FormControlLabel, Switch, Button, Paper, TextF
 import DownloadIcon from '@mui/icons-material/Download';
 import html2canvas from 'html2canvas';
 import Image from 'next/image';
-import UserDetailsForm from './UserDetailsForm';
+// import UserDetailsForm from './UserDetailsForm';
+import { apiService } from '@/utils/apiService';
+import { FloorPlanUpload } from '@/utils/apiService';
 
 
 interface ChakraEditorProps {
@@ -62,67 +64,87 @@ export const ChakraEditor: React.FC<ChakraEditorProps> = ({ floorPlanImageUrl })
   const handleDownload = async () => {
     const chakraViewerElement = document.getElementById('chakra-viewer-container');
     if (chakraViewerElement) {
-      const tempContainer = document.createElement('div');
-      tempContainer.style.position = 'absolute';
-      tempContainer.style.left = '-9999px';
-      tempContainer.style.width = '1000px';
-      tempContainer.style.height = '1000px';
-      tempContainer.style.backgroundColor = '#f0f0f0';
+      try {
+        // Create a temporary container for rendering the image
+        const tempContainer = document.createElement('div');
+        tempContainer.style.position = 'absolute';
+        tempContainer.style.left = '-9999px';
+        tempContainer.style.width = '1000px';
+        tempContainer.style.height = '1000px';
+        tempContainer.style.backgroundColor = '#f0f0f0';
   
-      const chakraImg = document.createElement('img');
-      chakraImg.src = '/images/Shakti Chakra_Size.png';
-      chakraImg.style.position = 'absolute';
-      chakraImg.style.opacity = chakraOpacity.toString();
-      chakraImg.style.transform = `rotate(-${rotation}deg) scale(${zoom})`; // Apply correct rotation
-      chakraImg.style.transformOrigin = 'center center';
-      chakraImg.style.width = '100%';
-      chakraImg.style.height = '100%';
+        const chakraImg = document.createElement('img');
+        chakraImg.src = '/images/Shakti Chakra_Size.png';
+        chakraImg.style.position = 'absolute';
+        chakraImg.style.opacity = chakraOpacity.toString();
+        chakraImg.style.transform = `rotate(-${rotation}deg) scale(${zoom})`;
+        chakraImg.style.transformOrigin = 'center center';
+        chakraImg.style.width = '100%';
+        chakraImg.style.height = '100%';
   
-      const floorPlanImg = document.createElement('img');
-      floorPlanImg.src = floorPlanImageUrl || '/floorplan.png';
-      floorPlanImg.style.position = 'absolute';
-      floorPlanImg.style.maxWidth = '50%';
-      floorPlanImg.style.maxHeight = '50%';
-      floorPlanImg.style.top = '50%';
-      floorPlanImg.style.left = '50%';
-      floorPlanImg.style.transform = 'translate(-50%, -50%)';
-      floorPlanImg.style.opacity = '0.75';
-      floorPlanImg.style.objectFit = 'contain';
+        const floorPlanImg = document.createElement('img');
+        floorPlanImg.src = floorPlanImageUrl || '/floorplan.png';
+        floorPlanImg.style.position = 'absolute';
+        floorPlanImg.style.maxWidth = '50%';
+        floorPlanImg.style.maxHeight = '50%';
+        floorPlanImg.style.top = '50%';
+        floorPlanImg.style.left = '50%';
+        floorPlanImg.style.transform = 'translate(-50%, -50%)';
+        floorPlanImg.style.opacity = '0.75';
+        floorPlanImg.style.objectFit = 'contain';
   
-      if (showCenterMark) {
-        const centerMark = document.createElement('div');
-        centerMark.style.position = 'absolute';
-        centerMark.style.top = '50%';
-        centerMark.style.left = '50%';
-        centerMark.style.width = '15px';
-        centerMark.style.height = '15px';
-        centerMark.style.backgroundColor = 'red';
-        centerMark.style.borderRadius = '50%';
-        centerMark.style.transform = 'translate(-50%, -50%)';
-        tempContainer.appendChild(centerMark);
+        if (showCenterMark) {
+          const centerMark = document.createElement('div');
+          centerMark.style.position = 'absolute';
+          centerMark.style.top = '50%';
+          centerMark.style.left = '50%';
+          centerMark.style.width = '15px';
+          centerMark.style.height = '15px';
+          centerMark.style.backgroundColor = 'red';
+          centerMark.style.borderRadius = '50%';
+          centerMark.style.transform = 'translate(-50%, -50%)';
+          tempContainer.appendChild(centerMark);
+        }
+  
+        tempContainer.appendChild(chakraImg);
+        tempContainer.appendChild(floorPlanImg);
+        document.body.appendChild(tempContainer);
+  
+        await Promise.all([
+          new Promise((resolve) => (chakraImg.onload = resolve)),
+          new Promise((resolve) => (floorPlanImg.onload = resolve)),
+        ]);
+  
+        // Generate canvas
+        const canvas = await html2canvas(tempContainer, {
+          backgroundColor: null,
+          logging: true,
+          useCORS: true,
+          allowTaint: true,
+        });
+  
+        // Convert canvas to a File
+        const dataUrl = canvas.toDataURL('image/png');
+        const blob = await (await fetch(dataUrl)).blob();
+        const file = new File([blob], 'floorplan-chakra.png', { type: 'image/png' });
+  
+        // Upload to backend using floorplan.uploadFloorplan
+        const response = await apiService.floorplan.uploadFloorplan(file);
+        console.log('File uploaded successfully:', response);
+  
+        // Trigger download
+        const link = document.createElement('a');
+        link.href = dataUrl;
+        link.download = 'floorplan-chakra.png';
+        link.click();
+  
+        // Clean up
+        document.body.removeChild(tempContainer);
+      } catch (error) {
+        console.error('Error generating or uploading image:', error);
+        // Optionally, show an error message to the user
+        alert('Failed to generate or upload the image. Please try again.');
       }
-  
-      tempContainer.appendChild(chakraImg);
-      tempContainer.appendChild(floorPlanImg);
-      document.body.appendChild(tempContainer);
-  
-      await Promise.all([
-        new Promise((resolve) => (chakraImg.onload = resolve)),
-        new Promise((resolve) => (floorPlanImg.onload = resolve)),
-      ]);
-  
-      const canvas = await html2canvas(tempContainer, {
-        backgroundColor: null,
-        logging: true,
-        useCORS: true,
-        allowTaint: true,
-      });
-      const link = document.createElement('a');
-      link.href = canvas.toDataURL('image/png');
-      link.download = 'floorplan-chakra.png';
-      link.click();
-  
-      document.body.removeChild(tempContainer);
     }
   };
 
