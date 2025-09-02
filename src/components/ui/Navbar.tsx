@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, memo } from 'react';
 import AppBar from '@mui/material/AppBar';
 import Toolbar from '@mui/material/Toolbar';
 import Typography from '@mui/material/Typography';
@@ -21,7 +21,7 @@ import ThemeSwitcher from './ThemeSwitcher';
 import LogSigComponent from './LogSig';
 import { useRouter } from 'next/navigation';
 import { usePathname } from 'next/navigation';
-import { useAuth } from '@/contexts/AuthContext';
+import { useAuthUser, useAuthGuest, useAuthActions } from '@/contexts/AuthContext';
 import Avatar from '@mui/material/Avatar';
 import Menu from '@mui/material/Menu';
 import MenuItem from '@mui/material/MenuItem';
@@ -48,17 +48,26 @@ function HideOnScroll({ children }: { children: React.ReactElement }) {
   );
 }
 
-export default function Navbar() {
+const Navbar = memo(function Navbar() {
   const router = useRouter();
   const { mode, toggleTheme, theme } = useThemeContext();
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [loginDialogOpen, setLoginDialogOpen] = useState(false);
   const [userMenuAnchor, setUserMenuAnchor] = useState<null | HTMLElement>(null);
   const pathname = usePathname();
-  const { user, isAuthenticated, logout } = useAuth();
-
+  
+  // Use selective hooks to prevent unnecessary re-renders
+  const user = useAuthUser();
+  const isGuest = useAuthGuest();
+  const { logout } = useAuthActions();
+  
   // Check if user is logged in and is admin
+  const isAuthenticated = !!user;
   const isAdmin = isAuthenticated && user?.role?.name === 'admin';
+
+  useEffect(() => {
+    // Remove console.log to prevent unnecessary renders
+  }, []);
 
   // User menu handlers
   const handleUserMenuOpen = (event: React.MouseEvent<HTMLElement>) => {
@@ -126,19 +135,19 @@ export default function Navbar() {
                 style={{ borderRadius: 8 }}
                 priority
               />
-              <Typography variant="h6" fontWeight={700} sx={{ color: theme.palette.primary.main }} onClick={() => window.location.href = '/'} style={{ cursor: 'pointer' }}>
+              <Typography variant="h6" fontWeight={700} sx={{ color: theme.palette.primary.main }} onClick={() => router.push('/')} style={{ cursor: 'pointer' }}>
                 Brahma Vastu
               </Typography>
             </Box>
             <Box display={{ xs: 'none', md: 'flex' }} gap={2} alignItems="center">
               {menuItems.map((item) => (
-                <Button key={item.label} href={item.href} sx={{ color: theme.palette.text.primary, fontWeight: 600 }}>
+                <Button key={item.label} onClick={() => router.push(item.href)} sx={{ color: theme.palette.text.primary, fontWeight: 600 }}>
                   {item.label}
                 </Button>
               ))}
               {isAdmin && (
                 <Button 
-                  href="/dashboard" 
+                  onClick={() => router.push('/dashboard')}
                   sx={{ 
                     color: theme.palette.text.primary, 
                     fontWeight: 600,
@@ -151,33 +160,33 @@ export default function Navbar() {
                   Admin Dashboard
                 </Button>
               )}
-              {isAuthenticated ? (
-                <Box display="flex" alignItems="center" gap={1}>
-                  <IconButton
-                    onClick={handleUserMenuOpen}
-                    sx={{
-                      p: 0.5,
-                      border: `2px solid ${theme.palette.primary.main}`,
-                      '&:hover': {
-                        borderColor: theme.palette.primary.dark,
-                      },
-                    }}
-                  >
-                    <Avatar
-                      sx={{
-                        width: 36,
-                        height: 36,
-                        bgcolor: theme.palette.primary.main,
-                        color: theme.palette.primary.contrastText,
-                        fontSize: '0.9rem',
-                        fontWeight: 600,
-                      }}
-                    >
-                      {user?.name ? user.name.charAt(0).toUpperCase() : 'U'}
-                    </Avatar>
-                  </IconButton>
-                </Box>
-              ) : (
+                             {isAuthenticated && !isGuest ? (
+                 <Box display="flex" alignItems="center" gap={1}>
+                   <IconButton
+                     onClick={handleUserMenuOpen}
+                     sx={{
+                       p: 0.5,
+                       border: `2px solid ${theme.palette.primary.main}`,
+                       '&:hover': {
+                         borderColor: theme.palette.primary.dark,
+                       },
+                     }}
+                   >
+                     <Avatar
+                       sx={{
+                         width: 36,
+                         height: 36,
+                         bgcolor: theme.palette.primary.main,
+                         color: theme.palette.primary.contrastText,
+                         fontSize: '0.9rem',
+                         fontWeight: 600,
+                       }}
+                     >
+                       {user?.name ? user.name.charAt(0).toUpperCase() : 'U'}
+                     </Avatar>
+                   </IconButton>
+                 </Box>
+               ) : (
                 <Button
                   onClick={handleLoginClick}
                   sx={{
@@ -204,57 +213,75 @@ export default function Navbar() {
                 <MenuIcon />
               </IconButton>
               <Drawer anchor="right" open={drawerOpen} onClose={() => setDrawerOpen(false)}>
-                <Box sx={{ width: 220, p: 2 }} role="presentation" onClick={() => setDrawerOpen(false)}>
+                <Box sx={{ width: 220, p: 2 }} role="presentation">
                   <List>
                     {menuItems.map((item) => (
                       <ListItem key={item.label} disablePadding>
-                        <ListItemButton component="a" href={item.href}>
+                        <ListItemButton onClick={() => {
+                          router.push(item.href);
+                          setDrawerOpen(false);
+                        }}>
                           <ListItemText primary={item.label} sx={{ color: theme.palette.text.primary }} />
                         </ListItemButton>
                       </ListItem>
                     ))}
-                    {isAuthenticated ? (
-                      <>
-                        <Divider sx={{ my: 1 }} />
-                        <ListItem disablePadding>
-                          <ListItemButton onClick={handleProfileClick}>
-                            <ListItemIcon>
-                              <Person />
-                            </ListItemIcon>
-                            <ListItemText primary="Profile" sx={{ color: theme.palette.text.primary }} />
-                          </ListItemButton>
-                        </ListItem>
-                        {isAdmin && (
-                          <ListItem disablePadding>
-                            <ListItemButton onClick={handleDashboardClick}>
-                              <ListItemIcon>
-                                <Dashboard />
-                              </ListItemIcon>
-                              <ListItemText primary="Admin Dashboard" sx={{ color: theme.palette.text.primary }} />
-                            </ListItemButton>
-                          </ListItem>
-                        )}
-                        <ListItem disablePadding>
-                          <ListItemButton onClick={handlePaymentsClick}>
-                            <ListItemIcon>
-                              <Payment />
-                            </ListItemIcon>
-                            <ListItemText primary="Payments & PDFs" sx={{ color: theme.palette.text.primary }} />
-                          </ListItemButton>
-                        </ListItem>
-                        <Divider sx={{ my: 1 }} />
-                        <ListItem disablePadding>
-                          <ListItemButton onClick={handleLogout}>
-                            <ListItemIcon>
-                              <Logout />
-                            </ListItemIcon>
-                            <ListItemText primary="Logout" sx={{ color: theme.palette.text.primary }} />
-                          </ListItemButton>
-                        </ListItem>
-                      </>
-                    ) : (
+                      {isAuthenticated && !isGuest ? (
+                       <>
+                         <Divider sx={{ my: 1 }} />
+                         <ListItem disablePadding>
+                           <ListItemButton onClick={() => {
+                             handleProfileClick();
+                             setDrawerOpen(false);
+                           }}>
+                             <ListItemIcon>
+                               <Person />
+                             </ListItemIcon>
+                             <ListItemText primary="Profile" sx={{ color: theme.palette.text.primary }} />
+                           </ListItemButton>
+                         </ListItem>
+                         {isAdmin && (
+                           <ListItem disablePadding>
+                             <ListItemButton onClick={() => {
+                               handleDashboardClick();
+                               setDrawerOpen(false);
+                             }}>
+                               <ListItemIcon>
+                                 <Dashboard />
+                               </ListItemIcon>
+                               <ListItemText primary="Admin Dashboard" sx={{ color: theme.palette.text.primary }} />
+                             </ListItemButton>
+                           </ListItem>
+                         )}
+                         <ListItem disablePadding>
+                           <ListItemButton onClick={() => {
+                             handlePaymentsClick();
+                             setDrawerOpen(false);
+                           }}>
+                             <ListItemIcon>
+                               <Payment />
+                             </ListItemIcon>
+                             <ListItemText primary="Payments & PDFs" sx={{ color: theme.palette.text.primary }} />
+                           </ListItemButton>
+                         </ListItem>
+                         <Divider sx={{ my: 1 }} />
+                         <ListItem disablePadding>
+                           <ListItemButton onClick={() => {
+                             handleLogout();
+                             setDrawerOpen(false);
+                           }}>
+                             <ListItemIcon>
+                               <Logout />
+                             </ListItemIcon>
+                             <ListItemText primary="Logout" sx={{ color: theme.palette.text.primary }} />
+                           </ListItemButton>
+                         </ListItem>
+                       </>
+                     ) : (
                       <ListItem disablePadding>
-                        <ListItemButton onClick={handleLoginClick}>
+                        <ListItemButton onClick={() => {
+                          handleLoginClick();
+                          setDrawerOpen(false);
+                        }}>
                           <ListItemText primary="Log in" sx={{ color: theme.palette.text.primary }} />
                         </ListItemButton>
                       </ListItem>
@@ -270,53 +297,57 @@ export default function Navbar() {
         </AppBar>
       </HideOnScroll>
 
-      {/* User Menu */}
-      <Menu
-        anchorEl={userMenuAnchor}
-        open={Boolean(userMenuAnchor)}
-        onClose={handleUserMenuClose}
-        PaperProps={{
-          sx: {
-            mt: 1,
-            minWidth: 200,
-            boxShadow: theme.palette.mode === 'dark' ? '0 8px 32px rgba(0,0,0,0.4)' : '0 8px 32px rgba(0,0,0,0.1)',
-            borderRadius: 2,
-            border: theme.palette.mode === 'dark' ? '1px solid #333' : '1px solid #e0e0e0',
-          },
-        }}
-        transformOrigin={{ horizontal: 'right', vertical: 'top' }}
-        anchorOrigin={{ horizontal: 'right', vertical: 'bottom' }}
-      >
-        <MenuItem onClick={handleProfileClick}>
-          <ListItemIcon>
-            <Person fontSize="small" />
-          </ListItemIcon>
-          Profile
-        </MenuItem>
-        {isAdmin && (
-          <MenuItem onClick={handleDashboardClick}>
+      {/* User Menu - Only show for non-guest users */}
+      {!isGuest && (
+        <Menu
+          anchorEl={userMenuAnchor}
+          open={Boolean(userMenuAnchor)}
+          onClose={handleUserMenuClose}
+          PaperProps={{
+            sx: {
+              mt: 1,
+              minWidth: 200,
+              boxShadow: theme.palette.mode === 'dark' ? '0 8px 32px rgba(0,0,0,0.4)' : '0 8px 32px rgba(0,0,0,0.1)',
+              borderRadius: 2,
+              border: theme.palette.mode === 'dark' ? '1px solid #333' : '1px solid #e0e0e0',
+            },
+          }}
+          transformOrigin={{ horizontal: 'right', vertical: 'top' }}
+          anchorOrigin={{ horizontal: 'right', vertical: 'bottom' }}
+        >
+          <MenuItem onClick={handleProfileClick}>
             <ListItemIcon>
-              <Dashboard fontSize="small" />
+              <Person fontSize="small" />
             </ListItemIcon>
-            Admin Dashboard
+            Profile
           </MenuItem>
-        )}
-        <MenuItem onClick={handlePaymentsClick}>
-          <ListItemIcon>
-            <Payment fontSize="small" />
-          </ListItemIcon>
-          Payments & PDFs
-        </MenuItem>
-        <Divider />
-        <MenuItem onClick={handleLogout}>
-          <ListItemIcon>
-            <Logout fontSize="small" />
-          </ListItemIcon>
-          Logout
-        </MenuItem>
-      </Menu>
+          {isAdmin && (
+            <MenuItem onClick={handleDashboardClick}>
+              <ListItemIcon>
+                <Dashboard fontSize="small" />
+              </ListItemIcon>
+              Admin Dashboard
+            </MenuItem>
+          )}
+          <MenuItem onClick={handlePaymentsClick}>
+            <ListItemIcon>
+              <Payment fontSize="small" />
+            </ListItemIcon>
+            Payments & PDFs
+          </MenuItem>
+          <Divider />
+          <MenuItem onClick={handleLogout}>
+            <ListItemIcon>
+              <Logout fontSize="small" />
+            </ListItemIcon>
+            Logout
+          </MenuItem>
+        </Menu>
+      )}
 
       <LogSigComponent open={loginDialogOpen} onClose={handleLoginClose} redirectUrl={pathname}/>
     </>
   );
-}
+});
+
+export default Navbar;

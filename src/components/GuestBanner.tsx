@@ -1,15 +1,17 @@
 'use client';
 
 import React, { useState } from 'react';
-import { useAuth } from '@/contexts/AuthContext';
+import { useAuthUser, useAuthGuest } from '@/contexts/AuthContext';
 // import GuestUpgradeModal from './GuestUpgradeModal';
 import LogSigComponent from './ui/LogSig';
 import { useRouter } from 'next/navigation';
 
-export function GuestBanner() {
-  const { isGuest, user } = useAuth();
-  const router = useRouter();
+export default function GuestBanner() {
+  const isGuest = useAuthGuest();
+  const user = useAuthUser();
+  const [showBanner, setShowBanner] = useState(false);
   const [showUpgradeModal, setShowUpgradeModal] = useState(false);
+  const router = useRouter();
 
   // Listen for custom event to open upgrade modal
   React.useEffect(() => {
@@ -59,7 +61,7 @@ export function GuestBanner() {
             <button
               onClick={() => {
                 sessionStorage.setItem('guest_banner_dismissed', 'true');
-                window.location.reload();
+                router.refresh();
               }}
               className="text-white opacity-75 hover:opacity-100 transition-opacity"
             >
@@ -77,5 +79,3 @@ export function GuestBanner() {
     </>
   );
 }
-
-export default GuestBanner;

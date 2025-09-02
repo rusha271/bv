@@ -4,7 +4,7 @@ import { Form } from "@/components/forms/Form";
 import { FileUploadInput } from "@/components/forms/FileUploadInput";
 import Navbar from "@/components/ui/Navbar";
 import SocialIcons from "@/components/ui/SocialIcons";
-import { Box, Typography, Card, Container, Fade, IconButton, Dialog, CircularProgress, DialogContent } from "@mui/material";
+import { Box, Typography, Card, Container, Fade, IconButton, Dialog, CircularProgress, DialogContent, Button } from "@mui/material";
 import PlayCircleOutlineIcon from '@mui/icons-material/PlayCircleOutline';
 import * as yup from "yup";
 import dynamic from 'next/dynamic';
@@ -188,7 +188,7 @@ export default function Home() {
               onSubmit={handleSubmit}
               validationSchema={validationSchema}
               defaultValues={{ floorPlan: null }}
-              submitButtonText={isProcessing ? "Processing Image..." : (submitted ? "Processing..." : "DivyaVastu")}
+              submitButtonText={isProcessing || submitted ? "" : "DivyaVastu"}
               submitButtonProps={{
                 sx: {
                   mt: 3,
@@ -208,22 +208,31 @@ export default function Home() {
                       : "linear-gradient(90deg,#64b5f6 0%,#1976d2 100%)",
                     transform: "scale(1.03)",
                   },
+                  position: 'relative',
                 },
                 fullWidth: true,
                 size: "large",
                 className: "check-vastu-btn",
-                disabled: isProcessing || submitted
+                disabled: isProcessing || submitted,
+                startIcon: (isProcessing || submitted) ? (
+                  <CircularProgress 
+                    size={20} 
+                    sx={{ 
+                      color: theme.palette.primary.contrastText,
+                      mr: 1
+                    }} 
+                  />
+                ) : undefined
               }}
             >
               {({ control }: { control: any }) => (
                 <FileUploadInput name="floorPlan" control={control} className="file-upload" />
               )}
             </Form>
-            {isProcessing && (
+            {(isProcessing || submitted) && (
               <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', mt: 2 }}>
-                <CircularProgress size={24} sx={{ mr: 2 }} />
                 <Typography variant="body2" color="text.secondary">
-                  Processing your floor plan...
+                  {isProcessing ? "Processing your floor plan..." : "Preparing crop page..."}
                 </Typography>
               </Box>
             )}

@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
-import { useAuth } from '@/contexts/AuthContext';
+import { useAuthActions } from '@/contexts/AuthContext';
 
 interface GuestUpgradeModalProps {
   isOpen: boolean;
@@ -9,7 +9,7 @@ interface GuestUpgradeModalProps {
 }
 
 export function GuestUpgradeModal({ isOpen, onClose }: GuestUpgradeModalProps) {
-  const { upgradeGuestAccount, isLoading } = useAuth();
+  const { upgradeGuestAccount, isLoading } = useAuthActions();
   const [formData, setFormData] = useState({
     name: '',
     email: '',

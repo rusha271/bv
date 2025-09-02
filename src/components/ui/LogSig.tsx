@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, memo } from 'react';
 import {
   Box,
   Dialog,
@@ -37,7 +37,7 @@ import { LegalDocument } from './LegalDocument';
 import { toast } from 'react-hot-toast';
 import { useRouter } from 'next/navigation';
 import * as Yup from 'yup';
-import { useAuth } from '@/contexts/AuthContext';
+import { useAuthActions } from '@/contexts/AuthContext';
 
 // TypeScript Interfaces
 interface FormData {
@@ -151,12 +151,17 @@ function TabPanel({ children, value, index }: TabPanelProps) {
 }
 
 // Main Login/Signup Component
-export default function LogSigComponent({ open, onClose, prefillData, redirectUrl }: LogSigProps) {
+const LogSig = memo(function LogSig({ 
+  open, 
+  onClose, 
+  redirectUrl, 
+  prefillData = {} 
+}: LogSigProps) {
   const { isMobile } = useDeviceType();
   const { showTerms, showPrivacy, setShowTerms, setShowPrivacy } = useLegal();
   const theme = useTheme();
   const router = useRouter();
-  const { login, register } = useAuth();
+  const { login: authLogin, register: authRegister } = useAuthActions();
 
   const [tabValue, setTabValue] = useState(0);
   const [showPassword, setShowPassword] = useState(false);
@@ -183,6 +188,10 @@ export default function LogSigComponent({ open, onClose, prefillData, redirectUr
       phone: prefillData?.phone || '',
     });
   };
+
+  useEffect(() => {
+    // Remove console.log to prevent unnecessary renders
+  }, []);
 
   const handleInputChange = (field: keyof FormData) => (event: React.ChangeEvent<HTMLInputElement>) => {
     setFormData((prev) => ({
@@ -215,28 +224,26 @@ export default function LogSigComponent({ open, onClose, prefillData, redirectUr
 
   const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
-
+  
     const isSignup = tabValue === 1;
     const validation = await validateForm(formData, isSignup);
     setErrors(validation.errors);
-
+  
     if (!validation.isValid) return;
-
+  
     setIsLoading(true);
-
+  
     try {
       if (isSignup) {
-        await register(formData.fullName, formData.email, formData.password, rememberMe);
+        await authRegister(formData.fullName, formData.email, formData.password, rememberMe);
         toast.success('Signup successful!');
-        router.push(redirectUrl || '/');
+        router.push(redirectUrl || '/', { scroll: false });
       } else {
         console.log('Sending login request:', { email: formData.email });
-        await login(formData.email, formData.password, rememberMe);
-
+        await authLogin(formData.email, formData.password, rememberMe);
         console.log('Login successful');
-
         toast.success('Login successful!');
-        router.push(redirectUrl || '/');
+        router.push(redirectUrl || '/', { scroll: false });
       }
       onClose();
     } catch (error: any) {
@@ -603,4 +610,6 @@ export default function LogSigComponent({ open, onClose, prefillData, redirectUr
       <LegalDocument type="privacy" open={showPrivacy} onClose={() => setShowPrivacy(false)} />
     </>
   );
-}
+});
+
+export default LogSig;

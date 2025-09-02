@@ -1,6 +1,6 @@
 'use client';
 
-import React, { createContext, useContext, useEffect, useState, useCallback, useRef } from 'react';
+import React, { createContext, useContext, useEffect, useReducer, useCallback, useRef, useMemo } from 'react';
 import { apiService, User, AuthResponse } from '@/utils/apiService';
 
 // Simple JWT decode function (base64 decode)
@@ -103,12 +103,68 @@ const getTokenExpiryTime = (token: string): number | null => {
   }
 };
 
+// Auth state interface
+interface AuthState {
+  user: User | null;
+  isLoading: boolean;
+  isGuest: boolean;
+  refreshTimer: NodeJS.Timeout | null;
+}
+
+// Auth action types
+type AuthAction =
+  | { type: 'SET_LOADING'; payload: boolean }
+  | { type: 'SET_USER'; payload: User | null }
+  | { type: 'SET_GUEST'; payload: boolean }
+  | { type: 'SET_REFRESH_TIMER'; payload: NodeJS.Timeout | null }
+  | { type: 'LOGIN_SUCCESS'; payload: { user: User; isGuest: boolean } }
+  | { type: 'LOGOUT' }
+  | { type: 'CLEAR_TIMER' };
+
+// Auth reducer
+const authReducer = (state: AuthState, action: AuthAction): AuthState => {
+  switch (action.type) {
+    case 'SET_LOADING':
+      return { ...state, isLoading: action.payload };
+    case 'SET_USER':
+      return { ...state, user: action.payload };
+    case 'SET_GUEST':
+      return { ...state, isGuest: action.payload };
+    case 'SET_REFRESH_TIMER':
+      return { ...state, refreshTimer: action.payload };
+    case 'LOGIN_SUCCESS':
+      return { 
+        ...state, 
+        user: action.payload.user, 
+        isGuest: action.payload.isGuest,
+        isLoading: false 
+      };
+    case 'LOGOUT':
+      return { 
+        ...state, 
+        user: null, 
+        isGuest: false, 
+        refreshTimer: null 
+      };
+    case 'CLEAR_TIMER':
+      return { ...state, refreshTimer: null };
+    default:
+      return state;
+  }
+};
+
+// Initial state
+const initialState: AuthState = {
+  user: null,
+  isLoading: true,
+  isGuest: false,
+  refreshTimer: null,
+};
+
 // Auth Provider Component
 export function AuthProvider({ children }: { children: React.ReactNode }) {
-  const [user, setUser] = useState<User | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
-  const [refreshTimer, setRefreshTimer] = useState<NodeJS.Timeout | null>(null);
-  const [isGuest, setIsGuest] = useState(false);
+  const [state, dispatch] = useReducer(authReducer, initialState);
+  const { user, isLoading, isGuest, refreshTimer } = state;
   
   // Use ref to track current user state without causing re-renders
   const userRef = useRef<User | null>(null);
@@ -141,19 +197,19 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           const timeout = setTimeout(() => {
             refreshToken();
           }, refreshTime - now);
-          setRefreshTimer(timeout);
+          dispatch({ type: 'SET_REFRESH_TIMER', payload: timeout });
         }
       }
       
       // Update user if needed - use ref to avoid dependency issues
       if (!userRef.current) {
         const currentUser = await apiService.auth.me();
-        setUser(currentUser);
+        dispatch({ type: 'SET_USER', payload: currentUser });
       }
     } catch (error) {
       console.error('Token refresh failed:', error);
       clearStoredTokens();
-      setUser(null);
+      dispatch({ type: 'SET_USER', payload: null });
       throw error;
     }
   }, []); // Remove user dependency
@@ -163,7 +219,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     try {
       const tokens = getStoredTokens();
       if (!tokens) {
-        setIsLoading(false);
+        dispatch({ type: 'SET_LOADING', payload: false });
         return;
       }
 
@@ -175,7 +231,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         } catch {
           // If refresh fails, clear tokens and return
           clearStoredTokens();
-          setIsLoading(false);
+          dispatch({ type: 'SET_LOADING', payload: false });
           return;
         }
       } else {
@@ -189,23 +245,23 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             const timeout = setTimeout(() => {
               refreshToken();
             }, refreshTime - now);
-            setRefreshTimer(timeout);
+            dispatch({ type: 'SET_REFRESH_TIMER', payload: timeout });
           }
         }
         
         // Get current user and check if guest
         try {
           const currentUser = await apiService.auth.me();
-          setUser(currentUser);
+          dispatch({ type: 'SET_USER', payload: currentUser });
           
           // Check if current user is a guest
           try {
             const guestCheck = await apiService.auth.isGuest();
-            setIsGuest(guestCheck.is_guest);
+            dispatch({ type: 'SET_GUEST', payload: guestCheck.is_guest });
           } catch (error) {
             console.error('Failed to check guest status:', error);
             // Default to false if check fails
-            setIsGuest(false);
+            dispatch({ type: 'SET_GUEST', payload: false });
           }
         } catch (error) {
           console.error('Failed to get current user:', error);
@@ -216,58 +272,53 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       console.error('Auth initialization error:', error);
       clearStoredTokens();
     } finally {
-      setIsLoading(false);
+      dispatch({ type: 'SET_LOADING', payload: false });
     }
   }, [refreshToken]);
 
-  // Login function
+  // Login function - optimized to batch state updates
   const login = useCallback(async (email: string, password: string, rememberMe = false) => {
     try {
-      setIsLoading(true);
+      dispatch({ type: 'SET_LOADING', payload: true });
       const response = await apiService.auth.login({ email, password });
-      
-      // Convert AuthResponse to AuthTokens format
-      const authTokens: AuthTokens = {
-        access_token: response.access_token,
-        refresh_token: response.refresh_token // Use access token as refresh token for now
-      };
-      
+      const authTokens: AuthTokens = { access_token: response.access_token, refresh_token: response.refresh_token };
       storeTokens(authTokens, rememberMe);
-      
-      // Set up refresh timer for new token
+  
       const expiryTime = getTokenExpiryTime(response.access_token);
       if (expiryTime) {
         const refreshTime = expiryTime - (5 * 60 * 1000);
-        const now = Date.now();
-        
-        if (refreshTime > now) {
-          const timeout = setTimeout(() => {
-            refreshToken();
-          }, refreshTime - now);
-          setRefreshTimer(timeout);
+        if (refreshTime > Date.now()) {
+          const timeout = setTimeout(refreshToken, refreshTime - Date.now());
+          dispatch({ type: 'SET_REFRESH_TIMER', payload: timeout });
         }
       }
-      
-      // Convert response.user to User type by adding missing fields
+  
       const userData: User = {
         ...response.user,
+        role: { name: response.user.role },
         created_at: new Date().toISOString(),
-        updated_at: new Date().toISOString()
+        updated_at: new Date().toISOString(),
       };
-      setUser(userData);
-      setIsGuest(false);
+  
+      // Batch all state updates in a single dispatch
+      dispatch({ 
+        type: 'LOGIN_SUCCESS', 
+        payload: { 
+          user: userData, 
+          isGuest: false 
+        } 
+      });
     } catch (error) {
       console.error('Login failed:', error);
+      dispatch({ type: 'SET_LOADING', payload: false });
       throw error;
-    } finally {
-      setIsLoading(false);
     }
   }, [refreshToken]);
-
-  // Register function
+  
+  // Register function - optimized to batch state updates
   const register = useCallback(async (name: string, email: string, password: string, rememberMe = false) => {
     try {
-      setIsLoading(true);
+      dispatch({ type: 'SET_LOADING', payload: true });
       const response = await apiService.auth.register({ name, email, password });
       
       // Convert AuthResponse to AuthTokens format
@@ -288,27 +339,34 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           const timeout = setTimeout(() => {
             refreshToken();
           }, refreshTime - now);
-          setRefreshTimer(timeout);
+          dispatch({ type: 'SET_REFRESH_TIMER', payload: timeout });
         }
       }
       
-      // Convert response.user to User type by adding missing fields
+      // Convert response.user to User type by adding missing fields and converting role
       const userData: User = {
         ...response.user,
+        role: { name: response.user.role },
         created_at: new Date().toISOString(),
         updated_at: new Date().toISOString()
       };
-      setUser(userData);
-      setIsGuest(false);
+      
+      // Batch all state updates in a single dispatch
+      dispatch({ 
+        type: 'LOGIN_SUCCESS', 
+        payload: { 
+          user: userData, 
+          isGuest: false 
+        } 
+      });
     } catch (error) {
       console.error('Registration failed:', error);
+      dispatch({ type: 'SET_LOADING', payload: false });
       throw error;
-    } finally {
-      setIsLoading(false);
     }
   }, [refreshToken]);
 
-  // Logout function
+  // Logout function - optimized to batch state updates
   const logout = useCallback(async () => {
     try {
       // Call logout API if user is authenticated
@@ -320,21 +378,16 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     } finally {
       // Clear local state regardless of API call success
       clearStoredTokens();
-      setUser(null);
-      setIsGuest(false);
       
-      // Clear refresh timer
-      if (refreshTimer) {
-        clearTimeout(refreshTimer);
-        setRefreshTimer(null);
-      }
+      // Batch all state updates in a single dispatch
+      dispatch({ type: 'LOGOUT' });
     }
-  }, [refreshTimer]);
+  }, []);
 
-  // Create guest account function
+  // Create guest account function - optimized to batch state updates
   const createGuestAccount = useCallback(async () => {
     try {
-      setIsLoading(true);
+      dispatch({ type: 'SET_LOADING', payload: true });
       const response = await apiService.auth.createGuest();
       
       // Convert AuthResponse to AuthTokens format
@@ -355,30 +408,37 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           const timeout = setTimeout(() => {
             refreshToken();
           }, refreshTime - now);
-          setRefreshTimer(timeout);
+          dispatch({ type: 'SET_REFRESH_TIMER', payload: timeout });
         }
       }
       
-      // Convert response.user to User type by adding missing fields
+      // Convert response.user to User type by adding missing fields and converting role
       const userData: User = {
         ...response.user,
+        role: { name: response.user.role },
         created_at: new Date().toISOString(),
         updated_at: new Date().toISOString()
       };
-      setUser(userData);
-      setIsGuest(true);
+      
+      // Batch all state updates in a single dispatch
+      dispatch({ 
+        type: 'LOGIN_SUCCESS', 
+        payload: { 
+          user: userData, 
+          isGuest: true 
+        } 
+      });
     } catch (error) {
       console.error('Guest account creation failed:', error);
+      dispatch({ type: 'SET_LOADING', payload: false });
       throw error;
-    } finally {
-      setIsLoading(false);
     }
   }, [refreshToken]);
 
-  // Upgrade guest account function
+  // Upgrade guest account function - optimized to batch state updates
   const upgradeGuestAccount = useCallback(async (name: string, email: string, password: string, rememberMe = false) => {
     try {
-      setIsLoading(true);
+      dispatch({ type: 'SET_LOADING', payload: true });
       const response = await apiService.auth.upgradeGuest({ name, email, password });
       
       // Convert AuthResponse to AuthTokens format
@@ -399,30 +459,40 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           const timeout = setTimeout(() => {
             refreshToken();
           }, refreshTime - now);
-          setRefreshTimer(timeout);
+          dispatch({ type: 'SET_REFRESH_TIMER', payload: timeout });
         }
       }
       
-      // Convert response.user to User type by adding missing fields
+      // Convert response.user to User type by adding missing fields and converting role
       const userData: User = {
         ...response.user,
+        role: { name: response.user.role },
         created_at: new Date().toISOString(),
         updated_at: new Date().toISOString()
       };
-      setUser(userData);
-      setIsGuest(false);
+      
+      // Batch all state updates in a single dispatch
+      dispatch({ 
+        type: 'LOGIN_SUCCESS', 
+        payload: { 
+          user: userData, 
+          isGuest: false 
+        } 
+      });
     } catch (error) {
       console.error('Guest account upgrade failed:', error);
+      dispatch({ type: 'SET_LOADING', payload: false });
       throw error;
-    } finally {
-      setIsLoading(false);
     }
   }, [refreshToken]);
 
   // Update user function
   const updateUser = useCallback((userData: Partial<User>) => {
-    setUser(prev => prev ? { ...prev, ...userData } : null);
-  }, []);
+    if (user) {
+      const updatedUser = { ...user, ...userData };
+      dispatch({ type: 'SET_USER', payload: updatedUser });
+    }
+  }, [user]);
 
   // Handle storage changes (cross-tab sync)
   useEffect(() => {
@@ -451,7 +521,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     };
   }, [refreshTimer]);
 
-  const value: AuthContextType = {
+  // Memoize the context value to prevent unnecessary re-renders
+  const value = useMemo<AuthContextType>(() => ({
     user,
     isAuthenticated: !!user,
     isLoading,
@@ -463,7 +534,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     logout,
     refreshToken,
     updateUser,
-  };
+  }), [user, isLoading, isGuest, login, register, createGuestAccount, upgradeGuestAccount, logout, refreshToken, updateUser]);
 
   return (
     <AuthContext.Provider value={value}>
@@ -479,6 +550,47 @@ export function useAuth() {
     throw new Error('useAuth must be used within an AuthProvider');
   }
   return context;
+}
+
+// Selective auth hooks to prevent unnecessary re-renders
+export function useAuthUser() {
+  const context = useContext(AuthContext);
+  if (context === undefined) {
+    throw new Error('useAuthUser must be used within an AuthProvider');
+  }
+  return context.user;
+}
+
+export function useAuthLoading() {
+  const context = useContext(AuthContext);
+  if (context === undefined) {
+    throw new Error('useAuthLoading must be used within an AuthProvider');
+  }
+  return context.isLoading;
+}
+
+export function useAuthGuest() {
+  const context = useContext(AuthContext);
+  if (context === undefined) {
+    throw new Error('useAuthGuest must be used within an AuthProvider');
+  }
+  return context.isGuest;
+}
+
+export function useAuthActions() {
+  const context = useContext(AuthContext);
+  if (context === undefined) {
+    throw new Error('useAuthActions must be used within an AuthProvider');
+  }
+  return {
+    login: context.login,
+    register: context.register,
+    createGuestAccount: context.createGuestAccount,
+    upgradeGuestAccount: context.upgradeGuestAccount,
+    logout: context.logout,
+    refreshToken: context.refreshToken,
+    updateUser: context.updateUser,
+  };
 }
 
 // Export for convenience

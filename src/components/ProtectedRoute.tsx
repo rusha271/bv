@@ -1,9 +1,10 @@
 'use client';
 
 import React from 'react';
-import { useAuth } from '@/contexts/AuthContext';
+import { useAuthUser, useAuthLoading, useAuthGuest } from '@/contexts/AuthContext';
 import { hasPermission, PERMISSIONS, isGuestUser } from '@/utils/permissions';
 import { User } from '@/utils/apiService';
+import { useRouter } from 'next/navigation';
 
 interface ProtectedRouteProps {
   children: React.ReactNode;
@@ -14,7 +15,7 @@ interface ProtectedRouteProps {
   redirectTo?: string;
 }
 
-export function ProtectedRoute({
+export default function ProtectedRoute({
   children,
   requiredPermission,
   requiredRole,
@@ -22,7 +23,13 @@ export function ProtectedRoute({
   fallback,
   redirectTo
 }: ProtectedRouteProps) {
-  const { user, isAuthenticated, isLoading, isGuest } = useAuth();
+  const user = useAuthUser();
+  const isLoading = useAuthLoading();
+  const isGuest = useAuthGuest();
+  
+  // Check if user is authenticated
+  const isAuthenticated = !!user;
+  const router = useRouter();
 
   // Show loading state while auth is initializing
   if (isLoading) {
@@ -40,8 +47,8 @@ export function ProtectedRoute({
     }
     
     if (redirectTo) {
-      // In a real app, you'd use Next.js router here
-      window.location.href = redirectTo;
+      // Use Next.js router for client-side navigation
+      router.push(redirectTo);
       return null;
     }
     
@@ -51,7 +58,7 @@ export function ProtectedRoute({
           <h2 className="text-2xl font-bold text-gray-900 mb-4">Authentication Required</h2>
           <p className="text-gray-600 mb-4">Please log in to access this page.</p>
           <button
-            onClick={() => window.location.href = '/login'}
+            onClick={() => router.push('/login')}
             className="bg-blue-600 text-white px-6 py-2 rounded-md hover:bg-blue-700 transition-colors"
           >
             Go to Login
@@ -95,7 +102,7 @@ export function ProtectedRoute({
   }
 
   // Check required role
-  if (requiredRole && user.role !== requiredRole) {
+  if (requiredRole && user.role.name !== requiredRole) {
     if (fallback) {
       return <>{fallback}</>;
     }
@@ -149,5 +156,3 @@ export function ProtectedRoute({
   // All checks passed, render children
   return <>{children}</>;
 }
-
-export default ProtectedRoute;

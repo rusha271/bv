@@ -1,9 +1,12 @@
 'use client';
 
 import { useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import api from '@/utils/axios';
 
 export default function AutoPollingWatcher() {
+  const router = useRouter();
+
   useEffect(() => {
     const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
     const endpoints = [
@@ -16,7 +19,9 @@ export default function AutoPollingWatcher() {
           const res = await api.get(endpoint.replace('trigger-reload', 'should-reload'));
           const data = res.data;
           if (data?.reload) {
-            window.location.reload();
+            // Use router.refresh() for client-side refresh instead of full page reload
+            // This preserves the current page state while refreshing data
+            router.refresh();
             break;
           }
         }
@@ -26,7 +31,7 @@ export default function AutoPollingWatcher() {
     }, 3001);
 
     return () => clearInterval(interval);
-  }, []);
+  }, [router]);
 
   return null;
 }

@@ -1,14 +1,19 @@
 'use client';
 
 import { useEffect } from 'react';
-import { useAuth } from '@/contexts/AuthContext';
+import { useAuthUser, useAuthActions } from '@/contexts/AuthContext';
 
 interface GuestAccountManagerProps {
   children: React.ReactNode;
 }
 
-export function GuestAccountManager({ children }: GuestAccountManagerProps) {
-  const { user, isAuthenticated, isLoading, createGuestAccount } = useAuth();
+export default function GuestAccountManager({ children }: { children: React.ReactNode }) {
+  const user = useAuthUser();
+  const { createGuestAccount } = useAuthActions();
+  
+  // Check if user is authenticated
+  const isAuthenticated = !!user;
+  const isLoading = false; // We don't need loading state for this component
 
   useEffect(() => {
     // Only create guest account if:
@@ -41,5 +46,3 @@ export function GuestAccountManager({ children }: GuestAccountManagerProps) {
 
   return <>{children}</>;
 }
-
-export default GuestAccountManager;
