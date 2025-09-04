@@ -63,7 +63,7 @@ const BlogCard: React.FC<BlogCardProps> = ({
       {/* Image Section */}
       <div className="relative w-full aspect-[4/2]">
         <Image
-          src={image}
+          src={image} 
           alt={title}
           fill
           className="object-cover group-hover:scale-115 transition-transform duration-500 ease-in-out"
@@ -72,6 +72,7 @@ const BlogCard: React.FC<BlogCardProps> = ({
           }}
         />
       </div>
+
 
       {/* Content Section */}
       <div className="flex-1 flex flex-col" style={{ padding }}>

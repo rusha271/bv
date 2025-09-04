@@ -272,13 +272,15 @@ export default function PostUploadSection({ onUpload }: { onUpload?: () => void 
       formData.append("title", data.title);
       formData.append("content", data.content);
       formData.append("category", data.category);
-      if (data.image) {
-        formData.append("image", data.image); // Back to original field name
+      if (data.image instanceof File) {
+        formData.append("image", data.image); 
         console.log('Image file details:', {
           name: data.image.name,
           size: data.image.size,
           type: data.image.type
         });
+      } else {
+        console.warn("No valid image file selected");
       }
   
       // Debug: Log FormData contents
