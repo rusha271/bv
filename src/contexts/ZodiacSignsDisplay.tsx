@@ -2,7 +2,7 @@
 
 import React from "react";
 import { useThemeContext } from "@/contexts/ThemeContext";
-import ZodiacSignCard from "@/components/ZodiacSignCard";
+import ZodiacSignCard from "@/components/Card/ZodiacSignCard";
 
 const zodiacSigns = [
   {

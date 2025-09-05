@@ -4,16 +4,16 @@ import React, { useState } from 'react';
 import Navbar from '@/components/ui/Navbar';
 import Footer from '@/components/ui/Footer';
 import dynamic from 'next/dynamic';
-import PostUploadSection from '@/components/PostUploadSection';
-const BlogCardsList = dynamic(() => import('@/components/BlogCardsList'), {
+import PostUploadSection from '@/components/forms/PostUploadSection';
+const BlogCardsList = dynamic(() => import('@/components/Card/BlogCardsList'), {
   ssr: true,
   loading: () => <div style={{ height: '200px', textAlign: 'center' }}>Loading...</div>,
 });
-const VideoCardsList = dynamic(() => import('@/components/VideoCardsList'), {
+const VideoCardsList = dynamic(() => import('@/components/Card/VideoCardsList'), {
   ssr: true,
   loading: () => <div style={{ height: '200px', textAlign: 'center' }}>Loading...</div>,
 });
-const BookCardsList = dynamic(() => import('@/components/BookCardsList'), {
+const BookCardsList = dynamic(() => import('@/components/Card/BookCardsList'), {
   ssr: true,
   loading: () => <div style={{ height: '200px', textAlign: 'center' }}>Loading...</div>,
 });

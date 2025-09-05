@@ -7,13 +7,13 @@ import { AuthProvider } from '../contexts/AuthContext';
 import { LoadingProvider } from '../contexts/LoadingContext';
 import { PlanetaryDataProvider } from '@/contexts/PlanetaryDataContext';
 import { LegalProvider } from '@/contexts/LegalContent';
-import Chatbot from '@/components/Chatbot';
-import ClientOnly from '@/components/ClientOnly';
+import Chatbot from '@/components/Bot/Chatbot';
+import ClientOnly from '@/components/Auth/ClientOnly';
 import ReduxProvider from '@/components/providers/ReduxProvider';
-import Toast from "@/components/ui/Toast";
-import GuestAccountManager from '@/components/GuestAccountManager';
-import GuestBanner from '@/components/GuestBanner';
-import SmartPageLoader from '@/components/ui/SmartPageLoader';
+import Toast from "@/components/Toast/Toast";
+import GuestAccountManager from '@/components/Guest Components/GuestAccountManager';
+import GuestBanner from '@/components/Guest Components/GuestBanner';
+import SmartPageLoader from '@/components/Loader/SmartPageLoader';
 
 export const metadata: Metadata = {
   title: {

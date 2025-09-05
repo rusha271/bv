@@ -3,7 +3,7 @@ import { useState } from "react";
 import { Form } from "@/components/forms/Form";
 import { FileUploadInput } from "@/components/forms/FileUploadInput";
 import Navbar from "@/components/ui/Navbar";
-import SocialIcons from "@/components/ui/SocialIcons";
+import SocialIcons from "@/components/Icons/SocialIcons";
 import { Box, Typography, Card, Container, Fade, IconButton, Dialog, CircularProgress, DialogContent, Button } from "@mui/material";
 import PlayCircleOutlineIcon from '@mui/icons-material/PlayCircleOutline';
 import * as yup from "yup";
@@ -12,7 +12,7 @@ import { useThemeContext } from '@/contexts/ThemeContext';
 import { useRouter } from 'next/navigation';
 import { sessionStorageManager } from '@/utils/sessionStorage';
 
-const ProductTour = dynamic(() => import('@/components/ui/ProductTour'), { ssr: false });
+const ProductTour = dynamic(() => import('@/components/Tour/ProductTour'), { ssr: false });
 
 const validationSchema = yup.object({
   floorPlan: yup

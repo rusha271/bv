@@ -6,7 +6,7 @@ import { useDeviceType } from '@/utils/useDeviceType';
 import { useAppDispatch, useAppSelector } from '@/store';
 import { fetchBooks, clearBooksError } from '@/store/slices/blogSlice';
 import { Book } from '@/utils/apiService';
-import ErrorDisplay from '@/components/ui/ErrorDisplay';
+import ErrorDisplay from '@/components/Error/ErrorDisplay';
 import { CircularProgress, Box, Typography } from '@mui/material';
 
 interface BookCardProps {

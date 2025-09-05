@@ -1,18 +1,8 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import {
-  LineChart,
-  Line,
-  XAxis,
-  YAxis,
-  CartesianGrid,
-  Tooltip,
-  ResponsiveContainer,
-  Area,
-  AreaChart
-} from "recharts";
 import { BarChart3, TrendingUp } from "lucide-react";
+
 
 // Dummy data for visitor sessions over the last 30 days
 const generateDummyData = () => {
@@ -63,22 +53,9 @@ export default function OrganicSessionsChart() {
     fetchSessionsData();
   }, []);
 
-  const CustomTooltip = ({ active, payload, label }: any) => {
-    if (active && payload && payload.length) {
-      return (
-        <div className="bg-white p-3 border border-gray-200 rounded-lg shadow-lg">
-          <p className="text-sm font-medium text-gray-900">{label}</p>
-          <p className="text-sm text-blue-600">
-            Sessions: {payload[0].value}
-          </p>
-          <p className="text-sm text-green-600">
-            Visitors: {payload[1].value}
-          </p>
-        </div>
-      );
-    }
-    return null;
-  };
+  // Simple chart data display without Recharts
+  const maxSessions = Math.max(...data.map(d => d.sessions));
+  const maxVisitors = Math.max(...data.map(d => d.visitors));
 
   if (loading) {
     return (
@@ -115,53 +92,34 @@ export default function OrganicSessionsChart() {
         </div>
       )}
 
-      <div className="h-64">
-        <ResponsiveContainer width="100%" height="100%">
-          <AreaChart data={data} margin={{ top: 5, right: 30, left: 20, bottom: 5 }}>
-            <defs>
-              <linearGradient id="colorSessions" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="5%" stopColor="#3B82F6" stopOpacity={0.3}/>
-                <stop offset="95%" stopColor="#3B82F6" stopOpacity={0}/>
-              </linearGradient>
-              <linearGradient id="colorVisitors" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="5%" stopColor="#10B981" stopOpacity={0.3}/>
-                <stop offset="95%" stopColor="#10B981" stopOpacity={0}/>
-              </linearGradient>
-            </defs>
-            <CartesianGrid strokeDasharray="3 3" stroke="#E5E7EB" />
-            <XAxis 
-              dataKey="date" 
-              stroke="#6B7280"
-              fontSize={12}
-              tickLine={false}
-              axisLine={false}
-            />
-            <YAxis 
-              stroke="#6B7280"
-              fontSize={12}
-              tickLine={false}
-              axisLine={false}
-              tickFormatter={(value) => `${value}`}
-            />
-            <Tooltip content={<CustomTooltip />} />
-            <Area
-              type="monotone"
-              dataKey="sessions"
-              stroke="#3B82F6"
-              strokeWidth={2}
-              fillOpacity={1}
-              fill="url(#colorSessions)"
-            />
-            <Area
-              type="monotone"
-              dataKey="visitors"
-              stroke="#10B981"
-              strokeWidth={2}
-              fillOpacity={1}
-              fill="url(#colorVisitors)"
-            />
-          </AreaChart>
-        </ResponsiveContainer>
+      <div className="h-64 p-4">
+        <div className="h-full flex items-end justify-between space-x-1">
+          {data.slice(-14).map((item, index) => (
+            <div key={index} className="flex flex-col items-center flex-1">
+              <div className="w-full flex flex-col items-center space-y-1">
+                <div 
+                  className="w-full bg-blue-500 rounded-t"
+                  style={{ 
+                    height: `${(item.sessions / maxSessions) * 120}px`,
+                    minHeight: '4px'
+                  }}
+                  title={`Sessions: ${item.sessions}`}
+                ></div>
+                <div 
+                  className="w-full bg-green-500 rounded-t"
+                  style={{ 
+                    height: `${(item.visitors / maxVisitors) * 120}px`,
+                    minHeight: '4px'
+                  }}
+                  title={`Visitors: ${item.visitors}`}
+                ></div>
+              </div>
+              <div className="text-xs text-gray-500 mt-2 transform -rotate-45 origin-left">
+                {item.date}
+              </div>
+            </div>
+          ))}
+        </div>
       </div>
 
       <div className="flex items-center justify-center mt-4 space-x-6">

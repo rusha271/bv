@@ -33,7 +33,7 @@ import {
 } from '@mui/icons-material';
 import { useDeviceType } from '../../utils/useDeviceType';
 import { useLegal } from '../../contexts/LegalContent';
-import { LegalDocument } from './LegalDocument';
+import { LegalDocument } from '../Policies/LegalDocument';
 import { toast } from 'react-hot-toast';
 import * as Yup from 'yup';
 import { useAuthActions } from '@/contexts/AuthContext';

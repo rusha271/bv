@@ -1,12 +1,12 @@
 "use client";
 
 import React, { useEffect, useRef } from "react";
-import BlogCard from "@/components/BlogCard";
+import BlogCard from "@/components/Card/BlogCard";
 import { useThemeContext } from "@/contexts/ThemeContext";
 import { useDeviceType } from "@/utils/useDeviceType";
 import { useAppDispatch, useAppSelector } from "@/store";
 import { fetchTips, clearTipsError } from "@/store/slices/blogSlice";
-import ErrorDisplay from "@/components/ui/ErrorDisplay";
+import ErrorDisplay from "@/components/Error/ErrorDisplay";
 import { CircularProgress, Box } from "@mui/material";
 
 const LoadingSpinner = () => {

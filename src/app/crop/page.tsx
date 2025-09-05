@@ -6,19 +6,19 @@ import { useThemeContext } from '@/contexts/ThemeContext';
 import { useDeviceType } from '@/utils/useDeviceType';
 import Navbar from '@/components/ui/Navbar';
 import Footer from '@/components/ui/Footer';
-import ImageCropper from '@/components/ui/ImageCropper';
+import ImageCropper from '@/components/Image Crop/ImageCropper';
 import { Box, Typography, Container, Skeleton , CircularProgress } from '@mui/material';
 import { useRouter } from 'next/navigation';
 import styles from './cropPage.module.css';
-import Disclaimer from '@/components/ui/Disclaimer';
+import Disclaimer from '@/components/Policies/Disclaimer';
 import { sessionStorageManager } from '@/utils/sessionStorage';
 import { Dialog, DialogContent } from '@mui/material'; // Add Dialog and DialogContent if not already imported
 
 // const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
 
 // Lazy load components
-const Vastu3DAnimation = React.lazy(() => import('@/components/ui/Vastu3DAnimation'));
-const ZodiacSignsDisplay = React.lazy(() => import('@/components/ui/ZodiacSignsDisplay'));
+const Vastu3DAnimation = React.lazy(() => import('@/components/Animations/Vastu3DAnimation'));
+const ZodiacSignsDisplay = React.lazy(() => import('@/contexts/ZodiacSignsDisplay'));
 
 function FadeInSection({ children }: { children: React.ReactNode }) {
   return <div className={styles.animateFadein}>{children}</div>;

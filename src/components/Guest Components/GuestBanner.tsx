@@ -3,7 +3,7 @@
 import React, { useState } from 'react';
 import { useAuthUser, useAuthGuest } from '@/contexts/AuthContext';
 // import GuestUpgradeModal from './GuestUpgradeModal';
-import LogSigComponent from './ui/LogSig';
+import LogSigComponent from '../Auth/LogSig';
 import { useRouter } from 'next/navigation';
 
 export default function GuestBanner() {

@@ -27,14 +27,14 @@ import {
   Warning as WarningIcon,
 } from '@mui/icons-material';
 import Lottie from 'lottie-react'; // Import Lottie
-import happyAnimation from '../../public/smile.json'; // Example: Replace with your downloaded JSON files
+import happyAnimation from '../../../public/smile.json'; // Example: Replace with your downloaded JSON files
 //import idleAnimation from './animations/idle.json';
-import thinkingAnimation from '../../public/thinking.json';
-import confusedAnimation from '../../public/confusion.json';
-import errorAnimation from '../../public/error.json';
-import excitedAnimation from '../../public/smile.json';
+import thinkingAnimation from '../../../public/thinking.json';
+import confusedAnimation from '../../../public/confusion.json';
+import errorAnimation from '../../../public/error.json';
+import excitedAnimation from '../../../public/smile.json';
 // import sadAnimation from './animations/sad.json';
-import sleepingAnimation from '../../public/sleeping.json';
+import sleepingAnimation from '../../../public/sleeping.json';
 import { useThemeContext } from '@/contexts/ThemeContext';
 import { useDeviceType } from '@/utils/useDeviceType';
 

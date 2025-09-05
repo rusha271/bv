@@ -9,7 +9,7 @@ import { CircularProgress, Skeleton } from '@mui/material';
 import dynamic from 'next/dynamic';
 import { useLazyLoad } from '@/hooks/useLazyLoad';
 
-const ChakraEditor = dynamic(() => import('@/components/ui/ChakraEditor'), { ssr: false });
+const ChakraEditor = dynamic(() => import('@/components/Image Crop/ChakraEditor'), { ssr: false });
 
 export default function ChakraOverlayPage() {
   const [floorPlanImageUrl, setFloorPlanImageUrl] = useState<string | null>(null);
