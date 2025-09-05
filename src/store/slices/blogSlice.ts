@@ -1,5 +1,6 @@
 import { createSlice, createAsyncThunk, PayloadAction } from '@reduxjs/toolkit';
 import { apiService } from '@/utils/apiService';
+import { cachedApiCall } from '@/utils/apiCache';
 
 // Async thunks for Books
 export const fetchBooks = createAsyncThunk(
@@ -26,7 +27,12 @@ export const fetchVideos = createAsyncThunk(
   'blog/fetchVideos',
   async (_, { rejectWithValue }) => {
     try {
-      const response = await apiService.videos.getAll();
+      const response = await cachedApiCall(
+        () => apiService.videos.getAll(),
+        '/api/blog/videos',
+        undefined,
+        { ttl: 10 * 60 * 1000 } // Cache for 10 minutes
+      );
       return response;
     } catch (error: any) {
       return rejectWithValue(error.message || 'Failed to fetch videos');

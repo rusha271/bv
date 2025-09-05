@@ -90,6 +90,19 @@ export default function PostUploadSection({ onUpload }: { onUpload?: () => void 
     formState: { errors: bookErrors },
   } = useForm({
     resolver: yupResolver(bookSchema),
+    defaultValues: {
+      title: '',
+      author: '',
+      summary: '',
+      pdf: undefined,
+      rating: null,
+      pages: null,
+      price: null,
+      publication_year: null,
+      publisher: '',
+      category: '',
+      isbn: '',
+    },
   });
 
   // Video form
@@ -101,6 +114,12 @@ export default function PostUploadSection({ onUpload }: { onUpload?: () => void 
     formState: { errors: videoErrors },
   } = useForm({
     resolver: yupResolver(videoSchema),
+    defaultValues: {
+      title: '',
+      description: '',
+      video: undefined,
+      category: '',
+    },
   });
 
   // Tip form
@@ -112,6 +131,12 @@ export default function PostUploadSection({ onUpload }: { onUpload?: () => void 
     formState: { errors: tipErrors },
   } = useForm({
     resolver: yupResolver(tipSchema),
+    defaultValues: {
+      title: '',
+      content: '',
+      category: '',
+      image: undefined,
+    },
   });
 
   // Handlers
@@ -155,16 +180,29 @@ export default function PostUploadSection({ onUpload }: { onUpload?: () => void 
 
   const onBookSubmit = async (data: any) => {
     setLoading(true);
-    setTimeout(() => {
-      setLoading(false);
-    }, 2000);
     setError('');
+    
     try {
       const formData = new FormData();
+      
+      // Required fields
       formData.append('title', data.title);
       formData.append('author', data.author);
       formData.append('summary', data.summary);
-      formData.append('pdf', data.pdf); // Back to original field name
+      
+      // PDF file (required)
+      if (data.pdf instanceof File) {
+        formData.append('pdf', data.pdf);
+        console.log('PDF file details:', {
+          name: data.pdf.name,
+          size: data.pdf.size,
+          type: data.pdf.type
+        });
+      } else {
+        throw new Error('PDF file is required');
+      }
+      
+      // Optional fields
       if (data.rating) formData.append('rating', String(data.rating));
       if (data.pages) formData.append('pages', String(data.pages));
       if (data.price) formData.append('price', String(data.price));
@@ -174,73 +212,93 @@ export default function PostUploadSection({ onUpload }: { onUpload?: () => void 
       if (data.isbn) formData.append('isbn', data.isbn);
   
       // Debug: Log FormData contents
-      console.log('Book FormData contents:');
+      console.log('📚 Book FormData payload:');
       for (let [key, value] of formData.entries()) {
-        console.log(key, value instanceof File ? `File: ${value.name} (${value.size} bytes)` : value);
+        console.log(`  ${key}:`, value instanceof File ? `File: ${value.name} (${value.size} bytes, ${value.type})` : value);
       }
   
-      const response = await apiService.books.create(formData as any);
+      const response = await apiService.books.create(formData);
       if (response) {
         setSuccess('Book uploaded successfully!');
         resetBook();
         setBookFileName(null);
+        // Reset file input
+        const fileInput = document.querySelector('input[type="file"][accept=".pdf"]') as HTMLInputElement;
+        if (fileInput) fileInput.value = '';
         onUpload?.();
       } else {
-        setError('Failed to upload book.');
+        setError('Failed to upload book: No response from server.');
       }
     } catch (error: any) {
-      console.error('API Error:', error);
-      const errorMessage = error.message || 'An error occurred while uploading the book.';
+      console.error('❌ Book Upload Error:', error);
+      let errorMessage = error.message || 'An error occurred while uploading the book.';
+      
+      if (error.response?.status === 404) {
+        errorMessage = 'Book upload endpoint not found. Please contact support.';
+      } else if (error.response?.status === 401) {
+        errorMessage = 'Unauthorized: Please log in to upload a book.';
+      } else if (error.response?.status === 400) {
+        errorMessage = error.response.data?.detail || 'Invalid input data.';
+      } else if (error.response?.status === 413) {
+        errorMessage = 'File too large. Please upload a smaller PDF file.';
+      }
+      
       setError(errorMessage);
+    } finally {
+      setLoading(false);
     }
   };
   
   const onVideoSubmit = async (data: any) => {
     setLoading(true);
-    setTimeout(() => {
-      setLoading(false);
-    }, 2000);
     setError('');
+    
     try {
       const formData = new FormData();
   
-      // Append required fields with validation
-      if (!data.title) throw new Error('Title is required');
+      // Required fields
       formData.append('title', data.title);
-  
-      if (!data.description) throw new Error('Description is required');
       formData.append('description', data.description);
   
-      if (!(data.video instanceof File)) throw new Error('Video file is not a valid File object');
-      console.log('Video file details:', {
-        name: data.video.name,
-        size: data.video.size,
-        type: data.video.type
-      });
-      formData.append('video', data.video); // Back to original field name
-  
-      // Create thumbnail file from canvas
-      if (videoThumbnail) {
-        // Convert base64 to blob and create a file
-        const response = await fetch(videoThumbnail);
-        const blob = await response.blob();
-        const thumbnailFile = new File([blob], 'thumbnail.png', { type: 'image/png' });
-        formData.append('thumbnail', thumbnailFile);
-        console.log('Thumbnail file created:', {
-          name: thumbnailFile.name,
-          size: thumbnailFile.size,
-          type: thumbnailFile.type
+      // Video file (required)
+      if (data.video instanceof File) {
+        formData.append('video', data.video);
+        console.log('Video file details:', {
+          name: data.video.name,
+          size: data.video.size,
+          type: data.video.type
         });
+      } else {
+        throw new Error('Video file is required');
       }
   
+      // Create thumbnail file from canvas (auto-generated)
+      if (videoThumbnail) {
+        try {
+          const response = await fetch(videoThumbnail);
+          const blob = await response.blob();
+          const thumbnailFile = new File([blob], 'thumbnail.png', { type: 'image/png' });
+          formData.append('thumbnail', thumbnailFile);
+          console.log('Thumbnail file created:', {
+            name: thumbnailFile.name,
+            size: thumbnailFile.size,
+            type: thumbnailFile.type
+          });
+        } catch (thumbnailError) {
+          console.warn('Failed to create thumbnail:', thumbnailError);
+          // Continue without thumbnail - backend can generate one
+        }
+      }
+  
+      // Optional fields
       if (data.category) {
         formData.append('category', data.category);
       }
   
       // Debug: Log FormData contents
-      console.log('Video FormData contents:');
+      console.log('🎥 Video FormData payload:');
       for (let [key, value] of formData.entries()) {
-        console.log(key, value instanceof File ? `File: ${value.name} (${value.size} bytes)` : value);
+        console.log(`  ${key}:`, value instanceof File ? `File: ${value.name} (${value.size} bytes, ${value.type})` : value);
       }
   
       // Call API
@@ -251,68 +309,99 @@ export default function PostUploadSection({ onUpload }: { onUpload?: () => void 
         resetVideo();
         setVideoPreview(null);
         setVideoThumbnail(null);
+        // Reset file input
+        const fileInput = document.querySelector('input[type="file"][accept="video/*"]') as HTMLInputElement;
+        if (fileInput) fileInput.value = '';
         onUpload?.();
       } else {
         setError('Failed to upload video: No response from server.');
       }
     } catch (error: any) {
-      console.error('API Error:', error.response?.data || error.message);
-      const errorMessage =
-        error.response?.data?.detail ||
-        error.message ||
-        'An error occurred while uploading the video.';
+      console.error('❌ Video Upload Error:', error);
+      let errorMessage = error.message || 'An error occurred while uploading the video.';
+      
+      if (error.response?.status === 404) {
+        errorMessage = 'Video upload endpoint not found. Please contact support.';
+      } else if (error.response?.status === 401) {
+        errorMessage = 'Unauthorized: Please log in to upload a video.';
+      } else if (error.response?.status === 400) {
+        errorMessage = error.response.data?.detail || 'Invalid input data.';
+      } else if (error.response?.status === 413) {
+        errorMessage = 'File too large. Please upload a smaller video file.';
+      } else if (error.response?.status === 415) {
+        errorMessage = 'Unsupported video format. Please use MP4, AVI, or MOV files.';
+      }
+      
       setError(errorMessage);
+    } finally {
+      setLoading(false);
     }
   };
   
   const onTipSubmit = async (data: any) => {
     setLoading(true);
-    setTimeout(() => {
-      setLoading(false);
-    }, 2000);
     setError('');
   
     try {
       const formData = new FormData();
+      
+      // Required fields
       formData.append("title", data.title);
       formData.append("content", data.content);
-      formData.append("category", data.category);
+      
+      // Image file (required)
       if (data.image instanceof File) {
-        formData.append("image", data.image); 
+        formData.append("image", data.image);
         console.log('Image file details:', {
           name: data.image.name,
           size: data.image.size,
           type: data.image.type
         });
       } else {
-        console.warn("No valid image file selected");
+        throw new Error('Image file is required');
+      }
+      
+      // Optional fields
+      if (data.category) {
+        formData.append("category", data.category);
       }
   
       // Debug: Log FormData contents
-      console.log('Tip FormData contents:');
+      console.log('💡 Tip FormData payload:');
       for (let [key, value] of formData.entries()) {
-        console.log(key, value instanceof File ? `File: ${value.name} (${value.size} bytes)` : value);
+        console.log(`  ${key}:`, value instanceof File ? `File: ${value.name} (${value.size} bytes, ${value.type})` : value);
       }
   
       const response = await apiService.tips.create(formData);
       if (response) {
         setSuccess("Tip uploaded successfully!");
         resetTip();
+        // Reset file input
+        const fileInput = document.querySelector('input[type="file"][accept="image/*"]') as HTMLInputElement;
+        if (fileInput) fileInput.value = '';
         onUpload?.();
       } else {
         setError("Failed to upload tip: No response from server.");
       }
     } catch (error: any) {
-      console.error("API Error:", error);
+      console.error("❌ Tip Upload Error:", error);
       let errorMessage = error.message || "An error occurred while uploading the tip.";
+      
       if (error.response?.status === 404) {
         errorMessage = "Tip upload endpoint not found. Please contact support.";
       } else if (error.response?.status === 401) {
         errorMessage = "Unauthorized: Please log in to upload a tip.";
       } else if (error.response?.status === 400) {
-        errorMessage = error.response.data.detail || "Invalid input data.";
+        errorMessage = error.response.data?.detail || "Invalid input data.";
+      } else if (error.response?.status === 413) {
+        errorMessage = "File too large. Please upload a smaller image file.";
+      } else if (error.response?.status === 415) {
+        errorMessage = "Unsupported image format. Please use JPEG, PNG, or WebP files.";
       }
+      
       setError(errorMessage);
+    } finally {
+      setLoading(false);
     }
   };
   
@@ -390,6 +479,7 @@ export default function PostUploadSection({ onUpload }: { onUpload?: () => void 
                       accept=".pdf"
                       onChange={handleBookFile}
                       style={{ display: 'block', marginBottom: 8 }}
+                      value=""
                     />
                     {bookErrors.pdf && (
                       <Typography color="error" variant="body2">{bookErrors.pdf.message}</Typography>
@@ -471,6 +561,7 @@ export default function PostUploadSection({ onUpload }: { onUpload?: () => void 
                       accept="video/*"
                       onChange={handleVideoFile}
                       style={{ display: 'block', marginBottom: 8 }}
+                      value=""
                     />
                     {videoErrors.video && (
                       <Typography color="error" variant="body2">
@@ -546,14 +637,18 @@ export default function PostUploadSection({ onUpload }: { onUpload?: () => void 
                 name="image"
                 control={tipControl}
                 render={({ field }) => (
-                  <TextField
-                    type="file"
-                    inputProps={{ accept: "image/*" }}
-                    fullWidth
-                    error={!!tipErrors.image}
-                    helperText={tipErrors.image?.message}
-                    onChange={handleTipImage}
-                  />
+                  <>
+                    <input
+                      type="file"
+                      accept="image/*"
+                      onChange={handleTipImage}
+                      style={{ display: 'block', marginBottom: 8 }}
+                      value=""
+                    />
+                    {tipErrors.image && (
+                      <Typography color="error" variant="body2">{tipErrors.image.message}</Typography>
+                    )}
+                  </>
                 )}
               />
               <Button type="submit" variant="contained" color="primary" disabled={loading} fullWidth sx={{ mt: 2, py: 1.5, fontWeight: 600 }}>

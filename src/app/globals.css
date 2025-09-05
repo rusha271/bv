@@ -2,6 +2,43 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Lazy Loading Styles */
+.lazy-loading {
+  opacity: 0.6;
+  filter: blur(2px);
+  transition: opacity 0.3s ease, filter 0.3s ease;
+}
+
+.lazy-loaded {
+  opacity: 1;
+  filter: none;
+}
+
+.lazy-error {
+  opacity: 0.8;
+  filter: grayscale(100%);
+}
+
+/* Performance optimizations */
+img {
+  content-visibility: auto;
+}
+
+video {
+  content-visibility: auto;
+}
+
+/* Smooth scrolling for better UX */
+html {
+  scroll-behavior: smooth;
+}
+
+/* Optimize font loading */
+@font-face {
+  font-family: 'Roboto';
+  font-display: swap;
+}
+
 :root {
   --background: #ffffff;
   --foreground: #171717;

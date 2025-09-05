@@ -1,11 +1,13 @@
 "use client";
 
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { useThemeContext } from '@/contexts/ThemeContext';
 import { useDeviceType } from '@/utils/useDeviceType';
 import { useAppDispatch, useAppSelector } from '@/store';
 import { fetchVideos, clearVideosError } from '@/store/slices/blogSlice';
 import { Video } from '@/utils/apiService';
+import VideoModal from '@/components/Video/VideoModal';
+import { lazyLoading } from '@/utils/lazyLoading';
 
 interface VideoCardProps {
   video: Video;
@@ -14,59 +16,209 @@ interface VideoCardProps {
 function VideoCard({ video }: VideoCardProps) {
   const { theme } = useThemeContext();
   const { isMobile, isTablet } = useDeviceType();
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const imgRef = useRef<HTMLImageElement>(null);
+
+  // Construct full URLs from backend response
+  const videoUrl = video.url?.startsWith('/') 
+    ? `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}${video.url}`
+    : video.url;
+
+  const thumbnailUrl = (video.thumbnail_url || video.thumbnail)?.startsWith('/')
+    ? `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}${video.thumbnail_url || video.thumbnail}`
+    : (video.thumbnail_url || video.thumbnail);
 
   const handleVideoClick = () => {
-    window.open(video.url, '_blank');
+    setIsModalOpen(true);
   };
 
+  const handleCloseModal = () => {
+    setIsModalOpen(false);
+  };
+
+  // Set up lazy loading for thumbnail
+  useEffect(() => {
+    if (imgRef.current && thumbnailUrl) {
+      lazyLoading.observeImage(imgRef.current, {
+        placeholder: '/images/placeholder-video.jpg', // You can add a placeholder image
+        errorImage: '/images/error-video.jpg', // You can add an error image
+        onLoad: (img) => {
+          img.classList.add('loaded');
+        },
+        onError: (img) => {
+          img.classList.add('error');
+        }
+      });
+    }
+
+    return () => {
+      if (imgRef.current) {
+        lazyLoading.unobserve(imgRef.current);
+      }
+    };
+  }, [thumbnailUrl]);
+
   return (
-    <div
-      className="rounded-lg shadow-md overflow-hidden cursor-pointer hover:shadow-lg transition-shadow duration-300"
-      style={{
-        background: theme.palette.background.paper,
-        border: `1px solid ${theme.palette.divider}`,
-      }}
-      onClick={handleVideoClick}
-    >
-      <div className="relative">
-        <img
-          src={video.thumbnail}
-          alt={video.title}
-          className="w-full h-48 object-cover"
-        />
-        <div className="absolute bottom-2 right-2 bg-black bg-opacity-75 text-white text-xs px-2 py-1 rounded">
-          {video.duration}
+    <>
+      <div
+        className="w-full rounded-2xl shadow-md transition-all duration-300 overflow-hidden flex flex-col border group cursor-pointer"
+        style={{
+          background: theme.palette.background.paper,
+          borderColor: theme.palette.divider,
+          color: theme.palette.text.primary,
+          transform: "scale(1)",
+        }}
+        onClick={handleVideoClick}
+        onMouseEnter={(e) => {
+          e.currentTarget.style.transform = "scale(1.08)";
+          e.currentTarget.style.boxShadow =
+            theme.palette.mode === "dark"
+              ? "0 10px 30px rgba(255, 255, 255, 0.15)"
+              : "0 10px 30px rgba(0, 0, 0, 0.2)";
+          e.currentTarget.style.filter =
+            theme.palette.mode === "dark" ? "brightness(1.1)" : "none";
+        }}
+        onMouseLeave={(e) => {
+          e.currentTarget.style.transform = "scale(1)";
+          e.currentTarget.style.boxShadow =
+            theme.palette.mode === "dark"
+              ? "0 4px 15px rgba(255, 255, 255, 0.05)"
+              : "0 4px 15px rgba(0, 0, 0, 0.1)";
+          e.currentTarget.style.filter = "none";
+        }}
+      >
+        {/* Image Section */}
+        <div className="relative w-full" style={{ aspectRatio: '16/9', minHeight: '200px', maxHeight: '400px' }}>
+          {thumbnailUrl ? (
+            <img
+              ref={imgRef}
+              data-src={thumbnailUrl}
+              alt={video.title}
+              className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 ease-in-out lazy-loading"
+              style={{
+                background: theme.palette.background.default,
+              }}
+              onError={(e) => {
+                console.error('Failed to load thumbnail:', thumbnailUrl);
+                console.error('Error event:', e);
+              }}
+              onLoad={() => {
+                console.log('Thumbnail loaded successfully:', thumbnailUrl);
+              }}
+            />
+          ) : (
+            <div 
+              className="w-full h-full flex items-center justify-center"
+              style={{
+                background: theme.palette.background.default,
+                color: theme.palette.text.secondary,
+              }}
+            >
+              <div className="text-center">
+                <svg
+                  className="w-12 h-12 mx-auto mb-2"
+                  fill="currentColor"
+                  viewBox="0 0 20 20"
+                >
+                  <path d="M2 6a2 2 0 012-2h6a2 2 0 012 2v8a2 2 0 01-2 2H4a2 2 0 01-2-2V6zM14.553 7.106A1 1 0 0014 8v4a1 1 0 00.553.894l2 1A1 1 0 0018 13V7a1 1 0 00-1.447-.894l-2 1z" />
+                </svg>
+                <span className="text-sm">No Thumbnail</span>
+              </div>
+            </div>
+          )}
+          
+          {/* Play button overlay */}
+          <div className="absolute inset-0 flex items-center justify-center bg-black bg-opacity-0 hover:bg-opacity-20 transition-all duration-300">
+            <div
+              className="w-16 h-16 rounded-full flex items-center justify-center opacity-0 hover:opacity-100 transition-opacity duration-300"
+              style={{
+                backgroundColor: theme.palette.primary.main,
+                color: theme.palette.primary.contrastText,
+              }}
+            >
+              <svg
+                className="w-8 h-8 ml-1"
+                fill="currentColor"
+                viewBox="0 0 20 20"
+              >
+                <path d="M6.3 2.841A1.5 1.5 0 004 4.11V15.89a1.5 1.5 0 002.3 1.269l9.344-5.89a1.5 1.5 0 000-2.538L6.3 2.84z" />
+              </svg>
+            </div>
+          </div>
+
+          {video.duration && (
+            <div className="absolute bottom-2 right-2 bg-black bg-opacity-75 text-white text-xs px-2 py-1 rounded">
+              {video.duration}
+            </div>
+          )}
         </div>
-      </div>
-      <div className="p-4">
-        <h3
-          className="font-bold text-lg mb-2 line-clamp-2"
-          style={{ color: theme.palette.text.primary }}
-        >
-          {video.title}
-        </h3>
-        <p
-          className="text-sm mb-3 line-clamp-3"
-          style={{ color: theme.palette.text.secondary }}
-        >
-          {video.description}
-        </p>
-        <div className="flex justify-between items-center">
-          <span
-            className="text-xs"
-            style={{ color: theme.palette.text.secondary }}
+        {/* Content Section */}
+        <div className="flex-1 flex flex-col" style={{ padding: isMobile ? '1rem' : isTablet ? '1.25rem' : '1.5rem' }}>
+          <h2
+            className="font-bold mb-2 leading-tight"
+            style={{ 
+              color: theme.palette.text.primary, 
+              fontSize: isMobile ? '1rem' : isTablet ? '1.1rem' : '1.25rem' 
+            }}
+          >
+            {video.title}
+          </h2>
+          <p
+            className="mb-1"
+            style={{ 
+              color: theme.palette.text.secondary, 
+              fontSize: isMobile ? '0.85rem' : isTablet ? '0.9rem' : '1rem' 
+            }}
+          >
+            {video.description}
+          </p>
+          <p
+            className="mb-4"
+            style={{ 
+              color: theme.palette.text.secondary, 
+              fontSize: isMobile ? '0.75rem' : isTablet ? '0.8rem' : '0.875rem' 
+            }}
           >
             {video.views.toLocaleString()} views
-          </span>
-          <span
-            className="text-xs font-medium"
-            style={{ color: theme.palette.primary.main }}
-          >
-            Watch Now
-          </span>
+          </p>
+
+          {/* Bottom Section */}
+          <div className="flex items-center justify-between mt-auto pt-2">
+            <div className="flex gap-1">
+              {video.category && (
+                <span
+                  className="text-xs font-bold uppercase tracking-wide"
+                  style={{ 
+                    color: theme.palette.text.primary, 
+                    fontSize: isMobile ? '0.65rem' : isTablet ? '0.7rem' : '0.75rem' 
+                  }}
+                >
+                  {video.category}
+                </span>
+              )}
+            </div>
+            <span
+              className="text-xs px-2 py-1 rounded font-semibold cursor-default select-none"
+              style={{
+                background: theme.palette.primary.main,
+                color: theme.palette.primary.contrastText,
+                fontSize: isMobile ? '0.65rem' : isTablet ? '0.7rem' : '0.75rem',
+                border: `1px solid ${theme.palette.divider}`,
+              }}
+            >
+              WATCH NOW
+            </span>
+          </div>
         </div>
       </div>
-    </div>
+
+      {/* Video Modal */}
+      <VideoModal
+        video={video}
+        isOpen={isModalOpen}
+        onClose={handleCloseModal}
+      />
+    </>
   );
 }
 
@@ -114,21 +266,55 @@ export default function VideoCardsList() {
     );
   }
 
-  return (
-    <div className="space-y-6">
-      <div
-        className={`grid gap-6 ${
-          isMobile
-            ? 'grid-cols-1'
-            : isTablet
-            ? 'grid-cols-2'
-            : 'grid-cols-3'
-        }`}
+  // Handle empty state
+  if (!videos || videos.length === 0) {
+    return (
+      <div 
+        className="flex flex-col items-center justify-center py-12 px-4"
+        style={{
+          background: theme.palette.background.default,
+          minHeight: '200px',
+        }}
       >
-        {videos && videos.map((video) => (
-          <VideoCard key={video.id} video={video} />
-        ))}
+        <div 
+          className="text-center"
+          style={{ color: theme.palette.text.secondary }}
+        >
+          <h3 className="text-lg font-medium mb-2">No Videos Available</h3>
+          <p className="text-sm">Check back later for new Vastu videos and tutorials.</p>
+        </div>
       </div>
+    );
+  }
+
+  // Determine grid layout based on number of items
+  const getGridLayout = () => {
+    const itemCount = videos.length;
+    
+    if (itemCount === 1) {
+      return 'grid-cols-1 max-w-md mx-auto';
+    } else if (itemCount === 2) {
+      return 'grid-cols-1 sm:grid-cols-2 max-w-4xl mx-auto';
+    } else if (itemCount === 3) {
+      return 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 max-w-6xl mx-auto';
+    } else {
+      return 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-3';
+    }
+  };
+
+  return (
+    <div
+      className={`grid ${getGridLayout()} gap-6`}
+      style={{
+        background: theme.palette.background.default,
+        justifyItems: 'center',
+        width: '100%',
+        overflow: 'hidden',
+      }}
+    >
+      {videos.map((video) => (
+        <VideoCard key={video.id} video={video} />
+      ))}
     </div>
   );
 }

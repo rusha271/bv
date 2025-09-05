@@ -232,11 +232,16 @@ export interface Video {
   title: string;
   description: string;
   url: string;
-  thumbnail: string;
-  duration: string;
+  thumbnail?: string; // Keep for backward compatibility
+  thumbnail_url?: string; // New field from backend
+  duration?: string | null;
   views: number;
   category?: string;
   upload_date?: string;
+  created_at?: string;
+  updated_at?: string;
+  is_published?: boolean;
+  video_type?: string;
 }
 
 export interface VideoCreate {
@@ -256,7 +261,13 @@ export interface Tip {
   title: string;
   content: string;
   category: string;
-  image: string;
+  image?: string;
+  image_url?: string;
+  description?: string;
+  details?: string;
+  is_published?: boolean;
+  created_at?: string;
+  updated_at?: string;
 }
 
 // API Service Class
@@ -633,6 +644,9 @@ class ApiService {
     },
     delete: async (id: number): Promise<ApiResponse> => {
       return api.delete<ApiResponse>(`/api/blog/videos/${id}`);
+    },
+    trackView: async (viewData: any): Promise<ApiResponse> => {
+      return api.post<ApiResponse>("/api/analytics/video-view", viewData);
     },
   }
 

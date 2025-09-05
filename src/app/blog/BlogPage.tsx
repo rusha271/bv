@@ -25,7 +25,7 @@ import Box from '@mui/material/Box';
 
 function FadeInSection({ children }: { children: React.ReactNode }) {
   return (
-    <div className="animate-fadein" style={{ minHeight: '200px' }}>
+    <div className="animate-fadein" style={{ minHeight: 'auto', width: '100%' }}>
       {children}
     </div>
   );
@@ -76,7 +76,7 @@ function BlogTabs() {
         <Tab label="Tips" sx={{ fontWeight: 700, fontSize: tabFontSize, color: theme.palette.text.primary, minHeight: isMobile ? 44 : 56, px: tabPaddingX }} />
         <Tab label="Posts" sx={{ fontWeight: 700, fontSize: tabFontSize, color: theme.palette.text.primary, minHeight: isMobile ? 44 : 56, px: tabPaddingX }} />
       </Tabs>
-      <Box sx={{ mt: 2, minHeight: 300, px: { xs: 2, sm: 2, md: 4 }, overflowX: 'hidden' }}>
+      <Box sx={{ mt: 2, minHeight: 'auto', px: { xs: 2, sm: 2, md: 4 }, overflowX: 'hidden', overflowY: 'auto' }}>
         {tab === 0 && (
           <FadeInSection>
             <VideoCardsList />

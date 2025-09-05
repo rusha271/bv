@@ -61,16 +61,44 @@ const BlogCard: React.FC<BlogCardProps> = ({
       }}
     >
       {/* Image Section */}
-      <div className="relative w-full aspect-[4/2]">
-        <Image
-          src={image} 
-          alt={title}
-          fill
-          className="object-cover group-hover:scale-115 transition-transform duration-500 ease-in-out"
-          style={{
-            background: theme.palette.background.default,
-          }}
-        />
+      <div className="relative w-full" style={{ aspectRatio: '16/9', minHeight: '200px', maxHeight: '400px' }}>
+        {image ? (
+          <Image
+            src={image} 
+            alt={title}
+            fill
+            className="object-cover group-hover:scale-105 transition-transform duration-500 ease-in-out rounded-t-2xl"
+            style={{
+              background: theme.palette.background.default,
+            }}
+            onError={(e) => {
+              console.error('Image failed to load:', image);
+              console.error('Error event:', e);
+            }}
+            onLoad={() => {
+              console.log('Image loaded successfully:', image);
+            }}
+          />
+        ) : (
+          <div 
+            className="w-full h-full flex items-center justify-center rounded-t-2xl"
+            style={{
+              background: theme.palette.background.default,
+              color: theme.palette.text.secondary,
+            }}
+          >
+            <div className="text-center">
+              <svg
+                className="w-12 h-12 mx-auto mb-2"
+                fill="currentColor"
+                viewBox="0 0 20 20"
+              >
+                <path fillRule="evenodd" d="M4 3a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V5a2 2 0 00-2-2H4zm12 12H4l4-8 3 6 2-4 3 6z" clipRule="evenodd" />
+              </svg>
+              <span className="text-sm">No Image</span>
+            </div>
+          </div>
+        )}
       </div>
 
 

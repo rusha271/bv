@@ -46,7 +46,21 @@ const nextConfig: NextConfig = {
 
   // ✅ Configure images for better performance
   images: {
-    domains: ['localhost'],
+    domains: ['localhost', '127.0.0.1'],
+    remotePatterns: [
+      {
+        protocol: 'http',
+        hostname: 'localhost',
+        port: '8000',
+        pathname: '/static/**',
+      },
+      {
+        protocol: 'http',
+        hostname: '127.0.0.1',
+        port: '8000',
+        pathname: '/static/**',
+      },
+    ],
     unoptimized: false,
   },
 
