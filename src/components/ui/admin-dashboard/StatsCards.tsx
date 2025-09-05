@@ -17,6 +17,9 @@ export default function StatsCards() {
     const fetchStats = async () => {
       try {
         setLoading(true);
+        setTimeout(() => {
+          setLoading(false);
+        }, 2000);
         setError(null);
 
         // Fetch visitors data
@@ -43,8 +46,6 @@ export default function StatsCards() {
           totalVisitors: 1250,
           consultationRequests: 89
         });
-      } finally {
-        setLoading(false);
       }
     };
 

@@ -23,6 +23,9 @@ export default function ConsultationsPage() {
     const fetchConsultations = async () => {
       try {
         setLoading(true);
+        setTimeout(() => {
+          setLoading(false);
+        }, 2000);
         setError(null);
         
         const response = await fetch('http://localhost:8000/api/contact/consultation/simple');
@@ -67,8 +70,6 @@ export default function ConsultationsPage() {
         console.error('Error fetching consultations:', err);
         setError('Failed to load consultation requests');
         // Keep using dummy data as fallback
-      } finally {
-        setLoading(false);
       }
     };
 

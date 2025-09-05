@@ -134,7 +134,7 @@ export default function HomePage() {
             console.error('Error loading background video:', e);
           }}
         >
-          <source src="/videos/169951-842348732_medium.mp4" type="video/mp4" />
+          {/* <source src="/videos/169951-842348732_medium.mp4" type="video/mp4" /> */}
           Your browser does not support the video tag.
         </video>
         <Box

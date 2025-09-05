@@ -155,6 +155,9 @@ export default function PostUploadSection({ onUpload }: { onUpload?: () => void 
 
   const onBookSubmit = async (data: any) => {
     setLoading(true);
+    setTimeout(() => {
+      setLoading(false);
+    }, 2000);
     setError('');
     try {
       const formData = new FormData();
@@ -189,13 +192,14 @@ export default function PostUploadSection({ onUpload }: { onUpload?: () => void 
       console.error('API Error:', error);
       const errorMessage = error.message || 'An error occurred while uploading the book.';
       setError(errorMessage);
-    } finally {
-      setLoading(false);
     }
   };
   
   const onVideoSubmit = async (data: any) => {
     setLoading(true);
+    setTimeout(() => {
+      setLoading(false);
+    }, 2000);
     setError('');
     try {
       const formData = new FormData();
@@ -258,13 +262,14 @@ export default function PostUploadSection({ onUpload }: { onUpload?: () => void 
         error.message ||
         'An error occurred while uploading the video.';
       setError(errorMessage);
-    } finally {
-      setLoading(false);
     }
   };
   
   const onTipSubmit = async (data: any) => {
     setLoading(true);
+    setTimeout(() => {
+      setLoading(false);
+    }, 2000);
     setError('');
   
     try {
@@ -308,8 +313,6 @@ export default function PostUploadSection({ onUpload }: { onUpload?: () => void 
         errorMessage = error.response.data.detail || "Invalid input data.";
       }
       setError(errorMessage);
-    } finally {
-      setLoading(false);
     }
   };
   

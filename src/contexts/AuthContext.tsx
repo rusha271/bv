@@ -252,7 +252,18 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         // Get current user and check if guest
         try {
           const currentUser = await apiService.auth.me();
-          dispatch({ type: 'SET_USER', payload: currentUser });
+          
+          // Decode JWT to get user role and other claims
+          const decodedToken = decodeJWT(tokens.access_token);
+          const userRole = decodedToken?.role || currentUser.role?.name || 'user';
+          
+          // Update user with role from JWT
+          const userWithRole: User = {
+            ...currentUser,
+            role: { name: userRole }
+          };
+          
+          dispatch({ type: 'SET_USER', payload: userWithRole });
           
           // Check if current user is a guest
           try {
@@ -279,7 +290,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   // Login function - optimized to batch state updates
   const login = useCallback(async (email: string, password: string, rememberMe = false) => {
     try {
-      dispatch({ type: 'SET_LOADING', payload: true });
       const response = await apiService.auth.login({ email, password });
       const authTokens: AuthTokens = { access_token: response.access_token, refresh_token: response.refresh_token };
       storeTokens(authTokens, rememberMe);
@@ -293,9 +303,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         }
       }
   
+      // Decode JWT to get user role and other claims
+      const decodedToken = decodeJWT(response.access_token);
+      const userRole = decodedToken?.role || response.user.role || 'user';
+      
       const userData: User = {
         ...response.user,
-        role: { name: response.user.role },
+        role: { name: userRole },
         created_at: new Date().toISOString(),
         updated_at: new Date().toISOString(),
       };
@@ -308,9 +322,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           isGuest: false 
         } 
       });
+
+      // Emit login success event for SmartPageLoader
+      window.dispatchEvent(new CustomEvent('authSuccess', { 
+        detail: { type: 'login', user: userData } 
+      }));
     } catch (error) {
       console.error('Login failed:', error);
-      dispatch({ type: 'SET_LOADING', payload: false });
       throw error;
     }
   }, [refreshToken]);
@@ -318,7 +336,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   // Register function - optimized to batch state updates
   const register = useCallback(async (name: string, email: string, password: string, rememberMe = false) => {
     try {
-      dispatch({ type: 'SET_LOADING', payload: true });
       const response = await apiService.auth.register({ name, email, password });
       
       // Convert AuthResponse to AuthTokens format
@@ -343,10 +360,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         }
       }
       
+      // Decode JWT to get user role and other claims
+      const decodedToken = decodeJWT(response.access_token);
+      const userRole = decodedToken?.role || response.user.role || 'user';
+      
       // Convert response.user to User type by adding missing fields and converting role
       const userData: User = {
         ...response.user,
-        role: { name: response.user.role },
+        role: { name: userRole },
         created_at: new Date().toISOString(),
         updated_at: new Date().toISOString()
       };
@@ -359,9 +380,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           isGuest: false 
         } 
       });
+
+      // Emit registration success event for SmartPageLoader
+      window.dispatchEvent(new CustomEvent('authSuccess', { 
+        detail: { type: 'register', user: userData } 
+      }));
     } catch (error) {
       console.error('Registration failed:', error);
-      dispatch({ type: 'SET_LOADING', payload: false });
       throw error;
     }
   }, [refreshToken]);
@@ -381,13 +406,17 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       
       // Batch all state updates in a single dispatch
       dispatch({ type: 'LOGOUT' });
+
+      // Emit logout event for SmartPageLoader
+      window.dispatchEvent(new CustomEvent('authLogout', { 
+        detail: { type: 'logout' } 
+      }));
     }
   }, []);
 
   // Create guest account function - optimized to batch state updates
   const createGuestAccount = useCallback(async () => {
     try {
-      dispatch({ type: 'SET_LOADING', payload: true });
       const response = await apiService.auth.createGuest();
       
       // Convert AuthResponse to AuthTokens format
@@ -412,10 +441,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         }
       }
       
+      // Decode JWT to get user role and other claims
+      const decodedToken = decodeJWT(response.access_token);
+      const userRole = decodedToken?.role || response.user.role || 'user';
+      
       // Convert response.user to User type by adding missing fields and converting role
       const userData: User = {
         ...response.user,
-        role: { name: response.user.role },
+        role: { name: userRole },
         created_at: new Date().toISOString(),
         updated_at: new Date().toISOString()
       };
@@ -430,7 +463,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       });
     } catch (error) {
       console.error('Guest account creation failed:', error);
-      dispatch({ type: 'SET_LOADING', payload: false });
       throw error;
     }
   }, [refreshToken]);
@@ -438,7 +470,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   // Upgrade guest account function - optimized to batch state updates
   const upgradeGuestAccount = useCallback(async (name: string, email: string, password: string, rememberMe = false) => {
     try {
-      dispatch({ type: 'SET_LOADING', payload: true });
       const response = await apiService.auth.upgradeGuest({ name, email, password });
       
       // Convert AuthResponse to AuthTokens format
@@ -463,10 +494,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         }
       }
       
+      // Decode JWT to get user role and other claims
+      const decodedToken = decodeJWT(response.access_token);
+      const userRole = decodedToken?.role || response.user.role || 'user';
+      
       // Convert response.user to User type by adding missing fields and converting role
       const userData: User = {
         ...response.user,
-        role: { name: response.user.role },
+        role: { name: userRole },
         created_at: new Date().toISOString(),
         updated_at: new Date().toISOString()
       };
@@ -481,7 +516,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       });
     } catch (error) {
       console.error('Guest account upgrade failed:', error);
-      dispatch({ type: 'SET_LOADING', payload: false });
       throw error;
     }
   }, [refreshToken]);

@@ -42,6 +42,9 @@ export default function OrganicSessionsChart() {
     const fetchSessionsData = async () => {
       try {
         setLoading(true);
+        setTimeout(() => {
+          setLoading(false);
+        }, 2000);
         setError(null);
         
         // In a real implementation, you would fetch from your analytics API
@@ -54,8 +57,6 @@ export default function OrganicSessionsChart() {
         console.error('Error fetching sessions data:', err);
         setError('Failed to load sessions data');
         // Keep using dummy data as fallback
-      } finally {
-        setLoading(false);
       }
     };
 

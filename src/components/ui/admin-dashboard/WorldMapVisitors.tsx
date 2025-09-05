@@ -51,6 +51,9 @@ export default function WorldMapVisitors() {
     const fetchVisitorData = async () => {
       try {
         setLoading(true);
+        setTimeout(() => {
+          setLoading(false);
+        }, 2000);
         setError(null);
         
         // In a real implementation, you would fetch from your analytics API
@@ -63,8 +66,6 @@ export default function WorldMapVisitors() {
         console.error('Error fetching visitor data:', err);
         setError('Failed to load visitor data');
         // Keep using dummy data as fallback
-      } finally {
-        setLoading(false);
       }
     };
 

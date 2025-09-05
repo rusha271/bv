@@ -31,14 +31,7 @@ export default function ProtectedRoute({
   const isAuthenticated = !!user;
   const router = useRouter();
 
-  // Show loading state while auth is initializing
-  if (isLoading) {
-    return (
-      <div className="flex items-center justify-center min-h-screen">
-        <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-blue-600"></div>
-      </div>
-    );
-  }
+  // Skip loading state - proceed directly to authentication check
 
   // Check if user is authenticated
   if (!isAuthenticated || !user) {

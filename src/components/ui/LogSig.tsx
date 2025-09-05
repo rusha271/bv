@@ -35,9 +35,9 @@ import { useDeviceType } from '../../utils/useDeviceType';
 import { useLegal } from '../../contexts/LegalContent';
 import { LegalDocument } from './LegalDocument';
 import { toast } from 'react-hot-toast';
-import { useRouter } from 'next/navigation';
 import * as Yup from 'yup';
 import { useAuthActions } from '@/contexts/AuthContext';
+import { useRouter } from 'next/navigation';
 
 // TypeScript Interfaces
 interface FormData {
@@ -174,7 +174,6 @@ const LogSig = memo(function LogSig({
     phone: prefillData?.phone || '',
   });
   const [errors, setErrors] = useState<{ [key: string]: string }>({});
-  const [isLoading, setIsLoading] = useState(false);
   const [rememberMe, setRememberMe] = useState(false);
 
   const handleTabChange = (event: React.SyntheticEvent, newValue: number) => {
@@ -188,6 +187,24 @@ const LogSig = memo(function LogSig({
       phone: prefillData?.phone || '',
     });
   };
+
+  // Emit modal state changes for SmartPageLoader
+  useEffect(() => {
+    if (open) {
+      const eventType = tabValue === 0 ? 'loginModalStateChange' : 'signupModalStateChange';
+      window.dispatchEvent(new CustomEvent(eventType, { 
+        detail: { type: tabValue === 0 ? 'login' : 'signup', isOpen: true } 
+      }));
+    } else {
+      // Emit close events for both login and signup
+      window.dispatchEvent(new CustomEvent('loginModalStateChange', { 
+        detail: { type: 'login', isOpen: false } 
+      }));
+      window.dispatchEvent(new CustomEvent('signupModalStateChange', { 
+        detail: { type: 'signup', isOpen: false } 
+      }));
+    }
+  }, [open, tabValue]);
 
   useEffect(() => {
     // Remove console.log to prevent unnecessary renders
@@ -231,27 +248,23 @@ const LogSig = memo(function LogSig({
   
     if (!validation.isValid) return;
   
-    setIsLoading(true);
-  
     try {
       if (isSignup) {
         await authRegister(formData.fullName, formData.email, formData.password, rememberMe);
         toast.success('Signup successful!');
-        router.push(redirectUrl || '/', { scroll: false });
+        router.push(redirectUrl || '/');
       } else {
         console.log('Sending login request:', { email: formData.email });
         await authLogin(formData.email, formData.password, rememberMe);
         console.log('Login successful');
         toast.success('Login successful!');
-        router.push(redirectUrl || '/', { scroll: false });
+        router.push(redirectUrl || '/');
       }
       onClose();
     } catch (error: any) {
       console.error('API Error:', error);
       const errorMessage = error.response?.data?.detail || error.message || 'Failed to authenticate. Please try again.';
       toast.error(errorMessage);
-    } finally {
-      setIsLoading(false);
     }
   };
 
@@ -405,7 +418,7 @@ const LogSig = memo(function LogSig({
                   fullWidth
                   variant="contained"
                   size={isMobile ? 'medium' : 'large'}
-                  disabled={isLoading}
+                  disabled={false}
                   sx={{
                     borderRadius: 2,
                     py: isMobile ? 1.2 : 1.5,
@@ -415,7 +428,7 @@ const LogSig = memo(function LogSig({
                     },
                   }}
                 >
-                  {isLoading ? 'Signing In' : 'Sign In'}
+                  Sign In
                 </Button>
               </Stack>
             </TabPanel>
@@ -559,7 +572,7 @@ const LogSig = memo(function LogSig({
                   fullWidth
                   variant="contained"
                   size={isMobile ? 'medium' : 'large'}
-                  disabled={isLoading}
+                  disabled={false}
                   sx={{
                     borderRadius: 2,
                     py: isMobile ? 1.2 : 1.5,
@@ -569,7 +582,7 @@ const LogSig = memo(function LogSig({
                     },
                   }}
                 >
-                  {isLoading ? 'Creating Account...' : 'Create Account'}
+                  Create Account
                 </Button>
               </Stack>
             </TabPanel>

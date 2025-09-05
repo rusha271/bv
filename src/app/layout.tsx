@@ -4,6 +4,7 @@ import "../styles/jcrop.css";
 import CssBaseline from '@mui/material/CssBaseline';
 import { ThemeProvider } from '../contexts/ThemeContext';
 import { AuthProvider } from '../contexts/AuthContext';
+import { LoadingProvider } from '../contexts/LoadingContext';
 import { PlanetaryDataProvider } from '@/contexts/PlanetaryDataContext';
 import { LegalProvider } from '@/contexts/LegalContent';
 import Chatbot from '@/components/Chatbot';
@@ -12,6 +13,7 @@ import ReduxProvider from '@/components/providers/ReduxProvider';
 import Toast from "@/components/ui/Toast";
 import GuestAccountManager from '@/components/GuestAccountManager';
 import GuestBanner from '@/components/GuestBanner';
+import SmartPageLoader from '@/components/ui/SmartPageLoader';
 
 export const metadata: Metadata = {
   title: {
@@ -111,7 +113,7 @@ export default function RootLayout({
       <head>
         <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=5" />
         <link rel="icon" href="/favicon.ico" sizes="any" />
-        <link rel="icon" href="/icon.svg" type="image/svg+xml" />
+        <link rel="icon" href="/universe-big-cosmos-gravity-svgrepo-com.svg" type="image/svg+xml" />
         <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
         <link rel="manifest" href="/manifest.json" />
         <script
@@ -159,19 +161,22 @@ export default function RootLayout({
         <ReduxProvider>
           <ThemeProvider>
             <CssBaseline />
-            <AuthProvider>
-              <GuestAccountManager>
-                <PlanetaryDataProvider>
-                  <LegalProvider>
-                    <GuestBanner />
-                    {children}
-                    <ClientOnly>
-                      <Chatbot />
-                    </ClientOnly>
-                  </LegalProvider>
-                </PlanetaryDataProvider>
-              </GuestAccountManager>
-            </AuthProvider>
+            <LoadingProvider>
+              <AuthProvider>
+                <GuestAccountManager>
+                  <PlanetaryDataProvider>
+                    <LegalProvider>
+                      <SmartPageLoader />
+                      <GuestBanner />
+                      {children}
+                      <ClientOnly>
+                        <Chatbot />
+                      </ClientOnly>
+                    </LegalProvider>
+                  </PlanetaryDataProvider>
+                </GuestAccountManager>
+              </AuthProvider>
+            </LoadingProvider>
           </ThemeProvider>
         </ReduxProvider>
         <Toast />
