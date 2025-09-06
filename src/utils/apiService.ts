@@ -645,9 +645,6 @@ class ApiService {
     delete: async (id: number): Promise<ApiResponse> => {
       return api.delete<ApiResponse>(`/api/blog/videos/${id}`);
     },
-    trackView: async (viewData: any): Promise<ApiResponse> => {
-      return api.post<ApiResponse>("/api/analytics/video-view", viewData);
-    },
   }
 
   // Tips API

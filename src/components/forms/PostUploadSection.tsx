@@ -479,7 +479,6 @@ export default function PostUploadSection({ onUpload }: { onUpload?: () => void 
                       accept=".pdf"
                       onChange={handleBookFile}
                       style={{ display: 'block', marginBottom: 8 }}
-                      value=""
                     />
                     {bookErrors.pdf && (
                       <Typography color="error" variant="body2">{bookErrors.pdf.message}</Typography>
@@ -561,7 +560,6 @@ export default function PostUploadSection({ onUpload }: { onUpload?: () => void 
                       accept="video/*"
                       onChange={handleVideoFile}
                       style={{ display: 'block', marginBottom: 8 }}
-                      value=""
                     />
                     {videoErrors.video && (
                       <Typography color="error" variant="body2">
@@ -643,7 +641,6 @@ export default function PostUploadSection({ onUpload }: { onUpload?: () => void 
                       accept="image/*"
                       onChange={handleTipImage}
                       style={{ display: 'block', marginBottom: 8 }}
-                      value=""
                     />
                     {tipErrors.image && (
                       <Typography color="error" variant="body2">{tipErrors.image.message}</Typography>

@@ -174,9 +174,6 @@ export default function VideoPage({ video }: VideoPageProps) {
               </h1>
               
               <div className="flex flex-wrap items-center gap-4 mb-4 text-sm">
-                <span style={{ color: theme.palette.text.secondary }}>
-                  {video.views.toLocaleString()} views
-                </span>
                 {video.duration && (
                   <span style={{ color: theme.palette.text.secondary }}>
                     Duration: {video.duration}
@@ -235,18 +232,6 @@ export default function VideoPage({ video }: VideoPageProps) {
                   </span>
                   <p style={{ color: theme.palette.text.primary }}>
                     {video.category || 'Vastu Shastra'}
-                  </p>
-                </div>
-                
-                <div>
-                  <span
-                    className="text-sm font-medium"
-                    style={{ color: theme.palette.text.secondary }}
-                  >
-                    Views:
-                  </span>
-                  <p style={{ color: theme.palette.text.primary }}>
-                    {video.views.toLocaleString()}
                   </p>
                 </div>
                 

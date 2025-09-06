@@ -4,7 +4,7 @@
  * Implements smart video view tracking with the following logic:
  * - Videos < 15 seconds: Count view if user watches at least 90%
  * - Videos >= 15 seconds: Count view if user watches at least 30 seconds or 50% (whichever comes first)
- * - Uses navigator.sendBeacon for reliable tracking
+ * - Logs view events locally for debugging and analytics
  * - Prevents duplicate view counts per session
  */
 
@@ -155,53 +155,17 @@ class VideoTrackingManager {
   }
 
   /**
-   * Send view event using navigator.sendBeacon for reliability
+   * Send view event - now just logs the event locally
    */
   private sendViewEvent(event: VideoViewEvent): void {
-    if (!navigator.sendBeacon) {
-      // Fallback to fetch if sendBeacon is not available
-      this.sendViewEventFallback(event);
-      return;
-    }
-
     try {
-      const url = `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/api/analytics/video-view`;
-      const data = JSON.stringify(event);
-      
-      const success = navigator.sendBeacon(url, data);
-      if (!success) {
-        console.warn('Failed to send video view event via sendBeacon');
-        this.sendViewEventFallback(event);
-      } else {
-        console.log('Video view tracked successfully:', event);
-      }
+      // Log the video view event locally instead of sending to endpoint
+      console.log('Video view tracked locally:', event);
     } catch (error) {
-      console.error('Error sending video view event:', error);
-      this.sendViewEventFallback(event);
+      console.error('Error logging video view event:', error);
     }
   }
 
-  /**
-   * Fallback method using fetch
-   */
-  private sendViewEventFallback(event: VideoViewEvent): void {
-    try {
-      const url = `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/api/analytics/video-view`;
-      
-      fetch(url, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(event),
-        keepalive: true // Ensures request completes even if page unloads
-      }).catch(error => {
-        console.error('Failed to send video view event via fetch:', error);
-      });
-    } catch (error) {
-      console.error('Error in video view fallback:', error);
-    }
-  }
 
   /**
    * Flush any pending view events

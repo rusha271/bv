@@ -188,9 +188,6 @@ export default function VideoModal({ video, isOpen, onClose }: VideoModalProps) 
             </p>
             
             <div className="flex flex-wrap items-center gap-4 text-xs">
-              <span style={{ color: theme.palette.text.secondary }}>
-                {video.views.toLocaleString()} views
-              </span>
               {video.duration && (
                 <span style={{ color: theme.palette.text.secondary }}>
                   Duration: {video.duration}

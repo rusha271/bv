@@ -67,11 +67,6 @@ export function generateVideoStructuredData(video: VideoSEOData, config: SEOConf
     "duration": video.duration,
     "contentUrl": videoUrl,
     "embedUrl": videoUrl,
-    "interactionStatistic": {
-      "@type": "InteractionCounter",
-      "interactionType": "https://schema.org/WatchAction",
-      "userInteractionCount": video.views
-    },
     "publisher": {
       "@type": "Organization",
       "name": config.siteName,
@@ -168,10 +163,6 @@ export function generateVideoMetaTags(video: VideoSEOData, config: SEOConfig = d
       {
         name: 'video:duration',
         content: video.duration || ''
-      },
-      {
-        name: 'video:views',
-        content: video.views.toString()
       },
       {
         name: 'video:category',

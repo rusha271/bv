@@ -108,49 +108,49 @@ const SmartPageLoader: React.FC<SmartPageLoaderProps> = ({
 const shouldShowLoader = React.useMemo(() => {
     // Manual hide takes precedence
     if (manualControl.hide || forceHide) {
-      console.log('Loader hidden due to manualControl.hide or forceHide');
+      // console.log('Loader hidden due to manualControl.hide or forceHide');
       return false;
     }
     
     // Manual show takes precedence over other conditions
     if (manualControl.show || forceShow) {
-      console.log('Loader shown due to manualControl.show or forceShow');
+      //  console.log('Loader shown due to manualControl.show or forceShow');
       return true;
     }
     
     // Don't show loader on login, signup, or logout pages
     const excludedPaths = ['/login', '/signup', '/logout'];
     if (excludedPaths.includes(pathname)) {
-      console.log(`Loader hidden: Current pathname (${pathname}) is in excluded paths`);
+      // console.log(`Loader hidden: Current pathname (${pathname}) is in excluded paths`);
       return false;
     }
     
     // Don't show loader if login/signup modal is open
     if (isLoginModalOpen || isSignupModalOpen) {
-      console.log('Loader hidden: Login or signup modal is open');
+      // console.log('Loader hidden: Login or signup modal is open');
       return false;
     }
     
     // Don't show loader if user just authenticated or logged out
     if (recentlyAuthenticated || recentlyLoggedOut) {
-      console.log('Loader hidden: Recently authenticated or logged out');
+      // console.log('Loader hidden: Recently authenticated or logged out');
       return false;
     }
     
     // Show loader if auth is loading (initial load)
     if (authLoading) {
-      console.log('Loader shown: Auth is loading');
+      // console.log('Loader shown: Auth is loading');
       return true;
     }
     
     // Show loader if context loading is active
     if (contextLoading) {
-      console.log('Loader shown: Context loading is active');
+      // console.log('Loader shown: Context loading is active');
       return true;
     }
     
     // Hide loader by default once initial checks are complete
-    console.log(`Loader hidden: Default case for pathname ${pathname}`);
+    // console.log(`Loader hidden: Default case for pathname ${pathname}`);
     return false;
   }, [
     manualControl,
@@ -168,7 +168,7 @@ const shouldShowLoader = React.useMemo(() => {
   // Auto-hide loader after initial auth check
   useEffect(() => {
     if (!authLoading && !contextLoading && user !== undefined) {
-      console.log('Auto-hiding loader: Auth and context loading complete, user state resolved');
+      // console.log('Auto-hiding loader: Auth and context loading complete, user state resolved');
       setLoading(false); // Ensure loading state is set to false in LoadingContext
     }
   }, [authLoading, contextLoading, user, setLoading]);

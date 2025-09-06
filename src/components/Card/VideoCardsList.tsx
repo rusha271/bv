@@ -172,15 +172,6 @@ function VideoCard({ video }: VideoCardProps) {
           >
             {video.description}
           </p>
-          <p
-            className="mb-4"
-            style={{ 
-              color: theme.palette.text.secondary, 
-              fontSize: isMobile ? '0.75rem' : isTablet ? '0.8rem' : '0.875rem' 
-            }}
-          >
-            {video.views.toLocaleString()} views
-          </p>
 
           {/* Bottom Section */}
           <div className="flex items-center justify-between mt-auto pt-2">

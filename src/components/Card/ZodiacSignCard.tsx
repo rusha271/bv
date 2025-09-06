@@ -40,20 +40,20 @@ const ZodiacSignCard: React.FC<ZodiacSignCardProps> = ({
         transform: "scale(1)",
       }}
       onMouseEnter={(e) => {
-        e.currentTarget.style.transform = "scale(1.08)";
+        e.currentTarget.style.transform = "scale(1.05)"; // Change from 1.08 to 1.05
         e.currentTarget.style.boxShadow =
           theme.palette.mode === "dark"
-            ? "0 10px 30px rgba(255, 255, 255, 0.15)"
-            : "0 10px 30px rgba(0, 0, 0, 0.2)";
-        e.currentTarget.style.filter =
-          theme.palette.mode === "dark" ? "brightness(1.1)" : "none";
+            ? "0 8px 25px rgba(147, 51, 234, 0.3)" // Purple glow instead
+            : "0 8px 25px rgba(147, 51, 234, 0.2)";
+                e.currentTarget.style.filter =
+                  theme.palette.mode === "dark" ? "brightness(1.1)" : "none";
       }}
       onMouseLeave={(e) => {
         e.currentTarget.style.transform = "scale(1)";
         e.currentTarget.style.boxShadow =
-          theme.palette.mode === "dark"
-            ? "0 4px 15px rgba(255, 255, 255, 0.05)"
-            : "0 4px 15px rgba(0, 0, 0, 0.1)";
+        theme.palette.mode === "dark"
+          ? "0 4px 15px rgba(147, 51, 234, 0.1)" // Subtle purple shadow
+          : "0 4px 15px rgba(147, 51, 234, 0.05)";
         e.currentTarget.style.filter = "none";
       }}
     >

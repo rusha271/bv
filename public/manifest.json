@@ -9,11 +9,6 @@
     "orientation": "portrait-primary",
     "icons": [
       {
-        "src": "/favicon.ico",
-        "sizes": "256x256",
-        "type": "image/x-icon"
-      },
-      {
         "src": "/universe-big-cosmos-gravity-svgrepo-com.svg",
         "sizes": "any",
         "type": "image/svg+xml"

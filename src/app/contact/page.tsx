@@ -302,20 +302,36 @@ export default function ModernContactPage() {
   const [mounted, setMounted] = useState(false);
   const [today, setToday] = useState('');
   const [minDateTime, setMinDateTime] = useState('');
+  
+  // Calculate default date immediately to avoid controlled/uncontrolled input issues
+  const getDefaultDateTime = () => {
+    const now = new Date();
+    const tomorrow = new Date(now);
+    tomorrow.setDate(tomorrow.getDate() + 1);
+    tomorrow.setHours(9, 0, 0, 0);
+    return tomorrow.toISOString().slice(0, 16);
+  };
+  
   const [formData, setFormData] = useState({
     name: '',
     email: '',
     phone: '',
     consultationType: '',
     message: '',
-    preferred_date: '',
+    preferred_date: getDefaultDateTime(),
   });
 
-  // Set today's date only on client side to prevent hydration mismatch
+  // Set tomorrow's date only on client side to prevent hydration mismatch
   useEffect(() => {
     const now = new Date();
+    const tomorrow = new Date(now);
+    tomorrow.setDate(tomorrow.getDate() + 1);
+    tomorrow.setHours(9, 0, 0, 0); // Set to 9:00 AM tomorrow
+    
+    const tomorrowDateTime = tomorrow.toISOString().slice(0, 16);
+    
     setToday(now.toISOString().split("T")[0]);
-    setMinDateTime(now.toISOString().slice(0, 16));
+    setMinDateTime(tomorrowDateTime);
     setMounted(true);
   }, []);
 
@@ -336,7 +352,7 @@ export default function ModernContactPage() {
       phone: formData.phone,
       subject: formData.consultationType || 'General Consultation', // Use consultationType as subject
       message: formData.message || 'No additional details provided',
-      preferred_date: formData.preferred_date || minDateTime || new Date().toISOString()
+      preferred_date: formData.preferred_date || minDateTime
     };
   
     try {
@@ -351,7 +367,7 @@ export default function ModernContactPage() {
           phone: '',
           consultationType: '',
           message: '',
-          preferred_date:'',
+          preferred_date: minDateTime, // Reset to tomorrow's date
         });
         // Optionally redirect or perform other actions
         // router.push('/thank-you'); // Uncomment and adjust if you have a thank-you page
@@ -625,7 +641,7 @@ export default function ModernContactPage() {
                 <input
                   type="datetime-local"
                   name="preferred_date"
-                  value={formData.preferred_date || minDateTime}
+                  value={formData.preferred_date}
                   onChange={handleInputChange}
                   min={minDateTime}
                   className="w-full p-3 rounded-lg border-2 transition-all duration-200 focus:border-blue-500 focus:outline-none"
@@ -716,10 +732,4 @@ export default function ModernContactPage() {
   );
 }
 
-function setErrors(errors: any) {
-  throw new Error('Function not implemented.');
-}
-function setIsLoading(arg0: boolean) {
-  throw new Error('Function not implemented.');
-}
 
