@@ -211,6 +211,9 @@ export const api = {
     } catch (error) {
       throw handleApiError(error);
     }
+  },
+  getBaseURL: (): string => {
+    return API_CONFIG.baseURL;
   }
 };
 

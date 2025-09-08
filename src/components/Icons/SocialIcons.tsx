@@ -10,9 +10,9 @@ import { useTheme } from '@mui/material/styles';
 
 const icons = [
   { icon: <LinkedInIcon />, label: 'Linked In', href: 'https://www.linkedin.com/in/karishmakori/?originalSubdomain=in' },
-  { icon: <InstagramIcon />, label: 'Instagram', href: 'https://www.instagram.com/karishmajkori?igsh=MWg2c2F0b3Uycm1wZw==' },
-  { icon: <WhatsAppIcon />, label: 'WhatsApp', href: '#' },
-  { icon:<YouTubeIcon/> , label:'YouTube' , href:'#'}
+  { icon: <InstagramIcon />, label: 'Instagram', href: 'https://www.instagram.com/brahmavastu.in?igsh=MTZqYWc3eDdzeXBhMg==' },
+  { icon: <WhatsAppIcon />, label: 'WhatsApp', href: '9152293717' },
+  { icon:<YouTubeIcon/> , label:'YouTube' , href:'https://www.youtube.com/@Brahmavastu'}
 ];
 
 export default function SocialIcons({ direction = 'row' }: { direction?: 'row' | 'column' }) {

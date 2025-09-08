@@ -15,7 +15,7 @@ export async function generateMetadata({ params }: VideoPageProps): Promise<Meta
     const videoId = parseInt(params.id);
     if (isNaN(videoId)) {
       return {
-        title: 'Video Not Found | Divya Vastu',
+        title: 'Video Not Found | Brahma Vastu',
         description: 'The requested video could not be found.',
       };
     }
@@ -24,7 +24,7 @@ export async function generateMetadata({ params }: VideoPageProps): Promise<Meta
     
     if (!video) {
       return {
-        title: 'Video Not Found | Divya Vastu',
+        title: 'Video Not Found | Brahma Vastu',
         description: 'The requested video could not be found.',
       };
     }
@@ -66,7 +66,7 @@ export async function generateMetadata({ params }: VideoPageProps): Promise<Meta
   } catch (error) {
     console.error('Error generating metadata for video:', error);
     return {
-      title: 'Video | Divya Vastu',
+      title: 'Video | Brahma Vastu',
       description: 'Watch Vastu videos and tutorials.',
     };
   }

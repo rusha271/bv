@@ -39,8 +39,8 @@ export interface SEOConfig {
 }
 
 const defaultSEOConfig: SEOConfig = {
-  siteName: 'Divya Vastu',
-  siteUrl: 'https://yourdomain.com',
+  siteName: 'Brahma Vastu',
+  siteUrl: 'http://localhost:3000',
   defaultImage: '/images/bv.png',
   twitterHandle: '@divyavastu'
 };
@@ -96,7 +96,7 @@ export function generateBlogStructuredData(blog: BlogSEOData, config: SEOConfig 
     "image": featuredImageUrl || `${config.siteUrl}${config.defaultImage}`,
     "author": {
       "@type": "Person",
-      "name": blog.author || "Divya Vastu Team"
+      "name": blog.author || "Brahma Vastu Team"
     },
     "publisher": {
       "@type": "Organization",
@@ -193,7 +193,7 @@ export function generateBlogMetaTags(blog: BlogSEOData, config: SEOConfig = defa
       article: {
         publishedTime: blog.published_date,
         modifiedTime: blog.updated_date,
-        authors: [blog.author || 'Divya Vastu Team'],
+        authors: [blog.author || 'Brahma Vastu Team'],
         section: blog.category || 'Vastu Shastra',
         tags: blog.tags || ['Vastu', 'Vastu Shastra']
       },
@@ -209,7 +209,7 @@ export function generateBlogMetaTags(blog: BlogSEOData, config: SEOConfig = defa
     additionalMetaTags: [
       {
         name: 'article:author',
-        content: blog.author || 'Divya Vastu Team'
+        content: blog.author || 'Brahma Vastu Team'
       },
       {
         name: 'article:published_time',
@@ -280,7 +280,7 @@ export function generateOrganizationStructuredData(config: SEOConfig = defaultSE
     "foundingDate": "2024",
     "founder": {
       "@type": "Person",
-      "name": "Divya Vastu Team"
+      "name": "Brahma Vastu Team"
     },
     "contactPoint": {
       "@type": "ContactPoint",

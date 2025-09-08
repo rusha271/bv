@@ -7,7 +7,8 @@ import {
   Users, 
   MessageSquare, 
   Globe,
-  BarChart3
+  BarChart3,
+  Settings
 } from "lucide-react";
 
 export default function Sidebar() {
@@ -19,6 +20,7 @@ export default function Sidebar() {
     { name: "Consultations", href: "/dashboard/consultations", icon: MessageSquare },
     { name: "World Map", href: "/dashboard/world-map", icon: Globe },
     { name: "Analytics", href: "/dashboard/analytics", icon: BarChart3 },
+    { name: "Site Settings", href: "/dashboard/site-settings", icon: Settings },
   ];
 
   return (

@@ -85,7 +85,7 @@ export default function Footer() {
           mt: 1,
         }}
       >
-        Made with ❤️ by Divya Vastu
+        Made with ❤️ by Brahma Vastu
       </Typography>
     </Box>
   );

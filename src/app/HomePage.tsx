@@ -298,7 +298,7 @@ export default function HomePage() {
           textShadow: "0 1px 4px rgba(0,0,0,0.3)",
         }}
       >
-        Made with ❤️ by Divya Vastu
+        Made with ❤️ by Brahma Vastu
       </Box>
       <Box
         component="footer"

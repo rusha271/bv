@@ -34,7 +34,7 @@ export async function generateMetadata({ params }: BlogPostPageProps): Promise<M
     
     if (!blog) {
       return {
-        title: 'Blog Post Not Found | Divya Vastu',
+        title: 'Blog Post Not Found | Brahma Vastu',
         description: 'The requested blog post could not be found.',
       };
     }
@@ -83,7 +83,7 @@ export async function generateMetadata({ params }: BlogPostPageProps): Promise<M
   } catch (error) {
     console.error('Error generating metadata for blog post:', error);
     return {
-      title: 'Blog Post | Divya Vastu',
+      title: 'Blog Post | Brahma Vastu',
       description: 'Read Vastu blog posts and articles.',
     };
   }

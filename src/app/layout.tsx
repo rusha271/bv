@@ -17,8 +17,8 @@ import SmartPageLoader from '@/components/Loader/SmartPageLoader';
 
 export const metadata: Metadata = {
   title: {
-    default: "Divya Vastu - Professional Vastu Consultation & Floor Plan Analysis",
-    template: "%s | Divya Vastu"
+    default: "Brahma Vastu - Professional Vastu Consultation & Floor Plan Analysis",
+    template: "%s | Brahma Vastu"
   },
   description: "Professional Vastu Shastra consultation services. Get instant Vastu analysis of your floor plan, expert tips, remedies, and comprehensive guidance for your home and office.",
   keywords: [
@@ -30,21 +30,21 @@ export const metadata: Metadata = {
     "Vastu Expert",
     "Vastu Tips",
     "Vastu Remedies",
-    "Divya Vastu",
+    "Brahma Vastu",
     "Brahma Vastu",
     "Vastu Analysis",
     "Vastu Check",
     "Vastu Services"
   ],
-  authors: [{ name: "Divya Vastu Team" }],
-  creator: "Divya Vastu",
+  authors: [{ name: "Brahma Vastu Team" }],
+  creator: "Brahma Vastu",
   publisher: "Brahma Vastu",
   formatDetection: {
     email: false,
     address: false,
     telephone: false,
   },
-  metadataBase: new URL('https://yourdomain.com'),
+  metadataBase: new URL('http://localhost:3000'),
   alternates: {
     canonical: '/',
   },
@@ -62,22 +62,22 @@ export const metadata: Metadata = {
   openGraph: {
     type: "website",
     locale: "en_US",
-    url: "https://yourdomain.com",
-    siteName: "Divya Vastu",
-    title: "Divya Vastu - Professional Vastu Consultation & Floor Plan Analysis",
+    url: "http://localhost:3000",
+    siteName: "Brahma Vastu",
+    title: "Brahma Vastu - Professional Vastu Consultation & Floor Plan Analysis",
     description: "Professional Vastu Shastra consultation services. Get instant Vastu analysis of your floor plan, expert tips, remedies, and comprehensive guidance.",
     images: [
       {
         url: "/images/bv.png",
         width: 1200,
         height: 630,
-        alt: "Divya Vastu - Professional Vastu Consultation",
+        alt: "Brahma Vastu - Professional Vastu Consultation",
       },
     ],
   },
   twitter: {
     card: "summary_large_image",
-    title: "Divya Vastu - Professional Vastu Consultation & Floor Plan Analysis",
+    title: "Brahma Vastu - Professional Vastu Consultation & Floor Plan Analysis",
     description: "Professional Vastu Shastra consultation services. Get instant Vastu analysis of your floor plan, expert tips, and remedies.",
     images: ["/images/bv.png"],
     creator: "@divyavastu",
@@ -90,8 +90,8 @@ export const metadata: Metadata = {
   category: "Vastu Shastra",
   classification: "Vastu Consultation Services",
   other: {
-    "application-name": "Divya Vastu",
-    "apple-mobile-web-app-title": "Divya Vastu",
+    "application-name": "Brahma Vastu",
+    "apple-mobile-web-app-title": "Brahma Vastu",
     "apple-mobile-web-app-capable": "yes",
     "apple-mobile-web-app-status-bar-style": "default",
     "format-detection": "telephone=no",
@@ -121,15 +121,15 @@ export default function RootLayout({
             __html: JSON.stringify({
               "@context": "https://schema.org",
               "@type": "Organization",
-              "name": "Divya Vastu",
+              "name": "Brahma Vastu",
               "alternateName": "Brahma Vastu",
-              "url": "https://yourdomain.com",
-              "logo": "https://yourdomain.com/images/bv.png",
+              "url": "http://localhost:3000",
+              "logo": "http://localhost:3000/images/bv.png",
               "description": "Professional Vastu Shastra consultation services. Get instant Vastu analysis of your floor plan, expert tips, remedies, and comprehensive guidance for your home and office.",
               "foundingDate": "2024",
               "founder": {
                 "@type": "Person",
-                "name": "Divya Vastu Team"
+                "name": "Brahma Vastu Team"
               },
               "contactPoint": {
                 "@type": "ContactPoint",
@@ -147,7 +147,7 @@ export default function RootLayout({
                 "description": "Professional Vastu Shastra consultation and floor plan analysis services",
                 "provider": {
                   "@type": "Organization",
-                  "name": "Divya Vastu"
+                  "name": "Brahma Vastu"
                 },
                 "areaServed": "Worldwide",
                 "serviceType": "Vastu Shastra Consultation"

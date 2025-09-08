@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import BlogPage from './BlogPage';
 
 export const metadata: Metadata = {
-  title: "Vastu Resources - Videos, Books, Tips & Posts | Divya Vastu Blog",
+  title: "Vastu Resources - Videos, Books, Tips & Posts | Brahma Vastu Blog",
   description: "Explore comprehensive Vastu resources including educational videos, books, expert tips, and community posts. Learn Vastu Shastra principles, remedies, and best practices for your home and office.",
   keywords: [
     "Vastu Resources",
@@ -20,8 +20,8 @@ export const metadata: Metadata = {
     "Office Vastu",
     "Vastu Remedies"
   ],
-  authors: [{ name: "Divya Vastu Team" }],
-  creator: "Divya Vastu",
+  authors: [{ name: "Brahma Vastu Team" }],
+  creator: "Brahma Vastu",
   publisher: "Brahma Vastu",
   robots: {
     index: true,
@@ -37,16 +37,16 @@ export const metadata: Metadata = {
   openGraph: {
     type: "website",
     locale: "en_US",
-    url: "https://yourdomain.com/blog",
-    siteName: "Divya Vastu",
+    url: "http://localhost:3000/blog",
+    siteName: "Brahma Vastu",
     title: "Vastu Resources - Videos, Books, Tips & Posts",
     description: "Explore comprehensive Vastu resources including educational videos, books, expert tips, and community posts. Learn Vastu Shastra principles and best practices.",
     images: [
       {
-        url: "https://yourdomain.com/images/bv.png",
+        url: "http://localhost:3000/images/bv.png",
         width: 1200,
         height: 630,
-        alt: "Divya Vastu - Vastu Resources and Learning",
+        alt: "Brahma Vastu - Vastu Resources and Learning",
       },
     ],
   },
@@ -54,16 +54,16 @@ export const metadata: Metadata = {
     card: "summary_large_image",
     title: "Vastu Resources - Videos, Books, Tips & Posts",
     description: "Explore comprehensive Vastu resources including educational videos, books, expert tips, and community posts.",
-    images: ["https://yourdomain.com/images/bv.png"],
+    images: ["http://localhost:3000/images/bv.png"],
     creator: "@divyavastu",
   },
   alternates: {
-    canonical: "https://yourdomain.com/blog",
+    canonical: "http://localhost:3000/blog",
   },
   category: "Vastu Education",
   classification: "Vastu Learning Resources",
   other: {
-    "application-name": "Divya Vastu",
+    "application-name": "Brahma Vastu",
     "apple-mobile-web-app-title": "Vastu Resources",
     "apple-mobile-web-app-capable": "yes",
     "apple-mobile-web-app-status-bar-style": "default",
@@ -84,76 +84,76 @@ export default function Blog() {
           __html: JSON.stringify({
             "@context": "https://schema.org",
             "@type": "Blog",
-            "name": "Divya Vastu Resources",
+            "name": "Brahma Vastu Resources",
             "description": "Explore comprehensive Vastu resources including educational videos, books, expert tips, and community posts. Learn Vastu Shastra principles, remedies, and best practices.",
-            "url": "https://yourdomain.com/blog",
+            "url": "http://localhost:3000/blog",
             "publisher": {
               "@type": "Organization",
-              "name": "Divya Vastu",
+              "name": "Brahma Vastu",
               "logo": {
                 "@type": "ImageObject",
-                "url": "https://yourdomain.com/images/bv.png"
+                "url": "http://localhost:3000/images/bv.png"
               }
             },
             "mainEntityOfPage": {
               "@type": "WebPage",
-              "@id": "https://yourdomain.com/blog"
+              "@id": "http://localhost:3000/blog"
             },
             "blogPost": [
               {
                 "@type": "BlogPosting",
                 "headline": "Vastu Videos",
                 "description": "Educational videos about Vastu Shastra principles and applications",
-                "url": "https://yourdomain.com/blog#videos",
+                "url": "http://localhost:3000/blog#videos",
                 "author": {
                   "@type": "Organization",
-                  "name": "Divya Vastu Team"
+                  "name": "Brahma Vastu Team"
                 },
                 "publisher": {
                   "@type": "Organization",
-                  "name": "Divya Vastu"
+                  "name": "Brahma Vastu"
                 }
               },
               {
                 "@type": "BlogPosting",
                 "headline": "Vastu Books",
                 "description": "Comprehensive books and guides on Vastu Shastra",
-                "url": "https://yourdomain.com/blog#books",
+                "url": "http://localhost:3000/blog#books",
                 "author": {
                   "@type": "Organization",
-                  "name": "Divya Vastu Team"
+                  "name": "Brahma Vastu Team"
                 },
                 "publisher": {
                   "@type": "Organization",
-                  "name": "Divya Vastu"
+                  "name": "Brahma Vastu"
                 }
               },
               {
                 "@type": "BlogPosting",
                 "headline": "Vastu Tips",
                 "description": "Expert tips and advice for Vastu Shastra implementation",
-                "url": "https://yourdomain.com/blog#tips",
+                "url": "http://localhost:3000/blog#tips",
                 "author": {
                   "@type": "Organization",
-                  "name": "Divya Vastu Team"
+                  "name": "Brahma Vastu Team"
                 },
                 "publisher": {
                   "@type": "Organization",
-                  "name": "Divya Vastu"
+                  "name": "Brahma Vastu"
                 }
               },
               {
                 "@type": "BlogPosting",
                 "headline": "Vastu Posts",
                 "description": "Community posts and discussions about Vastu Shastra",
-                "url": "https://yourdomain.com/blog#posts",
+                "url": "http://localhost:3000/blog#posts",
                 "author": {
                   "@type": "Organization",
-                  "name": "Divya Vastu Team"
+                  "name": "Brahma Vastu Team"
                 },
                 "publisher": {
                   "@type": "Organization",
-                  "name": "Divya Vastu"
+                  "name": "Brahma Vastu"
                 }
               }
             ]

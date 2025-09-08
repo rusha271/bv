@@ -661,6 +661,28 @@ class ApiService {
     },    
   };
 
+  // Admin Endpoints (/admin)
+  admin = {
+    getLogo: async (): Promise<{ image_url: string }> => {
+      return api.get<{ image_url: string }>('/get-image');
+    },
+
+    uploadLogo: async (imageFile: File): Promise<{ image_url: string }> => {
+      const formData = new FormData();
+      formData.append('file', imageFile);
+      return api.post<{ image_url: string }>('/admin/upload-image', formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
+      });
+    }
+  };
+
+  // Utility method to get base URL
+  getBaseURL = (): string => {
+    return api.getBaseURL();
+  };
+
   // Roles Endpoints (/api/roles)
   roles = {
     getAll: async (): Promise<Role[]> => {
@@ -711,7 +733,8 @@ export const {
   roles,
   books,
   videos,
-  tips
+  tips,
+  admin
 } = apiService;
 
 export default apiService;

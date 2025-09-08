@@ -11,6 +11,7 @@ import useScrollTrigger from '@mui/material/useScrollTrigger';
 import Slide from '@mui/material/Slide';
 import Image from 'next/image';
 import { useThemeContext } from '@/contexts/ThemeContext';
+import { apiService } from '@/utils/apiService';
 import MenuIcon from '@mui/icons-material/Menu';
 import Drawer from '@mui/material/Drawer';
 import List from '@mui/material/List';
@@ -53,6 +54,7 @@ const Navbar = memo(function Navbar() {
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [loginDialogOpen, setLoginDialogOpen] = useState(false);
   const [userMenuAnchor, setUserMenuAnchor] = useState<null | HTMLElement>(null);
+  const [uploadedLogo, setUploadedLogo] = useState<string | null>(null);
   const pathname = usePathname();
   
   // Use selective hooks to prevent unnecessary re-renders
@@ -64,8 +66,34 @@ const Navbar = memo(function Navbar() {
   const isAuthenticated = !!user;
   const isAdmin = isAuthenticated && user?.role?.name === 'admin';
 
+  // Helper function to construct proper image URL
+  const getImageUrl = (imagePath: string) => {
+    if (imagePath.startsWith('http')) {
+      console.log('Using full URL:', imagePath);
+      return imagePath;
+    }
+    // If the path doesn't start with http, it's likely a relative path from the API
+    // We need to construct the full URL using the same base URL as the apiService
+    const baseURL = apiService.getBaseURL();
+    const fullUrl = imagePath.startsWith('/') ? `${baseURL}${imagePath}` : `${baseURL}/${imagePath}`;
+    console.log('Constructed URL:', fullUrl, 'from path:', imagePath, 'baseURL:', baseURL);
+    return fullUrl;
+  };
+
   useEffect(() => {
-    // Remove console.log to prevent unnecessary renders
+    // Fetch uploaded logo
+    const fetchUploadedLogo = async () => {
+      try {
+        const data = await apiService.admin.getLogo();
+        console.log('Logo data received:', data);
+        console.log('Image URL:', data.image_url);
+        setUploadedLogo(data.image_url);
+      } catch (error) {
+        console.error('Error fetching uploaded logo:', error);
+      }
+    };
+
+    fetchUploadedLogo();
   }, []);
 
   // User menu handlers
@@ -126,14 +154,19 @@ const Navbar = memo(function Navbar() {
         >
           <Toolbar sx={{ justifyContent: 'space-between' }}>
             <Box display="flex" alignItems="center" gap={2}>
-              <Image
-                src="/images/bv.png"
-                alt="Brahma Vastu"
-                width={48}
-                height={48}
-                style={{ borderRadius: 8 }}
-                priority
-              />
+              {uploadedLogo && (
+                <Image
+                  src={getImageUrl(uploadedLogo)}
+                  alt="Uploaded Logo"
+                  width={48}
+                  height={48}
+                  style={{ borderRadius: 8 }}
+                  onError={(e) => {
+                    const target = e.target as HTMLImageElement;
+                    target.style.display = 'none';
+                  }}
+                />
+              )}
               <Typography variant="h6" fontWeight={700} sx={{ color: theme.palette.primary.main }} onClick={() => router.push('/')} style={{ cursor: 'pointer' }}>
                 Brahma Vastu
               </Typography>

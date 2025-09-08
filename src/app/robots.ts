@@ -13,6 +13,6 @@ export default function robots(): MetadataRoute.Robots {
         '/private/',
       ],
     },
-    sitemap: 'https://yourdomain.com/sitemap.xml',
+    sitemap: 'http://localhost:3000/sitemap.xml',
   };
 }

@@ -2,7 +2,7 @@ import { MetadataRoute } from 'next';
 import { apiService } from '@/utils/apiService';
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
-  const baseUrl = 'https://yourdomain.com';
+  const baseUrl = 'http://localhost:3000';
   
   // Static pages
   const staticPages: MetadataRoute.Sitemap = [
