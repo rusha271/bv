@@ -1,0 +1,4 @@
+sudo systemctl stop fastapi
+sudo systemctl daemon-reload
+sudo systemctl start fastapi
+sudo systemctl enable fastapi

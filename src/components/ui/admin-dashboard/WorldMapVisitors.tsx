@@ -9,6 +9,7 @@ import {
   Marker
 } from "react-simple-maps";
 import { Globe, Users } from "lucide-react";
+import { useThemeContext } from "@/contexts/ThemeContext";
 
 // Dummy visitor data by country
 const dummyVisitorData = [
@@ -46,6 +47,7 @@ export default function WorldMapVisitors() {
   const [error, setError] = useState<string | null>(null);
   const [tooltipContent, setTooltipContent] = useState<string>("");
   const [tooltipPosition, setTooltipPosition] = useState({ x: 0, y: 0 });
+  const { mode } = useThemeContext();
 
   useEffect(() => {
     const fetchVisitorData = async () => {
@@ -85,36 +87,60 @@ export default function WorldMapVisitors() {
 
   if (loading) {
     return (
-      <div className="bg-white rounded-lg shadow p-6">
+      <div className={`rounded-lg shadow p-6 ${
+        mode === 'dark' ? 'bg-gray-800' : 'bg-white'
+      }`}>
         <div className="animate-pulse">
-          <div className="h-6 bg-gray-200 rounded w-1/3 mb-4"></div>
-          <div className="h-96 bg-gray-200 rounded"></div>
+          <div className={`h-6 rounded w-1/3 mb-4 ${
+            mode === 'dark' ? 'bg-gray-700' : 'bg-gray-200'
+          }`}></div>
+          <div className={`h-96 rounded ${
+            mode === 'dark' ? 'bg-gray-700' : 'bg-gray-200'
+          }`}></div>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="bg-white rounded-lg shadow p-6">
+    <div className={`rounded-xl shadow-lg p-6 border ${
+      mode === 'dark' 
+        ? 'bg-gray-800 border-gray-700' 
+        : 'bg-white border-gray-200'
+    }`}>
       <div className="flex items-center justify-between mb-6">
         <div className="flex items-center">
-          <div className="p-2 bg-purple-100 rounded-lg mr-3">
-            <Globe className="h-6 w-6 text-purple-600" />
+          <div className={`p-3 rounded-lg mr-4 ${
+            mode === 'dark' ? 'bg-purple-900' : 'bg-purple-100'
+          }`}>
+            <Globe className={`h-6 w-6 ${
+              mode === 'dark' ? 'text-purple-300' : 'text-purple-600'
+            }`} />
           </div>
           <div>
-            <h3 className="text-lg font-semibold text-gray-900">Visitor Distribution</h3>
-            <p className="text-sm text-gray-600">Global visitor analytics</p>
+            <h3 className={`text-lg font-bold ${
+              mode === 'dark' ? 'text-white' : 'text-gray-900'
+            }`}>Visitor Distribution</h3>
+            <p className={`text-sm font-medium ${
+              mode === 'dark' ? 'text-gray-300' : 'text-gray-600'
+            }`}>Global visitor analytics</p>
           </div>
         </div>
-        <div className="flex items-center text-purple-600">
+        <div className="flex items-center text-purple-500">
           <Users className="h-4 w-4 mr-1" />
-          <span className="text-sm font-medium">{totalVisitors.toLocaleString()} total</span>
+          <span className="text-sm font-semibold">{totalVisitors.toLocaleString()} total</span>
         </div>
       </div>
 
       {error && (
-        <div className="bg-red-50 border border-red-200 rounded-lg p-4 mb-4">
-          <p className="text-red-600 text-sm">{error}</p>
+        <div className={`rounded-lg p-4 mb-4 ${
+          mode === 'dark' 
+            ? 'bg-red-900 border border-red-700' 
+            : 'bg-red-50 border border-red-200'
+        }`}>
+          <p className={`text-sm ${
+            mode === 'dark' ? 'text-red-300' : 'text-red-600'
+          }`}>{error}</p>
         </div>
       )}
 
@@ -128,8 +154,8 @@ export default function WorldMapVisitors() {
         <ZoomableGroup minZoom={1} maxZoom={8} zoom={1}>
           <Geographies
             geography="/features.json"
-            fill="#E5E7EB"
-            stroke="#D1D5DB"
+            fill={mode === 'dark' ? "#374151" : "#E5E7EB"}
+            stroke={mode === 'dark' ? "#4B5563" : "#D1D5DB"}
             strokeWidth={0.5}
           >
             {({ geographies }) =>
@@ -137,8 +163,8 @@ export default function WorldMapVisitors() {
                 <Geography
                   key={geo.rsmKey}
                   geography={geo}
-                  fill="#E5E7EB"
-                  stroke="#D1D5DB"
+                  fill={mode === 'dark' ? "#374151" : "#E5E7EB"}
+                  stroke={mode === 'dark' ? "#4B5563" : "#D1D5DB"}
                   strokeWidth={0.5}
                 />
               ))
@@ -166,7 +192,11 @@ export default function WorldMapVisitors() {
 
         {tooltipContent && (
           <div
-            className="absolute z-10 px-3 py-2 text-sm text-white bg-gray-900 rounded-lg shadow-lg pointer-events-none"
+            className={`absolute z-10 px-3 py-2 text-sm rounded-lg shadow-lg pointer-events-none ${
+              mode === 'dark' 
+                ? 'text-white bg-gray-900' 
+                : 'text-white bg-gray-900'
+            }`}
             style={{
               left: tooltipPosition.x + 10,
               top: tooltipPosition.y - 10,
@@ -179,15 +209,23 @@ export default function WorldMapVisitors() {
       </div>
 
       <div className="mt-6">
-        <h4 className="text-sm font-medium text-gray-900 mb-3">Top Countries</h4>
+        <h4 className={`text-sm font-medium mb-3 ${
+          mode === 'dark' ? 'text-white' : 'text-gray-900'
+        }`}>Top Countries</h4>
         <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
           {visitorData
             .sort((a, b) => b.visitors - a.visitors)
             .slice(0, 8)
             .map((country) => (
-              <div key={country.country} className="flex items-center justify-between p-2 bg-gray-50 rounded">
-                <span className="text-sm font-medium text-gray-700">{country.country}</span>
-                <span className="text-sm text-gray-600">{country.visitors.toLocaleString()}</span>
+              <div key={country.country} className={`flex items-center justify-between p-2 rounded ${
+                mode === 'dark' ? 'bg-gray-700' : 'bg-gray-50'
+              }`}>
+                <span className={`text-sm font-medium ${
+                  mode === 'dark' ? 'text-gray-200' : 'text-gray-700'
+                }`}>{country.country}</span>
+                <span className={`text-sm ${
+                  mode === 'dark' ? 'text-gray-300' : 'text-gray-600'
+                }`}>{country.visitors.toLocaleString()}</span>
               </div>
             ))}
         </div>

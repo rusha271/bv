@@ -9,9 +9,50 @@ import { useRouter } from 'next/navigation';
 export default function GuestBanner() {
   const isGuest = useAuthGuest();
   const user = useAuthUser();
-  const [showBanner, setShowBanner] = useState(false);
+  const [showBanner, setShowBanner] = useState(true);
   const [showUpgradeModal, setShowUpgradeModal] = useState(false);
+  const [isClient, setIsClient] = useState(false);
   const router = useRouter();
+
+  // Prevent hydration mismatch
+  React.useEffect(() => {
+    setIsClient(true);
+  }, []);
+
+  // Debug logging
+  React.useEffect(() => {
+    console.log('GuestBanner Debug:', {
+      isGuest,
+      user: user ? { name: user.name, email: user.email, role: user.role } : null,
+      showBanner,
+      bannerDismissed: typeof window !== 'undefined' ? sessionStorage.getItem('guest_banner_dismissed') : 'N/A',
+      guestAccountCreated: typeof window !== 'undefined' ? sessionStorage.getItem('guest_account_created') : 'N/A',
+      debugMode: typeof window !== 'undefined' ? window.location.search.includes('debug=banner') : false,
+      willShow: isGuest && showBanner
+    });
+  }, [isGuest, user, showBanner]);
+
+  // Check if banner was dismissed
+  React.useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const bannerDismissed = sessionStorage.getItem('guest_banner_dismissed');
+      console.log('Banner dismissed check:', bannerDismissed);
+      
+      // If banner was dismissed but we have a new guest account, reset the banner
+      if (bannerDismissed === 'true' && isGuest) {
+        const guestAccountCreated = sessionStorage.getItem('guest_account_created');
+        if (guestAccountCreated === 'true') {
+          console.log('Resetting banner for new guest account');
+          sessionStorage.removeItem('guest_banner_dismissed');
+          setShowBanner(true);
+        } else {
+          setShowBanner(false);
+        }
+      } else if (bannerDismissed === 'true') {
+        setShowBanner(false);
+      }
+    }
+  }, [isGuest]);
 
   // Listen for custom event to open upgrade modal
   React.useEffect(() => {
@@ -25,8 +66,34 @@ export default function GuestBanner() {
     };
   }, []);
 
-  // Don't show banner if user is not a guest
-  if (!isGuest) {
+  // Don't render until client-side to prevent hydration mismatch
+  if (!isClient) {
+    return null;
+  }
+
+  // Temporary debug mode - force banner to show for testing
+  const debugMode = typeof window !== 'undefined' && window.location.search.includes('debug=banner');
+  
+  // Debug: Add manual guest account creation button
+  const handleCreateGuestAccount = async () => {
+    try {
+      console.log('Manually creating guest account...');
+      // Trigger guest account creation via custom event
+      window.dispatchEvent(new CustomEvent('createGuestAccount'));
+    } catch (error) {
+      console.error('Failed to create guest account manually:', error);
+    }
+  };
+
+  // Debug: Reset banner state
+  const handleResetBanner = () => {
+    console.log('Resetting banner state...');
+    sessionStorage.removeItem('guest_banner_dismissed');
+    setShowBanner(true);
+  };
+  
+  // Don't show banner if user is not a guest or banner is dismissed (unless in debug mode)
+  if ((!isGuest || !showBanner) && !debugMode) {
     return null;
   }
 
@@ -48,6 +115,17 @@ export default function GuestBanner() {
               <p className="text-xs opacity-90">
                 Upgrade to save your progress and access all features.
               </p>
+              {debugMode && (
+                <div className="text-xs opacity-75 mt-1">
+                  <p>DEBUG: isGuest={isGuest ? 'true' : 'false'}, showBanner={showBanner ? 'true' : 'false'}</p>
+                  <button
+                    onClick={handleResetBanner}
+                    className="bg-yellow-500 text-white px-2 py-1 rounded text-xs mt-1"
+                  >
+                    Reset Banner
+                  </button>
+                </div>
+              )}
             </div>
           </div>
           <div className="flex items-center space-x-3">
@@ -61,9 +139,10 @@ export default function GuestBanner() {
             <button
               onClick={() => {
                 sessionStorage.setItem('guest_banner_dismissed', 'true');
-                router.refresh();
+                setShowBanner(false);
               }}
               className="text-white opacity-75 hover:opacity-100 transition-opacity"
+              aria-label="Close banner"
             >
               <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />

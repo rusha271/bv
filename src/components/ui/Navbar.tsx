@@ -55,7 +55,13 @@ const Navbar = memo(function Navbar() {
   const [loginDialogOpen, setLoginDialogOpen] = useState(false);
   const [userMenuAnchor, setUserMenuAnchor] = useState<null | HTMLElement>(null);
   const [uploadedLogo, setUploadedLogo] = useState<string | null>(null);
+  const [isClient, setIsClient] = useState(false);
   const pathname = usePathname();
+
+  // Prevent hydration mismatch
+  useEffect(() => {
+    setIsClient(true);
+  }, []);
   
   // Use selective hooks to prevent unnecessary re-renders
   const user = useAuthUser();
@@ -137,6 +143,11 @@ const Navbar = memo(function Navbar() {
   const handleLoginClose = () => {
     setLoginDialogOpen(false);
   };
+
+  // Don't render until client-side to prevent hydration mismatch
+  if (!isClient) {
+    return null;
+  }
 
   return (
     <>

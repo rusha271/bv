@@ -18,8 +18,144 @@ interface BaseStyles {
   [key: string]: any;
 }
 
-const InnerTour = ({ onVideoOpen }: { onVideoOpen: () => void }) => {
-  const { setIsOpen, currentStep, isOpen, setCurrentStep } = useTour();
+const TourWithSteps = ({ onVideoOpen }: { onVideoOpen: () => void }) => {
+  const { setIsOpen, currentStep, isOpen, setCurrentStep, setSteps } = useTour();
+  const { theme } = useThemeContext();
+  const isMobile = useMediaQuery('(max-width:600px)');
+
+  // Custom close button component
+  const CustomCloseButton = ({ setIsOpen }: { setIsOpen: () => void }) => (
+    <IconButton
+      onClick={setIsOpen}
+      size="small"
+      sx={{
+        position: 'absolute',
+        top: isMobile ? 8 : 12,
+        right: isMobile ? 8 : 12,
+        backgroundColor: theme.palette.mode === 'dark' ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.05)',
+        color: theme.palette.mode === 'dark' ? '#ffffff' : '#666666',
+        width: isMobile ? 28 : 32,
+        height: isMobile ? 28 : 32,
+        zIndex: 1,
+        '&:hover': { 
+          backgroundColor: theme.palette.mode === 'dark' ? 'rgba(255,255,255,0.2)' : 'rgba(0,0,0,0.1)',
+        },
+      }}
+    >
+      <CloseIcon fontSize={isMobile ? 'small' : 'medium'} />
+    </IconButton>
+  );
+
+  // Custom previous button component
+  const CustomPrevButton = ({ currentStep, setCurrentStep }: { currentStep: number; setCurrentStep: (step: number) => void }) => (
+    currentStep > 0 ? (
+      <IconButton
+        onClick={() => setCurrentStep(currentStep - 1)}
+        size="small"
+        sx={{
+          position: 'absolute',
+          top: isMobile ? 8 : 12,
+          left: isMobile ? 8 : 12,
+          backgroundColor: theme.palette.mode === 'dark' ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.05)',
+          color: theme.palette.mode === 'dark' ? '#ffffff' : '#666666',
+          width: isMobile ? 28 : 32,
+          height: isMobile ? 28 : 32,
+          '&:hover': { 
+            backgroundColor: theme.palette.mode === 'dark' ? 'rgba(255,255,255,0.2)' : 'rgba(0,0,0,0.1)',
+          },
+        }}
+      >
+        <ArrowBackIcon fontSize={isMobile ? 'small' : 'medium'} />
+      </IconButton>
+    ) : null
+  );
+
+  // Create custom step content component
+  const CustomStepContent = ({ 
+    stepIndex, 
+    title, 
+    description, 
+    emoji,
+    onClose
+  }: { 
+    stepIndex: number; 
+    title: string; 
+    description: string; 
+    emoji: string;
+    onClose: () => void;
+  }) => (
+    <Box sx={{ position: 'relative', p: isMobile ? '16px 16px 0 16px' : '20px 20px 0 20px' }}>
+      <CustomCloseButton setIsOpen={onClose} />
+      <CustomPrevButton currentStep={currentStep} setCurrentStep={setCurrentStep} />
+      <Box sx={{ mt: isMobile ? 1.5 : 2, pr: isMobile ? 4 : 5 }}>
+        <Typography variant="h6" sx={{ mb: 1, fontWeight: 600, fontSize: '16px' }}>
+          {emoji} {title}
+        </Typography>
+        <Typography variant="body2" sx={{ opacity: 0.9, fontSize: '14px', lineHeight: 1.4 }}>
+          {description}
+        </Typography>
+      </Box>
+    </Box>
+  );
+
+  // Define steps with proper typing
+  const steps: StepType[] = [
+    {
+      selector: '.file-upload',
+      content: (
+        <CustomStepContent
+          stepIndex={0}
+          emoji="📁"
+          title="Upload Your Floor Plan"
+          description="Start by uploading your floor plan image here. We support PNG, JPG, and JPEG formats."
+          onClose={() => setIsOpen(false)}
+        />
+      ),
+    },
+    {
+      selector: '.check-vastu-btn',
+      content: (
+        <CustomStepContent
+          stepIndex={1}
+          emoji="✨"
+          title="Check Your Vastu"
+          description="Once uploaded, click this button to analyze your floor plan according to Vastu principles."
+          onClose={() => setIsOpen(false)}
+        />
+      ),
+    },
+    {
+      selector: '.social-icons',
+      content: (
+        <CustomStepContent
+          stepIndex={2}
+          emoji="🌐"
+          title="Stay Connected"
+          description="Follow us on social media for more Vastu tips and updates."
+          onClose={() => setIsOpen(false)}
+        />
+      ),
+    },
+    {
+      selector: '.video-tour',
+      content: (
+        <CustomStepContent
+          stepIndex={3}
+          emoji="🎥"
+          title="Video Tutorial"
+          description="Watch our helpful video guide to learn the best practices for uploading your floor plan."
+          onClose={() => setIsOpen(false)}
+        />
+      ),
+    },
+  ];
+
+  // Set the steps for the tour
+  useEffect(() => {
+    if (setSteps) {
+      setSteps(steps);
+    }
+  }, [setSteps]); // Remove steps from dependencies to prevent infinite loop
 
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -56,80 +192,6 @@ export default function ProductTour() {
   const [videoOpen, setVideoOpen] = useState(false);
   const { theme } = useThemeContext();
   const isMobile = useMediaQuery('(max-width:600px)');
-
-  // Create custom step content component
-  const CustomStepContent = ({ 
-    stepIndex, 
-    title, 
-    description, 
-    emoji 
-  }: { 
-    stepIndex: number; 
-    title: string; 
-    description: string; 
-    emoji: string;
-  }) => (
-    <Box sx={{ position: 'relative', p: isMobile ? '16px 16px 0 16px' : '20px 20px 0 20px' }}>
-      <CustomCloseButton setIsOpen={() => {}} />
-      <CustomPrevButton currentStep={0} setCurrentStep={() => {}} setIsOpen={() => {}} />
-      <Box sx={{ mt: isMobile ? 1.5 : 2, pr: isMobile ? 4 : 5 }}>
-        <Typography variant="h6" sx={{ mb: 1, fontWeight: 600, fontSize: '16px' }}>
-          {emoji} {title}
-        </Typography>
-        <Typography variant="body2" sx={{ opacity: 0.9, fontSize: '14px', lineHeight: 1.4 }}>
-          {description}
-        </Typography>
-      </Box>
-    </Box>
-  );
-
-  // Define steps with proper typing
-  const steps: StepType[] = [
-    {
-      selector: '.file-upload',
-      content: (
-        <CustomStepContent
-          stepIndex={0}
-          emoji="📁"
-          title="Upload Your Floor Plan"
-          description="Start by uploading your floor plan image here. We support PNG, JPG, and JPEG formats."
-        />
-      ),
-    },
-    {
-      selector: '.check-vastu-btn',
-      content: (
-        <CustomStepContent
-          stepIndex={1}
-          emoji="✨"
-          title="Check Your Vastu"
-          description="Once uploaded, click this button to analyze your floor plan according to Vastu principles."
-        />
-      ),
-    },
-    {
-      selector: '.social-icons',
-      content: (
-        <CustomStepContent
-          stepIndex={2}
-          emoji="🌐"
-          title="Stay Connected"
-          description="Follow us on social media for more Vastu tips and updates."
-        />
-      ),
-    },
-    {
-      selector: '.video-tour',
-      content: (
-        <CustomStepContent
-          stepIndex={3}
-          emoji="🎥"
-          title="Video Tutorial"
-          description="Watch our helpful video guide to learn the best practices for uploading your floor plan."
-        />
-      ),
-    },
-  ];
 
   const tourStyles = {
     popover: (base: BaseStyles) => {
@@ -232,7 +294,7 @@ export default function ProductTour() {
           fontSize: isMobile ? '11px' : '12px',
           alignSelf: 'center'
         }}>
-          of {steps.length}
+          of 4
         </Typography>
       </Box>
       
@@ -259,13 +321,13 @@ export default function ProductTour() {
           variant="contained"
           size="small"
           onClick={() => {
-            if (currentStep === steps.length - 1) {
+            if (currentStep === 3) { // 4 steps total (0-3)
               setIsOpen(false);
             } else {
               setCurrentStep(currentStep + 1);
             }
           }}
-          endIcon={currentStep === steps.length - 1 ? null : <ArrowForwardIcon fontSize="small" />}
+          endIcon={currentStep === 3 ? null : <ArrowForwardIcon fontSize="small" />}
           sx={{
             backgroundColor: theme.palette.primary.main,
             color: theme.palette.primary.contrastText,
@@ -281,61 +343,16 @@ export default function ProductTour() {
             },
           }}
         >
-          {currentStep === steps.length - 1 ? 'Finish' : 'Next'}
+          {currentStep === 3 ? 'Finish' : 'Next'}
         </Button>
       </Box>
     </Box>
   );
 
-  const CustomPrevButton = ({ currentStep, setCurrentStep }: TourButtonProps) => (
-    currentStep > 0 ? (
-      <IconButton
-        onClick={() => setCurrentStep(currentStep - 1)}
-        size="small"
-        sx={{
-          position: 'absolute',
-          top: isMobile ? 8 : 12,
-          left: isMobile ? 8 : 12,
-          backgroundColor: theme.palette.mode === 'dark' ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.05)',
-          color: theme.palette.mode === 'dark' ? '#ffffff' : '#666666',
-          width: isMobile ? 28 : 32,
-          height: isMobile ? 28 : 32,
-          '&:hover': { 
-            backgroundColor: theme.palette.mode === 'dark' ? 'rgba(255,255,255,0.2)' : 'rgba(0,0,0,0.1)',
-          },
-        }}
-      >
-        <ArrowBackIcon fontSize={isMobile ? 'small' : 'medium'} />
-      </IconButton>
-    ) : null
-  );
-
-  const CustomCloseButton = ({ setIsOpen }: { setIsOpen: (isOpen: boolean) => void }) => (
-    <IconButton
-      onClick={() => setIsOpen(false)}
-      size="small"
-      sx={{
-        position: 'absolute',
-        top: isMobile ? 8 : 12,
-        right: isMobile ? 8 : 12,
-        backgroundColor: theme.palette.mode === 'dark' ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.05)',
-        color: theme.palette.mode === 'dark' ? '#ffffff' : '#666666',
-        width: isMobile ? 28 : 32,
-        height: isMobile ? 28 : 32,
-        zIndex: 1,
-        '&:hover': { 
-          backgroundColor: theme.palette.mode === 'dark' ? 'rgba(255,255,255,0.2)' : 'rgba(0,0,0,0.1)',
-        },
-      }}
-    >
-      <CloseIcon fontSize={isMobile ? 'small' : 'medium'} />
-    </IconButton>
-  );
-
   return (
     <>
       <TourProvider
-        steps={steps}
+        steps={[]} // Will be set by TourWithSteps
         disableInteraction={false}
         styles={tourStyles}
         nextButton={CustomNextButton}
@@ -346,7 +363,7 @@ export default function ProductTour() {
         position={isMobile ? 'bottom' : 'top'}
         showBadge={true}
       >
-        <InnerTour onVideoOpen={() => setVideoOpen(true)} />
+        <TourWithSteps onVideoOpen={() => setVideoOpen(true)} />
       </TourProvider>
 
       <Dialog

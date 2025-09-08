@@ -14,6 +14,7 @@ import Toast from "@/components/Toast/Toast";
 import GuestAccountManager from '@/components/Guest Components/GuestAccountManager';
 import GuestBanner from '@/components/Guest Components/GuestBanner';
 import SmartPageLoader from '@/components/Loader/SmartPageLoader';
+import ConditionalChatbot from '@/components/Bot/ConditionalChatbot';
 
 export const metadata: Metadata = {
   title: {
@@ -115,6 +116,20 @@ export default function RootLayout({
         <link rel="icon" href="/universe-big-cosmos-gravity-svgrepo-com.svg" type="image/svg+xml" />
         <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
         <link rel="manifest" href="/manifest.json" />
+        <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1" />
+        <meta name="googlebot" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1" />
+        <meta name="bingbot" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1" />
+        <meta name="language" content="English" />
+        <meta name="revisit-after" content="7 days" />
+        <meta name="distribution" content="global" />
+        <meta name="rating" content="general" />
+        <meta name="geo.region" content="IN" />
+        <meta name="geo.placename" content="India" />
+        <meta name="geo.position" content="20.5937;78.9629" />
+        <meta name="ICBM" content="20.5937, 78.9629" />
+        <link rel="canonical" href="http://localhost:3000" />
+        <link rel="alternate" hrefLang="en" href="http://localhost:3000" />
+        <link rel="alternate" hrefLang="x-default" href="http://localhost:3000" />
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{
@@ -150,6 +165,62 @@ export default function RootLayout({
                   "name": "Brahma Vastu"
                 },
                 "areaServed": "Worldwide",
+                "serviceType": "Vastu Shastra Consultation",
+                "offers": {
+                  "@type": "Offer",
+                  "price": "0",
+                  "priceCurrency": "INR",
+                  "availability": "https://schema.org/InStock",
+                  "description": "Free Vastu consultation and floor plan analysis"
+                }
+              },
+              "address": {
+                "@type": "PostalAddress",
+                "addressCountry": "IN",
+                "addressRegion": "India"
+              },
+              "aggregateRating": {
+                "@type": "AggregateRating",
+                "ratingValue": "4.8",
+                "reviewCount": "150",
+                "bestRating": "5",
+                "worstRating": "1"
+              }
+            })
+          }}
+        />
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify({
+              "@context": "https://schema.org",
+              "@type": "WebSite",
+              "name": "Brahma Vastu",
+              "alternateName": "Brahma Vastu",
+              "url": "http://localhost:3000",
+              "description": "Get instant Vastu analysis of your floor plan. Upload your floor plan image and receive comprehensive Vastu recommendations for your home or office.",
+              "publisher": {
+                "@type": "Organization",
+                "name": "Brahma Vastu",
+                "logo": {
+                  "@type": "ImageObject",
+                  "url": "http://localhost:3000/images/bv.png"
+                }
+              },
+              "potentialAction": {
+                "@type": "SearchAction",
+                "target": "http://localhost:3000/search?q={search_term_string}",
+                "query-input": "required name=search_term_string"
+              },
+              "mainEntity": {
+                "@type": "Service",
+                "name": "Vastu Floor Plan Analysis",
+                "description": "Professional Vastu Shastra consultation and floor plan analysis services",
+                "provider": {
+                  "@type": "Organization",
+                  "name": "Brahma Vastu"
+                },
+                "areaServed": "Worldwide",
                 "serviceType": "Vastu Shastra Consultation"
               }
             })
@@ -165,12 +236,12 @@ export default function RootLayout({
                 <GuestAccountManager>
                   <PlanetaryDataProvider>
                     <LegalProvider>
-                      <SmartPageLoader />
-                      <GuestBanner />
-                      {children}
                       <ClientOnly>
-                        <Chatbot />
+                        <SmartPageLoader />
+                        <GuestBanner />
+                        <ConditionalChatbot />
                       </ClientOnly>
+                      {children}
                     </LegalProvider>
                   </PlanetaryDataProvider>
                 </GuestAccountManager>
@@ -178,7 +249,9 @@ export default function RootLayout({
             </LoadingProvider>
           </ThemeProvider>
         </ReduxProvider>
-        <Toast />
+        <ClientOnly>
+          <Toast />
+        </ClientOnly>
       </body>
     </html>
   );

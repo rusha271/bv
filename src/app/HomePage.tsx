@@ -1,5 +1,5 @@
 'use client';
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Form } from "@/components/forms/Form";
 import { FileUploadInput } from "@/components/forms/FileUploadInput";
 import Navbar from "@/components/ui/Navbar";
@@ -31,8 +31,14 @@ export default function HomePage() {
   const [isProcessing, setIsProcessing] = useState(false);
   const [processingError, setProcessingError] = useState<string | null>(null);
   const [errorDialogOpen, setErrorDialogOpen] = useState(false);
+  const [isClient, setIsClient] = useState(false);
   const { theme } = useThemeContext();
   const router = useRouter();
+
+  // Prevent hydration mismatch by only rendering after client mount
+  useEffect(() => {
+    setIsClient(true);
+  }, []);
 
   const handleSubmit = async (data: any) => {
     try {
@@ -103,6 +109,11 @@ export default function HomePage() {
   const handleCloseErrorDialog = () => {
     setErrorDialogOpen(false);
   };
+
+  // Don't render until client-side to prevent hydration mismatch
+  if (!isClient) {
+    return null;
+  }
 
   return (
     <Box sx={{ height: "100vh", position: "relative", overflow: "hidden" }}>
@@ -318,7 +329,7 @@ export default function HomePage() {
           textShadow: "0 1px 4px rgba(0,0,0,0.3)",
         }}
       >
-        Copyrights © {new Date().getFullYear()} Brahma Vastu – All rights reserved.
+        Copyrights © 2025 Brahma Vastu – All rights reserved.
       </Box>
       <Dialog 
         open={videoOpen} 

@@ -1,6 +1,6 @@
 'use client';
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { ScaleLoader } from 'react-spinners';
 import { Box, useTheme } from '@mui/material';
 
@@ -26,8 +26,14 @@ const PageLoader: React.FC<PageLoaderProps> = ({
   speedMultiplier = 1,
 }) => {
   const theme = useTheme();
+  const [isClient, setIsClient] = useState(false);
 
-  if (!loading) return null;
+  // Prevent hydration mismatch by only rendering after client mount
+  useEffect(() => {
+    setIsClient(true);
+  }, []);
+
+  if (!loading || !isClient) return null;
 
   return (
     <Box

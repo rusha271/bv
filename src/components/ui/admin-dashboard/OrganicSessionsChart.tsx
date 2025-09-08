@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { BarChart3, TrendingUp } from "lucide-react";
+import { useThemeContext } from "@/contexts/ThemeContext";
 
 
 // Dummy data for visitor sessions over the last 30 days
@@ -27,6 +28,7 @@ export default function OrganicSessionsChart() {
   const [data, setData] = useState(generateDummyData());
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const { mode } = useThemeContext();
 
   useEffect(() => {
     const fetchSessionsData = async () => {
@@ -59,36 +61,60 @@ export default function OrganicSessionsChart() {
 
   if (loading) {
     return (
-      <div className="bg-white rounded-lg shadow p-6">
+      <div className={`rounded-lg shadow p-6 ${
+        mode === 'dark' ? 'bg-gray-800' : 'bg-white'
+      }`}>
         <div className="animate-pulse">
-          <div className="h-6 bg-gray-200 rounded w-1/3 mb-4"></div>
-          <div className="h-64 bg-gray-200 rounded"></div>
+          <div className={`h-6 rounded w-1/3 mb-4 ${
+            mode === 'dark' ? 'bg-gray-700' : 'bg-gray-200'
+          }`}></div>
+          <div className={`h-64 rounded ${
+            mode === 'dark' ? 'bg-gray-700' : 'bg-gray-200'
+          }`}></div>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="bg-white rounded-lg shadow p-6">
+    <div className={`rounded-xl shadow-lg p-6 border ${
+      mode === 'dark' 
+        ? 'bg-gray-800 border-gray-700' 
+        : 'bg-white border-gray-200'
+    }`}>
       <div className="flex items-center justify-between mb-6">
         <div className="flex items-center">
-          <div className="p-2 bg-blue-100 rounded-lg mr-3">
-            <BarChart3 className="h-6 w-6 text-blue-600" />
+          <div className={`p-3 rounded-lg mr-4 ${
+            mode === 'dark' ? 'bg-blue-900' : 'bg-blue-100'
+          }`}>
+            <BarChart3 className={`h-6 w-6 ${
+              mode === 'dark' ? 'text-blue-300' : 'text-blue-600'
+            }`} />
           </div>
           <div>
-            <h3 className="text-lg font-semibold text-gray-900">Visitor Sessions</h3>
-            <p className="text-sm text-gray-600">Last 30 days</p>
+            <h3 className={`text-lg font-bold ${
+              mode === 'dark' ? 'text-white' : 'text-gray-900'
+            }`}>Visitor Sessions</h3>
+            <p className={`text-sm font-medium ${
+              mode === 'dark' ? 'text-gray-300' : 'text-gray-600'
+            }`}>Last 30 days</p>
           </div>
         </div>
-        <div className="flex items-center text-green-600">
+        <div className="flex items-center text-green-500">
           <TrendingUp className="h-4 w-4 mr-1" />
-          <span className="text-sm font-medium">+15%</span>
+          <span className="text-sm font-semibold">+15%</span>
         </div>
       </div>
 
       {error && (
-        <div className="bg-red-50 border border-red-200 rounded-lg p-4 mb-4">
-          <p className="text-red-600 text-sm">{error}</p>
+        <div className={`rounded-lg p-4 mb-4 ${
+          mode === 'dark' 
+            ? 'bg-red-900 border border-red-700' 
+            : 'bg-red-50 border border-red-200'
+        }`}>
+          <p className={`text-sm ${
+            mode === 'dark' ? 'text-red-300' : 'text-red-600'
+          }`}>{error}</p>
         </div>
       )}
 
@@ -114,7 +140,9 @@ export default function OrganicSessionsChart() {
                   title={`Visitors: ${item.visitors}`}
                 ></div>
               </div>
-              <div className="text-xs text-gray-500 mt-2 transform -rotate-45 origin-left">
+              <div className={`text-xs mt-2 transform -rotate-45 origin-left ${
+                mode === 'dark' ? 'text-gray-400' : 'text-gray-500'
+              }`}>
                 {item.date}
               </div>
             </div>
@@ -125,11 +153,15 @@ export default function OrganicSessionsChart() {
       <div className="flex items-center justify-center mt-4 space-x-6">
         <div className="flex items-center">
           <div className="w-3 h-3 bg-blue-500 rounded-full mr-2"></div>
-          <span className="text-sm text-gray-600">Sessions</span>
+          <span className={`text-sm ${
+            mode === 'dark' ? 'text-gray-300' : 'text-gray-600'
+          }`}>Sessions</span>
         </div>
         <div className="flex items-center">
           <div className="w-3 h-3 bg-green-500 rounded-full mr-2"></div>
-          <span className="text-sm text-gray-600">Visitors</span>
+          <span className={`text-sm ${
+            mode === 'dark' ? 'text-gray-300' : 'text-gray-600'
+          }`}>Visitors</span>
         </div>
       </div>
     </div>

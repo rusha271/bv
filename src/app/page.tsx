@@ -74,46 +74,5 @@ export const metadata: Metadata = {
 };
 
 export default function Home() {
-  return (
-    <>
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{
-          __html: JSON.stringify({
-            "@context": "https://schema.org",
-            "@type": "WebSite",
-            "name": "Brahma Vastu",
-            "alternateName": "Brahma Vastu",
-            "url": "http://localhost:3000",
-            "description": "Get instant Vastu analysis of your floor plan. Upload your floor plan image and receive comprehensive Vastu recommendations for your home or office.",
-            "publisher": {
-              "@type": "Organization",
-              "name": "Brahma Vastu",
-              "logo": {
-                "@type": "ImageObject",
-                "url": "http://localhost:3000/images/bv.png"
-              }
-            },
-            "potentialAction": {
-              "@type": "SearchAction",
-              "target": "http://localhost:3000/search?q={search_term_string}",
-              "query-input": "required name=search_term_string"
-            },
-            "mainEntity": {
-              "@type": "Service",
-              "name": "Vastu Floor Plan Analysis",
-              "description": "Professional Vastu Shastra consultation and floor plan analysis services",
-              "provider": {
-                "@type": "Organization",
-                "name": "Brahma Vastu"
-              },
-              "areaServed": "Worldwide",
-              "serviceType": "Vastu Shastra Consultation"
-            }
-          })
-        }}
-      />
-      <HomePage />
-    </>
-  );
+  return <HomePage />;
 }
