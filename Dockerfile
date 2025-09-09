@@ -1,4 +1,4 @@
-FROM node:20-alpine as builder
+FROM node:20-bullseye as builder
 
 WORKDIR /app
 
@@ -10,14 +10,16 @@ COPY . .
 
 RUN npm run build
 
-FROM node:20-alpine as runner
+FROM node:20-bullseye as runner
 
 WORKDIR /app
 
-ENV NODE_ENV production
+ENV NODE_ENV=production
 
 RUN addgroup --system --gid 1001 nodejs
 RUN adduser --system --uid 1001 nextjs
+
+RUN apk add --no-cache libc6-compat
 
 COPY --from=builder /app/public ./public
 
@@ -28,7 +30,7 @@ USER nextjs
 
 EXPOSE 3000
 
-ENV PORT 3000
-ENV HOSTNAME "0.0.0.0"
+ENV PORT=3000
+ENV HOSTNAME=0.0.0.0
 
 CMD ["node", ".next/standalone/server.js"]
