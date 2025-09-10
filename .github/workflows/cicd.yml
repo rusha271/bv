@@ -38,4 +38,4 @@ jobs:
         run: docker rm -f bv-container || true
 
       - name: Run Docker container
-        run: docker run -d -p 3000:3000 --name bv-container rushabh046/brahma_vastu:latest
+        run: docker run -d -p 80:3000 --name bv-container rushabh046/brahma_vastu:latest
