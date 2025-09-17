@@ -7,22 +7,58 @@ import { useDeviceType } from "@/utils/useDeviceType";
 import { useAppDispatch, useAppSelector } from "@/store";
 import { fetchTips, clearTipsError } from "@/store/slices/blogSlice";
 import ErrorDisplay from "@/components/Error/ErrorDisplay";
-import { CircularProgress, Box } from "@mui/material";
+import { CircularProgress, Box, Typography } from "@mui/material";
+import { Lightbulb, Sparkles } from "lucide-react";
 
 const LoadingSpinner = () => {
   const { theme } = useThemeContext();
   return (
     <Box 
-      display="flex" 
-      justifyContent="center" 
-      alignItems="center" 
-      py={4}
-      width="100%"
+      sx={{
+        display: 'flex',
+        flexDirection: 'column',
+        justifyContent: 'center',
+        alignItems: 'center',
+        py: 6,
+        width: '100%',
+        background: theme.palette.mode === 'dark'
+          ? 'linear-gradient(135deg, rgba(15, 23, 42, 0.5) 0%, rgba(30, 41, 59, 0.5) 100%)'
+          : 'linear-gradient(135deg, rgba(255, 255, 255, 0.5) 0%, rgba(248, 250, 252, 0.5) 100%)',
+        backdropFilter: 'blur(10px)',
+        borderRadius: 4,
+        border: theme.palette.mode === 'dark'
+          ? '1px solid rgba(148, 163, 184, 0.1)'
+          : '1px solid rgba(148, 163, 184, 0.2)',
+      }}
     >
+      <Box
+        sx={{
+          p: 2,
+          borderRadius: 3,
+          background: theme.palette.mode === 'dark'
+            ? 'linear-gradient(135deg, rgba(59, 130, 246, 0.2) 0%, rgba(147, 51, 234, 0.2) 100%)'
+            : 'linear-gradient(135deg, rgba(59, 130, 246, 0.1) 0%, rgba(147, 51, 234, 0.1) 100%)',
+          border: theme.palette.mode === 'dark'
+            ? '1px solid rgba(59, 130, 246, 0.3)'
+            : '1px solid rgba(59, 130, 246, 0.2)',
+          mb: 2,
+        }}
+      >
+        <Lightbulb 
+          size={32} 
+          className={theme.palette.mode === 'dark' ? 'text-yellow-400' : 'text-yellow-600'} 
+        />
+      </Box>
       <CircularProgress 
         size={48}
-        sx={{ color: theme.palette.primary.main }}
+        sx={{ 
+          color: theme.palette.mode === 'dark' ? '#60a5fa' : '#1e40af',
+          mb: 2,
+        }}
       />
+      <Typography variant="body2" color="text.secondary" fontWeight={500}>
+        Loading Vastu Tips...
+      </Typography>
     </Box>
   );
 };
@@ -65,21 +101,65 @@ export default function BlogCardsList() {
   // Handle empty state
   if (!tips || tips.length === 0) {
     return (
-      <div 
-        className="flex flex-col items-center justify-center py-12 px-4"
-        style={{
-          background: theme.palette.background.default,
+      <Box
+        sx={{
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+          justifyContent: 'center',
+          py: 4,
+          px: 3,
           minHeight: '200px',
+          background: theme.palette.mode === 'dark'
+            ? 'linear-gradient(135deg, rgba(15, 23, 42, 0.5) 0%, rgba(30, 41, 59, 0.5) 100%)'
+            : 'linear-gradient(135deg, rgba(255, 255, 255, 0.5) 0%, rgba(248, 250, 252, 0.5) 100%)',
+          backdropFilter: 'blur(10px)',
+          borderRadius: 4,
+          border: theme.palette.mode === 'dark'
+            ? '1px solid rgba(148, 163, 184, 0.1)'
+            : '1px solid rgba(148, 163, 184, 0.2)',
         }}
       >
-        <div 
-          className="text-center"
-          style={{ color: theme.palette.text.secondary }}
+        <Box
+          sx={{
+            p: 3,
+            borderRadius: 4,
+            background: theme.palette.mode === 'dark'
+              ? 'linear-gradient(135deg, rgba(59, 130, 246, 0.2) 0%, rgba(147, 51, 234, 0.2) 100%)'
+              : 'linear-gradient(135deg, rgba(59, 130, 246, 0.1) 0%, rgba(147, 51, 234, 0.1) 100%)',
+            border: theme.palette.mode === 'dark'
+              ? '1px solid rgba(59, 130, 246, 0.3)'
+              : '1px solid rgba(59, 130, 246, 0.2)',
+            mb: 3,
+          }}
         >
-          <h3 className="text-lg font-medium mb-2">No Tips Available</h3>
-          <p className="text-sm">Check back later for new Vastu tips and insights.</p>
-        </div>
-      </div>
+          <Lightbulb 
+            size={48} 
+            className={theme.palette.mode === 'dark' ? 'text-yellow-400' : 'text-yellow-600'} 
+          />
+        </Box>
+        <Typography
+          variant="h6"
+          fontWeight={700}
+          sx={{
+            color: theme.palette.text.primary,
+            mb: 2,
+            textAlign: 'center',
+          }}
+        >
+          No Tips Available
+        </Typography>
+        <Typography
+          variant="body2"
+          sx={{
+            color: theme.palette.text.secondary,
+            textAlign: 'center',
+            maxWidth: '400px',
+          }}
+        >
+          Check back later for new Vastu tips and insights to enhance your understanding.
+        </Typography>
+      </Box>
     );
   }
 
@@ -99,31 +179,38 @@ export default function BlogCardsList() {
   };
 
   return (
-    <div
-      className={`grid ${getGridLayout()} gap-6`}
-      style={{
-        background: theme.palette.background.default,
-        justifyItems: 'center',
+    <Box
+      sx={{
+        display: 'grid',
+        gridTemplateColumns: {
+          xs: '1fr',
+          sm: tips.length === 1 ? '1fr' : 'repeat(2, 1fr)',
+          lg: tips.length <= 2 ? 'repeat(2, 1fr)' : 'repeat(3, 1fr)',
+        },
+        gap: 3,
         width: '100%',
-        overflow: 'hidden',
+        justifyItems: 'center',
+        maxWidth: tips.length === 1 ? '400px' : tips.length === 2 ? '800px' : '1200px',
+        mx: 'auto',
+        px: { xs: 1, sm: 2 },
       }}
     >
       {tips.map((tip) => {
         // Construct full image URL from backend response
         const imageUrl = tip.image_url || tip.image;
         const fullImageUrl = imageUrl?.startsWith('/') 
-          ? `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}${imageUrl}`
+          ? `${process.env.NEXT_PUBLIC_API_URL}${imageUrl}`
           : imageUrl;
         
         // Debug logging
-        console.log('Tip data:', {
-          id: tip.id,
-          title: tip.title,
-          originalImageUrl: imageUrl,
-          fullImageUrl: fullImageUrl,
-          hasImageUrl: !!tip.image_url,
-          hasImage: !!tip.image
-        });
+        // console.log('Tip data:', {
+        //   id: tip.id,
+        //   title: tip.title,
+        //   originalImageUrl: imageUrl,
+        //   fullImageUrl: fullImageUrl,
+        //   hasImageUrl: !!tip.image_url,
+        //   hasImage: !!tip.image
+        // });
         
         return (
           <BlogCard
@@ -136,6 +223,6 @@ export default function BlogCardsList() {
           />
         );
       })}
-    </div>
+    </Box>
   );
 };

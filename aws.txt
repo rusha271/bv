@@ -2,3 +2,16 @@ sudo systemctl stop fastapi
 sudo systemctl daemon-reload
 sudo systemctl start fastapi
 sudo systemctl enable fastapi
+
+
+
+
+
+
+
+#RDS
+databaseName : brahmavastu
+username : admin
+password : password
+Port : 3307
+dbUrl : brahmavastu.cbca4iw0wv7d.ap-south-1.rds.amazonaws.com

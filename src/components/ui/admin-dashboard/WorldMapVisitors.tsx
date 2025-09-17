@@ -8,7 +8,7 @@ import {
   ZoomableGroup,
   Marker
 } from "react-simple-maps";
-import { Globe, Users } from "lucide-react";
+import { Globe, Users, Plus, Minus } from "lucide-react";
 import { useThemeContext } from "@/contexts/ThemeContext";
 
 // Dummy visitor data by country
@@ -47,6 +47,7 @@ export default function WorldMapVisitors() {
   const [error, setError] = useState<string | null>(null);
   const [tooltipContent, setTooltipContent] = useState<string>("");
   const [tooltipPosition, setTooltipPosition] = useState({ x: 0, y: 0 });
+  const [zoom, setZoom] = useState(1);
   const { mode } = useThemeContext();
 
   useEffect(() => {
@@ -85,6 +86,14 @@ export default function WorldMapVisitors() {
     setTooltipContent("");
   };
 
+  const handleZoomIn = () => {
+    setZoom(prev => Math.min(prev + 0.5, 8));
+  };
+
+  const handleZoomOut = () => {
+    setZoom(prev => Math.max(prev - 0.5, 1));
+  };
+
   if (loading) {
     return (
       <div className={`rounded-lg shadow p-6 ${
@@ -108,29 +117,6 @@ export default function WorldMapVisitors() {
         ? 'bg-gray-800 border-gray-700' 
         : 'bg-white border-gray-200'
     }`}>
-      <div className="flex items-center justify-between mb-6">
-        <div className="flex items-center">
-          <div className={`p-3 rounded-lg mr-4 ${
-            mode === 'dark' ? 'bg-purple-900' : 'bg-purple-100'
-          }`}>
-            <Globe className={`h-6 w-6 ${
-              mode === 'dark' ? 'text-purple-300' : 'text-purple-600'
-            }`} />
-          </div>
-          <div>
-            <h3 className={`text-lg font-bold ${
-              mode === 'dark' ? 'text-white' : 'text-gray-900'
-            }`}>Visitor Distribution</h3>
-            <p className={`text-sm font-medium ${
-              mode === 'dark' ? 'text-gray-300' : 'text-gray-600'
-            }`}>Global visitor analytics</p>
-          </div>
-        </div>
-        <div className="flex items-center text-purple-500">
-          <Users className="h-4 w-4 mr-1" />
-          <span className="text-sm font-semibold">{totalVisitors.toLocaleString()} total</span>
-        </div>
-      </div>
 
       {error && (
         <div className={`rounded-lg p-4 mb-4 ${
@@ -144,14 +130,84 @@ export default function WorldMapVisitors() {
         </div>
       )}
 
-      <div className="relative h-96">
+      {/* Zoom Controls */}
+      <div className="flex items-center justify-between mb-4">
+        <div className="flex items-center">
+          <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-emerald-500 to-emerald-600 flex items-center justify-center mr-3">
+            <Globe className="w-5 h-5 text-white" />
+          </div>
+          <div>
+            <h3 className={`text-lg font-bold ${
+              mode === 'dark' ? 'text-white' : 'text-gray-900'
+            }`}>
+              Visitor Distribution
+            </h3>
+            <p className={`text-sm ${
+              mode === 'dark' ? 'text-gray-400' : 'text-gray-600'
+            }`}>
+              Global visitor analytics
+            </p>
+          </div>
+        </div>
+        
+        <div className="flex items-center space-x-2">
+          <div className={`flex items-center px-3 py-2 rounded-xl ${
+            mode === 'dark' 
+              ? 'bg-slate-700/50 text-slate-300' 
+              : 'bg-slate-100/50 text-slate-600'
+          }`}>
+            <Users className="w-4 h-4 mr-2" />
+            <span className="text-sm font-medium">
+              {totalVisitors.toLocaleString()} total
+            </span>
+          </div>
+          
+          <div className="flex items-center space-x-2">
+            <div className={`px-3 py-1 rounded-lg text-xs font-medium ${
+              mode === 'dark' 
+                ? 'bg-slate-700/50 text-slate-300' 
+                : 'bg-slate-100/50 text-slate-600'
+            }`}>
+              {zoom}x
+            </div>
+            <div className="flex items-center space-x-1">
+              <button
+                onClick={handleZoomOut}
+                disabled={zoom <= 1}
+                className={`p-2 rounded-lg transition-all duration-300 hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed ${
+                  mode === 'dark' 
+                    ? 'bg-slate-700/50 hover:bg-slate-600/50 text-slate-300' 
+                    : 'bg-slate-100/50 hover:bg-slate-200/50 text-slate-600'
+                }`}
+                title="Zoom Out"
+              >
+                <Minus className="w-4 h-4" />
+              </button>
+              <button
+                onClick={handleZoomIn}
+                disabled={zoom >= 8}
+                className={`p-2 rounded-lg transition-all duration-300 hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed ${
+                  mode === 'dark' 
+                    ? 'bg-slate-700/50 hover:bg-slate-600/50 text-slate-300' 
+                    : 'bg-slate-100/50 hover:bg-slate-200/50 text-slate-600'
+                }`}
+                title="Zoom In"
+              >
+                <Plus className="w-4 h-4" />
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div className="relative h-64 md:h-80 lg:h-96 w-full">
         <ComposableMap
           projection="geoEqualEarth"
           projectionConfig={{
             scale: 147
           }}
         >
-        <ZoomableGroup minZoom={1} maxZoom={8} zoom={1}>
+        <ZoomableGroup minZoom={1} maxZoom={8} zoom={zoom}>
           <Geographies
             geography="/features.json"
             fill={mode === 'dark' ? "#374151" : "#E5E7EB"}
@@ -208,23 +264,23 @@ export default function WorldMapVisitors() {
         )}
       </div>
 
-      <div className="mt-6">
-        <h4 className={`text-sm font-medium mb-3 ${
+      <div className="mt-4">
+        <h4 className={`text-sm font-medium mb-2 ${
           mode === 'dark' ? 'text-white' : 'text-gray-900'
         }`}>Top Countries</h4>
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
           {visitorData
             .sort((a, b) => b.visitors - a.visitors)
             .slice(0, 8)
             .map((country) => (
-              <div key={country.country} className={`flex items-center justify-between p-2 rounded ${
-                mode === 'dark' ? 'bg-gray-700' : 'bg-gray-50'
+              <div key={country.country} className={`flex items-center justify-between p-2 rounded-lg transition-all duration-300 hover:scale-105 ${
+                mode === 'dark' ? 'bg-slate-700/50 hover:bg-slate-600/50' : 'bg-slate-100/50 hover:bg-slate-200/50'
               }`}>
-                <span className={`text-sm font-medium ${
+                <span className={`text-xs font-medium ${
                   mode === 'dark' ? 'text-gray-200' : 'text-gray-700'
                 }`}>{country.country}</span>
-                <span className={`text-sm ${
-                  mode === 'dark' ? 'text-gray-300' : 'text-gray-600'
+                <span className={`text-xs font-semibold ${
+                  mode === 'dark' ? 'text-emerald-300' : 'text-emerald-600'
                 }`}>{country.visitors.toLocaleString()}</span>
               </div>
             ))}

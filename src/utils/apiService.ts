@@ -47,7 +47,12 @@ export interface User {
   id: string;
   email: string;
   name: string;
+  full_name?: string;
+  phone?: string;
+  avatar_url?: string;
+  is_active?: boolean;
   role: {
+    id: number;
     name: string;
   };
   created_at: string;
@@ -254,6 +259,59 @@ export interface VideoCreate {
 }
 
 export interface VideoUpdate extends Partial<VideoCreate> {}
+
+// Podcast Types
+export interface Podcast {
+  id: number;
+  title: string;
+  description: string;
+  audio_url: string;
+  duration?: string;
+  thumbnail_url?: string;
+  created_at: string;
+  updated_at: string;
+  is_published?: boolean;
+  category?: string;
+}
+
+export interface PodcastCreate {
+  title: string;
+  description: string;
+  audio_url: string;
+  duration?: string;
+  thumbnail_url?: string;
+  category?: string;
+}
+
+export interface PodcastUpdate extends Partial<PodcastCreate> {}
+
+// Site Settings Types
+export interface SiteSetting {
+  id: number;
+  category: 'logo' | 'tour_video' | 'chakra_points';
+  file_path: string;
+  meta_data?: any;
+  created_at: string;
+  updated_at: string;
+  public_url?: string;
+}
+
+export interface SiteSettingResponse {
+  success: boolean;
+  message: string;
+  data: SiteSetting;
+  file_url: string;
+}
+
+export interface SiteSettingCreate {
+  category: 'logo' | 'tour_video' | 'chakra_points';
+  file: File;
+  meta_data?: any;
+}
+
+export interface SiteSettingUpdate {
+  meta_data?: any;
+}
 
 // Tip Types
 export interface Tip {
@@ -645,7 +703,31 @@ class ApiService {
     delete: async (id: number): Promise<ApiResponse> => {
       return api.delete<ApiResponse>(`/api/blog/videos/${id}`);
     },
-  }
+  };
+
+  // Podcasts API
+  podcasts = {
+    getAll: async (): Promise<Podcast[]> => {
+      return api.get<Podcast[]>("/api/blog/podcasts");
+    },
+    getById: async (id: number): Promise<Podcast> => {
+      return api.get<Podcast>(`/api/blog/podcasts/${id}`);
+    },
+    create: async (data: FormData): Promise<Podcast> => {
+      return api.post<Podcast>("/api/blog/podcasts", data, {
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
+        transformRequest: [(formData) => formData],
+      });
+    },
+    update: async (id: number, data: FormData | PodcastUpdate): Promise<Podcast> => {
+      return api.put<Podcast>(`/api/blog/podcasts/${id}`, data);
+    },
+    delete: async (id: number): Promise<ApiResponse> => {
+      return api.delete<ApiResponse>(`/api/blog/podcasts/${id}`);
+    },
+  };
 
   // Tips API
   // (GET only, as per backend)
@@ -659,6 +741,55 @@ class ApiService {
     ): Promise<Tip> => {
       return api.post<Tip>("/api/blog/tips", formData, config);
     },    
+  };
+
+  // Site Settings API
+  siteSettings = {
+    upload: async (category: string, file: File, metaData?: any): Promise<SiteSetting> => {
+      const formData = new FormData();
+      formData.append('category', category);
+      formData.append('file', file);
+      if (metaData) {
+        formData.append('meta_data', JSON.stringify(metaData));
+      }
+      return api.post<SiteSetting>('/api/site-settings/upload', formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
+        transformRequest: [(formData) => formData],
+      });
+    },
+
+    getAll: async (category?: string, skip?: number, limit?: number): Promise<SiteSetting[]> => {
+      const params = new URLSearchParams();
+      if (category) params.append('category', category);
+      if (skip !== undefined) params.append('skip', skip.toString());
+      if (limit !== undefined) params.append('limit', limit.toString());
+      
+      const queryString = params.toString();
+      const url = queryString ? `/api/site-settings?${queryString}` : '/api/site-settings';
+      return api.get<SiteSetting[]>(url);
+    },
+
+    getById: async (id: number): Promise<SiteSetting> => {
+      return api.get<SiteSetting>(`/api/site-settings/${id}`);
+    },
+
+    getLatestByCategory: async (category: string): Promise<SiteSettingResponse> => {
+      return api.get<SiteSettingResponse>(`/api/site-settings/category/${category}/latest`);
+    },
+
+    update: async (id: number, data: SiteSettingUpdate): Promise<SiteSetting> => {
+      return api.put<SiteSetting>(`/api/site-settings/${id}`, data);
+    },
+
+    delete: async (id: number): Promise<{ message: string }> => {
+      return api.delete<{ message: string }>(`/api/site-settings/${id}`);
+    },
+
+    getHistory: async (category: string): Promise<SiteSetting[]> => {
+      return api.get<SiteSetting[]>(`/api/site-settings/history/${category}`);
+    },
   };
 
   // Admin Endpoints (/admin)
@@ -675,6 +806,29 @@ class ApiService {
           'Content-Type': 'multipart/form-data',
         },
       });
+    }
+  };
+
+  // Vastu Chakra Points Endpoints (/api/vastu/chakra-points) - Public endpoints
+  vastuChakraPoints = {
+    getChakraPoints: async (): Promise<{ [key: string]: any }> => {
+      return api.get<{ [key: string]: any }>('/api/vastu/chakra-points');
+    },
+
+    getChakraPoint: async (chakraId: string): Promise<any> => {
+      return api.get<any>(`/api/vastu/chakra-points/${chakraId}`);
+    },
+
+    updateChakraPoint: async (chakraId: string, chakraData: any): Promise<any> => {
+      return api.put<any>(`/api/vastu/chakra-points/${chakraId}`, chakraData);
+    },
+
+    createChakraPoint: async (chakraData: any): Promise<any> => {
+      return api.post<any>('/api/vastu/chakra-points', chakraData);
+    },
+
+    deleteChakraPoint: async (chakraId: string): Promise<void> => {
+      return api.delete<void>(`/api/vastu/chakra-points/${chakraId}`);
     }
   };
 
@@ -734,7 +888,9 @@ export const {
   books,
   videos,
   tips,
-  admin
+  admin,
+  vastuChakraPoints,
+  siteSettings
 } = apiService;
 
 export default apiService;

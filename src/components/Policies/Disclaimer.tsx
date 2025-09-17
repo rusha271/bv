@@ -5,26 +5,39 @@ import { useThemeContext } from '@/contexts/ThemeContext';
 import { useDeviceType } from '@/utils/useDeviceType';
 
 const DisclaimerCard = styled(Box)(({ theme }) => ({
-  padding: theme.spacing(2, 3),
-  borderRadius: Number(theme.shape.borderRadius) * 2,
-  boxShadow: theme.shadows[4],
-  backgroundColor: theme.palette.mode === 'dark' ? 'rgba(30, 30, 40, 0.9)' : 'rgba(255, 255, 255, 0.9)',
-  border: `1px solid ${theme.palette.divider}`,
-  backdropFilter: 'blur(8px)',
-  overflowY: 'auto', // Ensure scrollable if content overflows
-  maxHeight: '400px', // Example max height, adjust as needed
+  padding: theme.spacing(3, 4),
+  borderRadius: 24,
+  boxShadow: theme.palette.mode === 'dark'
+    ? '0 25px 50px -12px rgba(0, 0, 0, 0.5)'
+    : '0 25px 50px -12px rgba(0, 0, 0, 0.25)',
+  backgroundColor: theme.palette.mode === 'dark' 
+    ? 'rgba(15, 23, 42, 0.95)' 
+    : 'rgba(255, 255, 255, 0.95)',
+  border: theme.palette.mode === 'dark'
+    ? '1px solid rgba(148, 163, 184, 0.1)'
+    : '1px solid rgba(148, 163, 184, 0.2)',
+  backdropFilter: 'blur(20px)',
+  overflowY: 'auto',
+  maxHeight: '400px',
+  transition: 'all 0.3s ease',
+  '&:hover': {
+    transform: 'translateY(-2px)',
+    boxShadow: theme.palette.mode === 'dark'
+      ? '0 32px 64px -12px rgba(0, 0, 0, 0.6)'
+      : '0 32px 64px -12px rgba(0, 0, 0, 0.3)',
+  },
   '&::-webkit-scrollbar': {
     width: '8px',
   },
   '&::-webkit-scrollbar-track': {
-    background: 'rgba(0, 0, 0, 0.1)',
+    background: theme.palette.mode === 'dark' ? 'rgba(148, 163, 184, 0.1)' : 'rgba(148, 163, 184, 0.05)',
     borderRadius: '4px',
   },
   '&::-webkit-scrollbar-thumb': {
-    background: 'rgba(0, 0, 0, 0.2)',
+    background: theme.palette.mode === 'dark' ? 'rgba(148, 163, 184, 0.3)' : 'rgba(148, 163, 184, 0.2)',
     borderRadius: '4px',
     '&:hover': {
-      background: 'rgba(0, 0, 0, 0.3)',
+      background: theme.palette.mode === 'dark' ? 'rgba(148, 163, 184, 0.5)' : 'rgba(148, 163, 184, 0.3)',
     },
   },
 }));
@@ -38,8 +51,17 @@ const Disclaimer = () => {
 
   return (
     <DisclaimerCard>
-      <Typography variant="h6" fontWeight={700} gutterBottom sx={{ fontSize: titleSize, color: theme.palette.primary.main }}>
-        Disclaimer
+      <Typography variant="h6" fontWeight={700} gutterBottom sx={{ 
+        fontSize: titleSize, 
+        background: theme.palette.mode === 'dark'
+          ? 'linear-gradient(135deg, #60a5fa 0%, #a78bfa 100%)'
+          : 'linear-gradient(135deg, #1e40af 0%, #7c3aed 100%)',
+        backgroundClip: 'text',
+        WebkitBackgroundClip: 'text',
+        WebkitTextFillColor: 'transparent',
+        mb: 2
+      }}>
+        ⚖️ Disclaimer
       </Typography>
       <Typography variant="body2" sx={{ mb: 1, fontSize: textSize, color: theme.palette.text.secondary }}>
         The information provided on BrahmaVastu.in is for general informational purposes only. While we strive to ensure that the information presented is accurate and up-to-date, we make no representations or warranties of any kind, express or implied, about the completeness, accuracy, reliability, suitability, or availability with respect to the website or the information, products, services, or related graphics contained on the website for any purpose.

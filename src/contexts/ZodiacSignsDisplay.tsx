@@ -108,14 +108,35 @@ const ZodiacSignsDisplay: React.FC = () => {
 
   return (
     <div
-      className="w-full mt-4 p-3 rounded-2xl shadow-2xl"
-      style={{ background: theme.palette.background.paper }}
+      className="w-full mt-4 p-6 rounded-2xl transition-all duration-300 hover:shadow-2xl"
+      style={{ 
+        background: theme.palette.mode === 'dark'
+          ? 'rgba(15, 23, 42, 0.95)'
+          : 'rgba(255, 255, 255, 0.95)',
+        backdropFilter: 'blur(20px)',
+        border: theme.palette.mode === 'dark'
+          ? '1px solid rgba(148, 163, 184, 0.1)'
+          : '1px solid rgba(148, 163, 184, 0.2)',
+        boxShadow: theme.palette.mode === 'dark'
+          ? '0 25px 50px -12px rgba(0, 0, 0, 0.5)'
+          : '0 25px 50px -12px rgba(0, 0, 0, 0.25)',
+      }}
     >
       <h2
-        className="text-2xl font-bold mb-4 text-center"
-        style={{ color: theme.palette.primary.main }}
+        className="text-2xl font-bold mb-6 text-center"
+        style={{ 
+          background: theme.palette.mode === 'dark'
+            ? 'linear-gradient(135deg, #a78bfa 0%, #ec4899 100%)'
+            : 'linear-gradient(135deg, #7c3aed 0%, #db2777 100%)',
+          backgroundClip: 'text',
+          WebkitBackgroundClip: 'text',
+          WebkitTextFillColor: 'transparent',
+          textShadow: theme.palette.mode === 'dark' 
+            ? '0 2px 4px rgba(0, 0, 0, 0.1)' 
+            : '0 2px 4px rgba(0, 0, 0, 0.1)',
+        }}
       >
-        Zodiac Signs and Planetary Influences
+        ⭐ Zodiac Signs and Planetary Influences
       </h2>
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-x-6 gap-y-8">
         {zodiacSigns.map((sign) => (

@@ -1,22 +1,55 @@
 'use client';
 
-import React, { useEffect, useState, useRef } from 'react';
+import React, { useEffect, useState, useRef, Suspense } from 'react';
 import Navbar from '@/components/ui/Navbar';
 import Footer from '@/components/ui/Footer';
-import { Box, Container, Typography } from '@mui/material';
+import { Box, Container, Typography, CircularProgress, Skeleton } from '@mui/material';
 import { sessionStorageManager } from '@/utils/sessionStorage';
-import { CircularProgress, Skeleton } from '@mui/material';
 import dynamic from 'next/dynamic';
-import { useLazyLoad } from '@/hooks/useLazyLoad';
 
-const ChakraEditor = dynamic(() => import('@/components/Image Crop/ChakraEditor'), { ssr: false });
+// Lazy load the ChakraEditor component with more aggressive loading
+const ChakraEditor = dynamic(() => import('@/components/Image Crop/ChakraEditor'), { 
+  ssr: false,
+  loading: () => (
+    <Box sx={{ 
+      width: '100%', 
+      height: '600px', 
+      display: 'flex', 
+      alignItems: 'center', 
+      justifyContent: 'center',
+      background: (theme) => theme.palette.background.paper,
+      borderRadius: 2,
+      border: (theme) => `1px solid ${theme.palette.divider}`,
+      flexDirection: 'column'
+    }}>
+      <CircularProgress 
+        size={48}
+        sx={{ color: (theme) => theme.palette.primary.main, mb: 2 }}
+      />
+      <Typography 
+        variant="body2" 
+        color="text.secondary"
+      >
+        Loading Chakra Editor...
+      </Typography>
+    </Box>
+  )
+});
+
+// Lazy load heavy dependencies separately
+const ChakraDetailsModal = dynamic(() => import('@/components/Chakra/ChakraDetailsModal'), { 
+  ssr: false 
+});
 
 export default function ChakraOverlayPage() {
   const [floorPlanImageUrl, setFloorPlanImageUrl] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [isClient, setIsClient] = useState(false);
 
-  // Use the custom lazy loading hook
-  const chakraSection = useLazyLoad();
+  // Prevent hydration mismatch
+  useEffect(() => {
+    setIsClient(true);
+  }, []);
 
   useEffect(() => {
     // Clean up expired sessions
@@ -36,11 +69,11 @@ export default function ChakraOverlayPage() {
       return;
     }
     
-    console.log('ChakraOverlay: Using image:', {
-      hasCroppedImage: !!sessionData.croppedImage?.blobUrl,
-      hasOriginalImage: !!sessionData.originalImage?.blobUrl,
-      imageUrl: imageUrl.substring(0, 50) + '...'
-    });
+    // console.log('ChakraOverlay: Using image:', {
+    //   hasCroppedImage: !!sessionData.croppedImage?.blobUrl,
+    //   hasOriginalImage: !!sessionData.originalImage?.blobUrl,
+    //   imageUrl: imageUrl.substring(0, 50) + '...'
+    // });
   
     setFloorPlanImageUrl(imageUrl);
   }, []);
@@ -101,11 +134,14 @@ export default function ChakraOverlayPage() {
           mb: { xs: 3, sm: 4 },
         }}
       >
-        <Box ref={chakraSection.ref}>
-          {chakraSection.isVisible ? (
-            <ChakraEditor floorPlanImageUrl={floorPlanImageUrl} />
-          ) : (
-            <Box sx={{ 
+        <Box>
+          {/* Loading state - shown when not client-side */}
+          <Box
+            sx={{
+              opacity: isClient ? 0 : 1,
+              transition: 'opacity 0.3s ease',
+              position: isClient ? 'absolute' : 'static',
+              pointerEvents: isClient ? 'none' : 'auto',
               width: '100%', 
               height: '600px', 
               display: 'flex', 
@@ -115,19 +151,30 @@ export default function ChakraOverlayPage() {
               borderRadius: 2,
               border: (theme) => `1px solid ${theme.palette.divider}`,
               flexDirection: 'column'
-            }}>
-              <CircularProgress 
-                size={48}
-                sx={{ color: (theme) => theme.palette.primary.main, mb: 2 }}
-              />
-              <Typography 
-                variant="body2" 
-                color="text.secondary"
-              >
-                Loading Chakra Editor...
-              </Typography>
-            </Box>
-          )}
+            }}
+          >
+            <CircularProgress 
+              size={48}
+              sx={{ color: (theme) => theme.palette.primary.main, mb: 2 }}
+            />
+            <Typography 
+              variant="body2" 
+              color="text.secondary"
+            >
+              Loading Chakra Editor...
+            </Typography>
+          </Box>
+
+          {/* Main content - shown when client-side */}
+          <Box
+            sx={{
+              opacity: isClient ? 1 : 0,
+              transition: 'opacity 0.3s ease',
+              width: '100%',
+            }}
+          >
+            <ChakraEditor floorPlanImageUrl={floorPlanImageUrl} />
+          </Box>
         </Box>
       </Container>
       <Footer />

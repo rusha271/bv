@@ -53,7 +53,7 @@ class VideoTrackingManager {
         this.trackedVideos = new Set(data.trackedVideos || []);
       }
     } catch (error) {
-      console.warn('Failed to load video tracking session:', error);
+      // console.warn('Failed to load video tracking session:', error);
     }
   }
 
@@ -66,7 +66,7 @@ class VideoTrackingManager {
       };
       sessionStorage.setItem('video_tracking_session', JSON.stringify(data));
     } catch (error) {
-      console.warn('Failed to save video tracking session:', error);
+      //  console.warn('Failed to save video tracking session:', error);
     }
   }
 
@@ -126,10 +126,16 @@ class VideoTrackingManager {
   }
 
   /**
-   * Record a video view
+   * Record a video view (only for tour videos)
    */
-  recordView(videoId: number, watchTime: number, duration: number): void {
+  recordView(videoId: number, watchTime: number, duration: number, category?: string): void {
     if (!this.isTrackingEnabled || this.trackedVideos.has(videoId)) {
+      return;
+    }
+
+    // Only track tour videos as per backend API changes
+    if (category && category !== 'tour') {
+      // console.log(`Skipping tracking for non-tour video (category: ${category})`);
       return;
     }
 
@@ -160,9 +166,9 @@ class VideoTrackingManager {
   private sendViewEvent(event: VideoViewEvent): void {
     try {
       // Log the video view event locally instead of sending to endpoint
-      console.log('Video view tracked locally:', event);
+      // console.log('Video view tracked locally:', event);
     } catch (error) {
-      console.error('Error logging video view event:', error);
+      // console.error('Error logging video view event:', error);
     }
   }
 
@@ -212,8 +218,8 @@ class VideoTrackingManager {
 export const videoTracking = new VideoTrackingManager();
 
 // Export utility functions
-export const trackVideoView = (videoId: number, watchTime: number, duration: number) => {
-  videoTracking.recordView(videoId, watchTime, duration);
+export const trackVideoView = (videoId: number, watchTime: number, duration: number, category?: string) => {
+  videoTracking.recordView(videoId, watchTime, duration, category);
 };
 
 export const startVideoTracking = (videoId: number, duration: number) => {

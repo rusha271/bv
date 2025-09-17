@@ -1,45 +1,99 @@
-"use client";
+'use client';
 
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { useThemeContext } from '@/contexts/ThemeContext';
 import { useDeviceType } from '@/utils/useDeviceType';
 import { useAppDispatch, useAppSelector } from '@/store';
-import { fetchBooks, clearBooksError } from '@/store/slices/blogSlice';
-import { Book } from '@/utils/apiService';
+import { fetchPodcasts, clearPodcastsError } from '@/store/slices/blogSlice';
+import { Podcast } from '@/utils/apiService';
 import ErrorDisplay from '@/components/Error/ErrorDisplay';
 import { CircularProgress, Box, Typography } from '@mui/material';
-import { BookOpen, Star, Sparkles } from 'lucide-react';
+import PlayArrowIcon from '@mui/icons-material/PlayArrow';
+import PauseIcon from '@mui/icons-material/Pause';
+import VolumeUpIcon from '@mui/icons-material/VolumeUp';
+import AccessTimeIcon from '@mui/icons-material/AccessTime';
+import { Headphones, Play, Pause, Clock } from 'lucide-react';
+import { apiService } from '@/utils/apiService';
 
-interface BookCardProps {
-  book: Book;
+interface PodcastCardProps {
+  podcast: Podcast;
 }
 
-function BookCard({ book }: BookCardProps) {
+function PodcastCard({ podcast }: PodcastCardProps) {
   const { theme } = useThemeContext();
   const { isMobile, isTablet } = useDeviceType();
+  const [playingPodcast, setPlayingPodcast] = useState<number | null>(null);
+  const [audioElement, setAudioElement] = useState<HTMLAudioElement | null>(null);
 
-  const renderStars = (rating: number) => {
-    return Array.from({ length: 5 }, (_, i) => (
-      <span
-        key={i}
-        className={`text-sm ${
-          i < Math.floor(rating) ? 'text-yellow-400' : 'text-gray-300'
-        }`}
-      >
-        ★
-      </span>
-    ));
+  const getImageUrl = (imagePath: string | undefined) => {
+    if (!imagePath) return '/images/bv.png'; // Default image
+    
+    if (imagePath.startsWith('http')) {
+      return imagePath;
+    }
+    
+    const baseURL = apiService.getBaseURL();
+    return imagePath.startsWith('/') ? `${baseURL}${imagePath}` : `${baseURL}/${imagePath}`;
+  };
+
+  const formatDuration = (duration?: string) => {
+    if (!duration) return 'Unknown';
+    return duration;
+  };
+
+  const formatDate = (dateString: string) => {
+    return new Date(dateString).toLocaleDateString('en-US', {
+      year: 'numeric',
+      month: 'short',
+      day: 'numeric'
+    });
+  };
+
+  const handlePlayPause = () => {
+    if (playingPodcast === podcast.id) {
+      // Pause current podcast
+      if (audioElement) {
+        audioElement.pause();
+        setAudioElement(null);
+      }
+      setPlayingPodcast(null);
+    } else {
+      // Stop any currently playing audio
+      if (audioElement) {
+        audioElement.pause();
+        setAudioElement(null);
+      }
+
+      // Play new podcast
+      const audio = new Audio(podcast.audio_url);
+      audio.play();
+      setAudioElement(audio);
+      setPlayingPodcast(podcast.id);
+
+      // Handle audio end
+      audio.onended = () => {
+        setPlayingPodcast(null);
+        setAudioElement(null);
+      };
+
+      // Handle audio error
+      audio.onerror = () => {
+        setPlayingPodcast(null);
+        setAudioElement(null);
+      };
+    }
   };
 
   return (
     <div
-      className="w-full rounded-2xl shadow-md transition-all duration-300 overflow-hidden flex flex-col border group"
+      className="w-full rounded-2xl shadow-md transition-all duration-300 overflow-hidden flex flex-col border group cursor-pointer"
       style={{
         background: theme.palette.background.paper,
         borderColor: theme.palette.divider,
         color: theme.palette.text.primary,
         transform: "scale(1)",
       }}
+      onClick={handlePlayPause}
       onMouseEnter={(e) => {
         e.currentTarget.style.transform = "scale(1.08)";
         e.currentTarget.style.boxShadow =
@@ -59,21 +113,17 @@ function BookCard({ book }: BookCardProps) {
       }}
     >
       {/* Image Section */}
-      <div className="relative w-full" style={{ aspectRatio: '3/4', minHeight: '200px', maxHeight: '400px' }}>
-        {book.image ? (
+      <div className="relative w-full" style={{ aspectRatio: '16/9', minHeight: '200px', maxHeight: '400px' }}>
+        {podcast.thumbnail_url ? (
           <img
-            src={book.image}
-            alt={book.title}
+            src={getImageUrl(podcast.thumbnail_url)}
+            alt={podcast.title}
             className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 ease-in-out"
             style={{
               background: theme.palette.background.default,
             }}
             onError={(e) => {
-              console.error('Failed to load book image:', book.image);
-              console.error('Error event:', e);
-            }}
-            onLoad={() => {
-              // console.log('Book image loaded successfully:', book.image);
+              console.error('Failed to load podcast thumbnail:', podcast.thumbnail_url);
             }}
           />
         ) : (
@@ -85,17 +135,30 @@ function BookCard({ book }: BookCardProps) {
             }}
           >
             <div className="text-center">
-              <svg
-                className="w-12 h-12 mx-auto mb-2"
-                fill="currentColor"
-                viewBox="0 0 20 20"
-              >
-                <path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-              </svg>
-              <span className="text-sm">No Cover</span>
+              <VolumeUpIcon sx={{ fontSize: 48, mb: 1 }} />
+              <span className="text-sm">No Thumbnail</span>
             </div>
           </div>
         )}
+        
+        {/* Play/Pause Overlay */}
+        <div
+          className="absolute inset-0 flex items-center justify-center bg-black bg-opacity-30 opacity-0 group-hover:opacity-100 transition-opacity duration-300"
+        >
+          <div
+            className="w-16 h-16 rounded-full flex items-center justify-center cursor-pointer"
+            style={{
+              backgroundColor: theme.palette.primary.main,
+              color: 'white',
+            }}
+          >
+            {playingPodcast === podcast.id ? (
+              <PauseIcon fontSize="large" />
+            ) : (
+              <PlayArrowIcon fontSize="large" />
+            )}
+          </div>
+        </div>
       </div>
 
       {/* Content Section */}
@@ -107,17 +170,9 @@ function BookCard({ book }: BookCardProps) {
             fontSize: isMobile ? '1rem' : isTablet ? '1.1rem' : '1.25rem' 
           }}
         >
-          {book.title}
+          {podcast.title}
         </h2>
-        <p
-          className="mb-1 font-medium"
-          style={{ 
-            color: theme.palette.primary.main, 
-            fontSize: isMobile ? '0.85rem' : isTablet ? '0.9rem' : '1rem' 
-          }}
-        >
-          by {book.author}
-        </p>
+        
         <p
           className="mb-4"
           style={{ 
@@ -125,13 +180,18 @@ function BookCard({ book }: BookCardProps) {
             fontSize: isMobile ? '0.75rem' : isTablet ? '0.8rem' : '0.875rem' 
           }}
         >
-          {book.summary}
+          {podcast.description}
         </p>
 
         {/* Bottom Section */}
         <div className="flex items-center justify-between mt-auto pt-2">
           <div className="flex items-center gap-2">
-            <div className="flex">{renderStars(book.rating)}</div>
+            <AccessTimeIcon 
+              sx={{ 
+                fontSize: isMobile ? 16 : 18,
+                color: theme.palette.text.secondary 
+              }} 
+            />
             <span
               className="text-xs"
               style={{ 
@@ -139,9 +199,10 @@ function BookCard({ book }: BookCardProps) {
                 fontSize: isMobile ? '0.65rem' : isTablet ? '0.7rem' : '0.75rem'
               }}
             >
-              {book.rating}
+              {formatDuration(podcast.duration)}
             </span>
           </div>
+          
           <span
             className="text-xs px-2 py-1 rounded font-semibold cursor-default select-none"
             style={{
@@ -151,17 +212,36 @@ function BookCard({ book }: BookCardProps) {
               border: `1px solid ${theme.palette.divider}`,
             }}
           >
-            {book.pages} PAGES
+            {formatDate(podcast.created_at)}
           </span>
         </div>
+
+        {/* Play Status */}
+        {playingPodcast === podcast.id && (
+          <div className="flex items-center gap-2 mt-2">
+            <div
+              className="w-2 h-2 rounded-full animate-pulse"
+              style={{ backgroundColor: theme.palette.primary.main }}
+            />
+            <span
+              className="text-xs font-semibold"
+              style={{ 
+                color: theme.palette.primary.main,
+                fontSize: isMobile ? '0.65rem' : isTablet ? '0.7rem' : '0.75rem'
+              }}
+            >
+              Now Playing
+            </span>
+          </div>
+        )}
       </div>
     </div>
   );
 }
 
-export default function BookCardsList() {
+export default function PodcastCardsList() {
   const dispatch = useAppDispatch();
-  const { data: books, loading, error } = useAppSelector((state) => state.blog.books);
+  const { data: podcasts, loading, error } = useAppSelector((state) => state.blog.podcasts);
   const { theme } = useThemeContext();
   const { isMobile, isTablet } = useDeviceType();
   const hasFetched = useRef(false);
@@ -169,13 +249,13 @@ export default function BookCardsList() {
   useEffect(() => {
     if (!hasFetched.current) {
       hasFetched.current = true;
-      dispatch(fetchBooks());
+      dispatch(fetchPodcasts());
     }
   }, [dispatch]);
 
   const handleRetry = () => {
-    dispatch(clearBooksError());
-    dispatch(fetchBooks());
+    dispatch(clearPodcastsError());
+    dispatch(fetchPodcasts());
   };
 
   if (loading) {
@@ -211,7 +291,7 @@ export default function BookCardsList() {
             mb: 2,
           }}
         >
-          <BookOpen 
+          <Headphones 
             size={32} 
             className={theme.palette.mode === 'dark' ? 'text-blue-400' : 'text-blue-600'} 
           />
@@ -224,7 +304,7 @@ export default function BookCardsList() {
           }}
         />
         <Typography variant="body2" color="text.secondary" fontWeight={500}>
-          Loading Vastu Books...
+          Loading Vastu Podcasts...
         </Typography>
       </Box>
     );
@@ -234,7 +314,7 @@ export default function BookCardsList() {
     return (
       <ErrorDisplay
         error={error}
-        title="Failed to load books"
+        title="Failed to load podcasts"
         onRetry={handleRetry}
         variant="paper"
         retryText="Retry"
@@ -243,7 +323,7 @@ export default function BookCardsList() {
   }
 
   // Handle empty state
-  if (!books || books.length === 0) {
+  if (!podcasts || podcasts.length === 0) {
     return (
       <Box
         sx={{
@@ -277,7 +357,7 @@ export default function BookCardsList() {
             mb: 3,
           }}
         >
-          <BookOpen 
+          <Headphones 
             size={48} 
             className={theme.palette.mode === 'dark' ? 'text-blue-400' : 'text-blue-600'} 
           />
@@ -291,7 +371,7 @@ export default function BookCardsList() {
             textAlign: 'center',
           }}
         >
-          No Books Available
+          No Podcasts Available
         </Typography>
         <Typography
           variant="body2"
@@ -301,7 +381,7 @@ export default function BookCardsList() {
             maxWidth: '400px',
           }}
         >
-          Check back later for new Vastu books and resources to expand your knowledge.
+          Check back later for new Vastu podcast episodes and audio content.
         </Typography>
       </Box>
     );
@@ -309,7 +389,7 @@ export default function BookCardsList() {
 
   // Determine grid layout based on number of items
   const getGridLayout = () => {
-    const itemCount = books.length;
+    const itemCount = podcasts.length;
     
     if (itemCount === 1) {
       return 'grid-cols-1 max-w-md mx-auto';
@@ -328,19 +408,19 @@ export default function BookCardsList() {
         display: 'grid',
         gridTemplateColumns: {
           xs: '1fr',
-          sm: books.length === 1 ? '1fr' : 'repeat(2, 1fr)',
-          lg: books.length <= 2 ? 'repeat(2, 1fr)' : 'repeat(3, 1fr)',
+          sm: podcasts.length === 1 ? '1fr' : 'repeat(2, 1fr)',
+          lg: podcasts.length <= 2 ? 'repeat(2, 1fr)' : 'repeat(3, 1fr)',
         },
         gap: 3,
         width: '100%',
         justifyItems: 'center',
-        maxWidth: books.length === 1 ? '400px' : books.length === 2 ? '800px' : '1200px',
+        maxWidth: podcasts.length === 1 ? '400px' : podcasts.length === 2 ? '800px' : '1200px',
         mx: 'auto',
         px: { xs: 1, sm: 2 },
       }}
     >
-      {books.map((book) => (
-        <BookCard key={book.id} book={book} />
+      {podcasts.map((podcast) => (
+        <PodcastCard key={podcast.id} podcast={podcast} />
       ))}
     </Box>
   );

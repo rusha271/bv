@@ -76,7 +76,7 @@ const BlogCard: React.FC<BlogCardProps> = ({
               console.error('Error event:', e);
             }}
             onLoad={() => {
-              console.log('Image loaded successfully:', image);
+              // console.log('Image loaded successfully:', image);
             }}
           />
         ) : (

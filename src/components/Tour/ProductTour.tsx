@@ -1,7 +1,6 @@
 'use client';
 import React, { useEffect, useState } from 'react';
 import { TourProvider, useTour, StepType } from '@reactour/tour';
-import Dialog from '@mui/material/Dialog';
 import { useThemeContext } from '@/contexts/ThemeContext';
 import { IconButton, Box, Typography, Button, useMediaQuery, Chip } from '@mui/material';
 import ArrowForwardIcon from '@mui/icons-material/ArrowForward';
@@ -18,10 +17,16 @@ interface BaseStyles {
   [key: string]: any;
 }
 
-const TourWithSteps = ({ onVideoOpen }: { onVideoOpen: () => void }) => {
+const TourWithSteps = ({ onVideoOpen }: { onVideoOpen?: () => void }) => {
   const { setIsOpen, currentStep, isOpen, setCurrentStep, setSteps } = useTour();
   const { theme } = useThemeContext();
+  const [isClient, setIsClient] = useState(false);
   const isMobile = useMediaQuery('(max-width:600px)');
+
+  // Prevent hydration mismatch
+  useEffect(() => {
+    setIsClient(true);
+  }, []);
 
   // Custom close button component
   const CustomCloseButton = ({ setIsOpen }: { setIsOpen: () => void }) => (
@@ -30,19 +35,19 @@ const TourWithSteps = ({ onVideoOpen }: { onVideoOpen: () => void }) => {
       size="small"
       sx={{
         position: 'absolute',
-        top: isMobile ? 8 : 12,
-        right: isMobile ? 8 : 12,
+        top: isClient && isMobile ? 8 : 12,
+        right: isClient && isMobile ? 8 : 12,
         backgroundColor: theme.palette.mode === 'dark' ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.05)',
         color: theme.palette.mode === 'dark' ? '#ffffff' : '#666666',
-        width: isMobile ? 28 : 32,
-        height: isMobile ? 28 : 32,
+        width: isClient && isMobile ? 28 : 32,
+        height: isClient && isMobile ? 28 : 32,
         zIndex: 1,
         '&:hover': { 
           backgroundColor: theme.palette.mode === 'dark' ? 'rgba(255,255,255,0.2)' : 'rgba(0,0,0,0.1)',
         },
       }}
     >
-      <CloseIcon fontSize={isMobile ? 'small' : 'medium'} />
+      <CloseIcon fontSize={isClient && isMobile ? 'small' : 'medium'} />
     </IconButton>
   );
 
@@ -54,18 +59,18 @@ const TourWithSteps = ({ onVideoOpen }: { onVideoOpen: () => void }) => {
         size="small"
         sx={{
           position: 'absolute',
-          top: isMobile ? 8 : 12,
-          left: isMobile ? 8 : 12,
+          top: isClient && isMobile ? 8 : 12,
+          left: isClient && isMobile ? 8 : 12,
           backgroundColor: theme.palette.mode === 'dark' ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.05)',
           color: theme.palette.mode === 'dark' ? '#ffffff' : '#666666',
-          width: isMobile ? 28 : 32,
-          height: isMobile ? 28 : 32,
+          width: isClient && isMobile ? 28 : 32,
+          height: isClient && isMobile ? 28 : 32,
           '&:hover': { 
             backgroundColor: theme.palette.mode === 'dark' ? 'rgba(255,255,255,0.2)' : 'rgba(0,0,0,0.1)',
           },
         }}
       >
-        <ArrowBackIcon fontSize={isMobile ? 'small' : 'medium'} />
+        <ArrowBackIcon fontSize={isClient && isMobile ? 'small' : 'medium'} />
       </IconButton>
     ) : null
   );
@@ -84,10 +89,10 @@ const TourWithSteps = ({ onVideoOpen }: { onVideoOpen: () => void }) => {
     emoji: string;
     onClose: () => void;
   }) => (
-    <Box sx={{ position: 'relative', p: isMobile ? '16px 16px 0 16px' : '20px 20px 0 20px' }}>
+    <Box sx={{ position: 'relative', p: isClient && isMobile ? '16px 16px 0 16px' : '20px 20px 0 20px' }}>
       <CustomCloseButton setIsOpen={onClose} />
       <CustomPrevButton currentStep={currentStep} setCurrentStep={setCurrentStep} />
-      <Box sx={{ mt: isMobile ? 1.5 : 2, pr: isMobile ? 4 : 5 }}>
+      <Box sx={{ mt: isClient && isMobile ? 1.5 : 2, pr: isClient && isMobile ? 4 : 5 }}>
         <Typography variant="h6" sx={{ mb: 1, fontWeight: 600, fontSize: '16px' }}>
           {emoji} {title}
         </Typography>
@@ -168,7 +173,9 @@ const TourWithSteps = ({ onVideoOpen }: { onVideoOpen: () => void }) => {
     if (isOpen && currentStep === 3) {
       setTimeout(() => {
         setIsOpen(false);
-        onVideoOpen();
+        if (onVideoOpen) {
+          onVideoOpen();
+        }
       }, 3000);
     }
   }, [currentStep, isOpen, setIsOpen, onVideoOpen]);
@@ -188,14 +195,23 @@ const TourWithSteps = ({ onVideoOpen }: { onVideoOpen: () => void }) => {
   return null;
 };
 
-export default function ProductTour() {
-  const [videoOpen, setVideoOpen] = useState(false);
+interface ProductTourProps {
+  onVideoOpen?: () => void;
+}
+
+export default function ProductTour({ onVideoOpen }: ProductTourProps) {
   const { theme } = useThemeContext();
+  const [isClient, setIsClient] = useState(false);
   const isMobile = useMediaQuery('(max-width:600px)');
+
+  // Prevent hydration mismatch
+  useEffect(() => {
+    setIsClient(true);
+  }, []);
 
   const tourStyles = {
     popover: (base: BaseStyles) => {
-      const mobileStyles = isMobile ? {
+      const mobileStyles = isClient && isMobile ? {
         maxWidth: '85vw',
         minWidth: '280px',
         position: 'fixed' as const,
@@ -269,7 +285,7 @@ export default function ProductTour() {
       gap: 1, 
       alignItems: 'center',
       justifyContent: 'space-between',
-      padding: isMobile ? '12px 16px' : '16px 20px',
+      padding: isClient && isMobile ? '12px 16px' : '16px 20px',
       borderTop: `1px solid ${theme.palette.mode === 'dark' ? '#333366' : '#f0f0f0'}`,
       backgroundColor: theme.palette.mode === 'dark' ? 'rgba(255,255,255,0.02)' : 'rgba(0,0,0,0.02)',
     }}>
@@ -291,7 +307,7 @@ export default function ProductTour() {
         />
         <Typography variant="caption" sx={{ 
           opacity: 0.7, 
-          fontSize: isMobile ? '11px' : '12px',
+          fontSize: isClient && isMobile ? '11px' : '12px',
           alignSelf: 'center'
         }}>
           of 4
@@ -306,9 +322,9 @@ export default function ProductTour() {
           sx={{
             color: theme.palette.mode === 'dark' ? '#ffffff' : '#666666',
             textTransform: 'none',
-            fontSize: isMobile ? '12px' : '13px',
+            fontSize: isClient && isMobile ? '12px' : '13px',
             minWidth: 'auto',
-            padding: isMobile ? '4px 8px' : '6px 12px',
+            padding: isClient && isMobile ? '4px 8px' : '6px 12px',
             '&:hover': { 
               backgroundColor: theme.palette.mode === 'dark' ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.05)',
             },
@@ -332,11 +348,11 @@ export default function ProductTour() {
             backgroundColor: theme.palette.primary.main,
             color: theme.palette.primary.contrastText,
             textTransform: 'none',
-            fontSize: isMobile ? '12px' : '13px',
+            fontSize: isClient && isMobile ? '12px' : '13px',
             fontWeight: 600,
             borderRadius: '8px',
             minWidth: 'auto',
-            px: isMobile ? 1.5 : 2,
+            px: isClient && isMobile ? 1.5 : 2,
             py: 0.5,
             '&:hover': {
               backgroundColor: theme.palette.primary.dark,
@@ -360,66 +376,12 @@ export default function ProductTour() {
         className="modern-tour"
         padding={{ mask: 4, popover: [8, 4] }}
         onClickMask={({ setIsOpen }) => setIsOpen(false)}
-        position={isMobile ? 'bottom' : 'top'}
+        position={isClient && isMobile ? 'bottom' : 'top'}
         showBadge={true}
       >
-        <TourWithSteps onVideoOpen={() => setVideoOpen(true)} />
+        <TourWithSteps onVideoOpen={onVideoOpen} />
       </TourProvider>
 
-      <Dialog
-        open={videoOpen}
-        onClose={() => setVideoOpen(false)}
-        maxWidth="md"
-        fullWidth
-        PaperProps={{
-          sx: {
-            borderRadius: '16px',
-            backgroundColor: theme.palette.mode === 'dark' ? '#1a1a2e' : '#ffffff',
-            overflow: 'hidden',
-          }
-        }}
-        sx={{
-          '& .MuiBackdrop-root': {
-            backgroundColor: 'rgba(0,0,0,0.8)',
-            backdropFilter: 'blur(4px)',
-          }
-        }}
-      >
-        <Box sx={{ 
-          position: 'relative',
-          backgroundColor: '#000',
-          aspectRatio: '16/9',
-        }}>
-          <IconButton
-            onClick={() => setVideoOpen(false)}
-            sx={{
-              position: 'absolute',
-              top: 8,
-              right: 8,
-              zIndex: 1,
-              backgroundColor: 'rgba(0,0,0,0.5)',
-              color: 'white',
-              '&:hover': {
-                backgroundColor: 'rgba(0,0,0,0.7)',
-              }
-            }}
-          >
-            <CloseIcon />
-          </IconButton>
-          <video 
-            controls 
-            width="100%" 
-            height="100%"
-            style={{ 
-              display: 'block',
-              objectFit: 'contain'
-            }}
-          >
-            <source src="/videos/0_Mountains_Landscape_3840x2160.mp4" type="video/mp4" />
-            Your browser does not support the video tag.
-          </video>
-        </Box>
-      </Dialog>
     </>
   );
 }

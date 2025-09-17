@@ -1,282 +1,185 @@
 "use client";
 
-import { useState, useEffect } from "react";
 import DashboardLayout from "@/components/ui/admin-dashboard/DashboardLayout";
-import { Upload, Image as ImageIcon, CheckCircle, AlertCircle } from "lucide-react";
-import { toast } from "react-hot-toast";
-import { apiService } from "@/utils/apiService";
+import { Settings, Image as ImageIcon, ArrowRight, Upload, FileText, Video, Palette } from "lucide-react";
 import { useThemeContext } from "@/contexts/ThemeContext";
+import Link from "next/link";
 
 export default function SiteSettingsPage() {
-  const [selectedFile, setSelectedFile] = useState<File | null>(null);
-  const [currentLogo, setCurrentLogo] = useState<string | null>(null);
-  const [uploadedLogo, setUploadedLogo] = useState<string | null>(null);
-  const [isUploading, setIsUploading] = useState(false);
-  const [isLoading, setIsLoading] = useState(true);
   const { mode } = useThemeContext();
-
-  // Fetch current logo on page load
-  useEffect(() => {
-    fetchCurrentLogo();
-  }, []);
-
-  const fetchCurrentLogo = async () => {
-    try {
-      setIsLoading(true);
-      const data = await apiService.admin.getLogo();
-      setCurrentLogo(data.image_url);
-    } catch (error) {
-      console.log('No current logo found or error fetching logo:', error);
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      // Validate file type
-      const allowedTypes = ['image/png', 'image/jpeg', 'image/jpg'];
-      if (!allowedTypes.includes(file.type)) {
-        toast.error('Please select a valid image file (PNG, JPG, JPEG)');
-        return;
-      }
-
-      // Validate file size (max 5MB)
-      if (file.size > 5 * 1024 * 1024) {
-        toast.error('File size must be less than 5MB');
-        return;
-      }
-
-      setSelectedFile(file);
-      setUploadedLogo(null); // Clear previous upload preview
-    }
-  };
-
-  const handleUpload = async () => {
-    if (!selectedFile) {
-      toast.error('Please select a file to upload');
-      return;
-    }
-
-    setIsUploading(true);
-    
-    try {
-      const data = await apiService.admin.uploadLogo(selectedFile);
-      setUploadedLogo(data.image_url);
-      setCurrentLogo(data.image_url); // Update current logo
-      setSelectedFile(null);
-      
-      // Reset file input
-      const fileInput = document.getElementById('logo-upload') as HTMLInputElement;
-      if (fileInput) fileInput.value = '';
-      
-      toast.success('Logo uploaded successfully!');
-    } catch (error: any) {
-      console.error('Upload error:', error);
-      toast.error(error.message || 'An error occurred while uploading the logo');
-    } finally {
-      setIsUploading(false);
-    }
-  };
-
-  const getImageUrl = (imagePath: string) => {
-    if (imagePath.startsWith('http')) {
-      return imagePath;
-    }
-    // If the path doesn't start with http, it's likely a relative path from the API
-    // We need to construct the full URL using the same base URL as the apiService
-    const baseURL = apiService.getBaseURL();
-    return imagePath.startsWith('/') ? `${baseURL}${imagePath}` : `${baseURL}/${imagePath}`;
-  };
 
   return (
     <DashboardLayout>
-      <div className="space-y-8">
-        {/* Header Section */}
-        <div className="text-center lg:text-left">
-          <h1 className={`text-3xl font-bold mb-3 ${
-            mode === 'dark' ? 'text-white' : 'text-gray-900'
-          }`}>
-            Site Settings
-          </h1>
-          <p className={`text-lg ${
-            mode === 'dark' ? 'text-gray-300' : 'text-gray-600'
-          }`}>
-            Manage your site logo and branding
-          </p>
-        </div>
-
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-          {/* Upload Form */}
-          <div className={`rounded-xl shadow-lg p-6 border ${
-            mode === 'dark' 
-              ? 'bg-gray-800 border-gray-700' 
-              : 'bg-white border-gray-200'
-          }`}>
-            <h2 className={`text-lg font-bold mb-4 flex items-center ${
-              mode === 'dark' ? 'text-white' : 'text-gray-900'
-            }`}>
-              <Upload className="w-5 h-5 mr-2" />
-              Upload New Logo
-            </h2>
-            
-            <div className="space-y-4">
-              <div>
-                <label htmlFor="logo-upload" className={`block text-sm font-medium mb-2 ${
-                  mode === 'dark' ? 'text-gray-300' : 'text-gray-700'
-                }`}>
-                  Select Logo Image
-                </label>
-                <div className="relative">
-                  <input
-                    id="logo-upload"
-                    type="file"
-                    accept=".png,.jpg,.jpeg,image/png,image/jpeg,image/jpg"
-                    onChange={handleFileSelect}
-                    className={`block w-full text-sm file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-medium border rounded-md p-2 ${
-                      mode === 'dark'
-                        ? 'text-gray-300 bg-gray-700 border-gray-600 file:bg-blue-600 file:text-white hover:file:bg-blue-700'
-                        : 'text-gray-500 file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100 border-gray-300'
-                    }`}
-                  />
-                </div>
-                <p className={`mt-1 text-xs ${
-                  mode === 'dark' ? 'text-gray-400' : 'text-gray-500'
-                }`}>
-                  Supported formats: PNG, JPG, JPEG. Max size: 5MB
-                </p>
-              </div>
-
-              {selectedFile && (
-                <div className={`border rounded-md p-3 ${
-                  mode === 'dark' 
-                    ? 'bg-blue-900 border-blue-700' 
-                    : 'bg-blue-50 border-blue-200'
-                }`}>
-                  <div className="flex items-center">
-                    <ImageIcon className={`w-4 h-4 mr-2 ${
-                      mode === 'dark' ? 'text-blue-300' : 'text-blue-600'
-                    }`} />
-                    <span className={`text-sm ${
-                      mode === 'dark' ? 'text-blue-200' : 'text-blue-800'
-                    }`}>
-                      Selected: {selectedFile.name} ({(selectedFile.size / 1024 / 1024).toFixed(2)} MB)
-                    </span>
-                  </div>
-                </div>
-              )}
-
-              <button
-                onClick={handleUpload}
-                disabled={!selectedFile || isUploading}
-                className="w-full bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center transition-colors"
-              >
-                {isUploading ? (
-                  <>
-                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
-                    Uploading...
-                  </>
-                ) : (
-                  <>
-                    <Upload className="w-4 h-4 mr-2" />
-                    Upload Logo
-                  </>
-                )}
-              </button>
+      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100 dark:from-slate-900 dark:via-slate-800 dark:to-slate-900">
+        <div className="container mx-auto px-6 py-8">
+          {/* Modern Header Section */}
+          <div className="text-center mb-12">
+            <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-gradient-to-r from-blue-500 to-purple-600 mb-6 shadow-lg">
+              <Settings className="w-8 h-8 text-white" />
             </div>
-          </div>
-
-          {/* Current Logo Display */}
-          <div className={`rounded-xl shadow-lg p-6 border ${
-            mode === 'dark' 
-              ? 'bg-gray-800 border-gray-700' 
-              : 'bg-white border-gray-200'
-          }`}>
-            <h2 className={`text-lg font-bold mb-4 flex items-center ${
-              mode === 'dark' ? 'text-white' : 'text-gray-900'
-            }`}>
-              <ImageIcon className="w-5 h-5 mr-2" />
-              Current Logo
-            </h2>
-            
-            {isLoading ? (
-              <div className="flex items-center justify-center h-32">
-                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
-              </div>
-            ) : currentLogo ? (
-              <div className="space-y-4">
-                <div className={`border rounded-md p-4 ${
-                  mode === 'dark' 
-                    ? 'border-gray-600 bg-gray-700' 
-                    : 'border-gray-200 bg-gray-50'
-                }`}>
-                  <img
-                    src={getImageUrl(currentLogo)}
-                    alt="Current Logo"
-                    className="max-h-32 max-w-full object-contain mx-auto"
-                    onError={(e) => {
-                      const target = e.target as HTMLImageElement;
-                      target.style.display = 'none';
-                    }}
-                  />
-                </div>
-                <div className={`flex items-center text-sm ${
-                  mode === 'dark' ? 'text-green-400' : 'text-green-600'
-                }`}>
-                  <CheckCircle className="w-4 h-4 mr-2" />
-                  Logo is active and displayed on the site
-                </div>
-              </div>
-            ) : (
-              <div className="text-center py-8">
-                <AlertCircle className={`w-12 h-12 mx-auto mb-3 ${
-                  mode === 'dark' ? 'text-gray-500' : 'text-gray-400'
-                }`} />
-                <p className={`${
-                  mode === 'dark' ? 'text-gray-300' : 'text-gray-500'
-                }`}>No logo uploaded yet</p>
-                <p className={`text-sm mt-1 ${
-                  mode === 'dark' ? 'text-gray-400' : 'text-gray-400'
-                }`}>Upload a logo to get started</p>
-              </div>
-            )}
-          </div>
-        </div>
-
-        {/* Upload Preview */}
-        {uploadedLogo && (
-          <div className={`rounded-xl shadow-lg p-6 border ${
-            mode === 'dark' 
-              ? 'bg-gray-800 border-gray-700' 
-              : 'bg-white border-gray-200'
-          }`}>
-            <h2 className={`text-lg font-bold mb-4 flex items-center ${
-              mode === 'dark' ? 'text-white' : 'text-gray-900'
-            }`}>
-              <CheckCircle className={`w-5 h-5 mr-2 ${
-                mode === 'dark' ? 'text-green-400' : 'text-green-600'
-              }`} />
-              Upload Preview
-            </h2>
-            <div className={`border rounded-md p-4 ${
-              mode === 'dark' 
-                ? 'border-green-700 bg-green-900' 
-                : 'border-green-200 bg-green-50'
-            }`}>
-              <img
-                src={getImageUrl(uploadedLogo)}
-                alt="Uploaded Logo Preview"
-                className="max-h-32 max-w-full object-contain mx-auto"
-              />
-            </div>
-            <p className={`text-sm mt-2 text-center ${
-              mode === 'dark' ? 'text-green-400' : 'text-green-600'
-            }`}>
-              This logo is now active and will be displayed on your site
+            <h1 className="text-4xl md:text-5xl font-bold bg-gradient-to-r from-gray-900 via-blue-800 to-purple-800 dark:from-white dark:via-blue-200 dark:to-purple-200 bg-clip-text text-transparent mb-4">
+              Site Settings
+            </h1>
+            <p className="text-xl text-gray-600 dark:text-gray-300 max-w-2xl mx-auto leading-relaxed">
+              Streamline your site management with our intuitive file and content tools
             </p>
           </div>
-        )}
+
+          {/* Modern Cards Grid */}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 max-w-6xl mx-auto">
+            {/* File Management Card */}
+            <Link href="/dashboard/site-settings/image-upload">
+              <div className="group relative overflow-hidden rounded-3xl bg-white/80 dark:bg-slate-800/80 backdrop-blur-xl border border-white/20 dark:border-slate-700/50 shadow-2xl hover:shadow-3xl transition-all duration-500 hover:-translate-y-2 cursor-pointer">
+                {/* Gradient Overlay */}
+                <div className="absolute inset-0 bg-gradient-to-br from-blue-500/10 via-purple-500/5 to-pink-500/10 opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+                
+                {/* Content */}
+                <div className="relative p-8">
+                  {/* Icon Container */}
+                  <div className="flex items-center justify-between mb-6">
+                    <div className="relative">
+                      <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-blue-500 to-blue-600 shadow-lg flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
+                        <ImageIcon className="w-8 h-8 text-white" />
+                      </div>
+                      <div className="absolute -top-1 -right-1 w-6 h-6 rounded-full bg-green-500 flex items-center justify-center">
+                        <div className="w-2 h-2 rounded-full bg-white" />
+                      </div>
+                    </div>
+                    <ArrowRight className="w-6 h-6 text-gray-400 group-hover:text-blue-500 group-hover:translate-x-2 transition-all duration-300" />
+                  </div>
+                  
+                  {/* Title */}
+                  <h3 className="text-2xl font-bold text-gray-900 dark:text-white mb-3 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors duration-300">
+                    File Management
+                  </h3>
+                  
+                  {/* Description */}
+                  <p className="text-gray-600 dark:text-gray-300 mb-6 leading-relaxed">
+                    Upload and manage your site files including logos, tour videos, and other assets with our advanced file management system.
+                  </p>
+                  
+                  {/* Features List */}
+                  <div className="space-y-3">
+                    <div className="flex items-center space-x-3">
+                      <div className="w-2 h-2 rounded-full bg-blue-500" />
+                      <span className="text-sm text-gray-600 dark:text-gray-300">Logo & branding files</span>
+                    </div>
+                    <div className="flex items-center space-x-3">
+                      <div className="w-2 h-2 rounded-full bg-purple-500" />
+                      <span className="text-sm text-gray-600 dark:text-gray-300">Tour video uploads</span>
+                    </div>
+                    <div className="flex items-center space-x-3">
+                      <div className="w-2 h-2 rounded-full bg-pink-500" />
+                      <span className="text-sm text-gray-600 dark:text-gray-300">Site assets & files</span>
+                    </div>
+                    <div className="flex items-center space-x-3">
+                      <div className="w-2 h-2 rounded-full bg-green-500" />
+                      <span className="text-sm text-gray-600 dark:text-gray-300">File history & management</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </Link>
+
+            {/* Coming Soon Cards */}
+            <div className="group relative overflow-hidden rounded-3xl bg-white/60 dark:bg-slate-800/60 backdrop-blur-xl border border-white/20 dark:border-slate-700/50 shadow-xl opacity-75">
+              <div className="absolute inset-0 bg-gradient-to-br from-gray-500/10 via-slate-500/5 to-gray-500/10" />
+              <div className="relative p-8">
+                <div className="flex items-center justify-between mb-6">
+                  <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-gray-400 to-gray-500 shadow-lg flex items-center justify-center">
+                    <Upload className="w-8 h-8 text-white" />
+                  </div>
+                  <div className="px-3 py-1 rounded-full bg-gray-200 dark:bg-gray-700 text-xs font-medium text-gray-600 dark:text-gray-300">
+                    Coming Soon
+                  </div>
+                </div>
+                <h3 className="text-2xl font-bold text-gray-700 dark:text-gray-300 mb-3">
+                  Content Manager
+                </h3>
+                <p className="text-gray-500 dark:text-gray-400 mb-6 leading-relaxed">
+                  Advanced content management system for blogs, articles, and dynamic content.
+                </p>
+                <div className="space-y-3">
+                  <div className="flex items-center space-x-3">
+                    <div className="w-2 h-2 rounded-full bg-gray-400" />
+                    <span className="text-sm text-gray-500 dark:text-gray-400">Rich text editor</span>
+                  </div>
+                  <div className="flex items-center space-x-3">
+                    <div className="w-2 h-2 rounded-full bg-gray-400" />
+                    <span className="text-sm text-gray-500 dark:text-gray-400">Media library</span>
+                  </div>
+                  <div className="flex items-center space-x-3">
+                    <div className="w-2 h-2 rounded-full bg-gray-400" />
+                    <span className="text-sm text-gray-500 dark:text-gray-400">SEO optimization</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div className="group relative overflow-hidden rounded-3xl bg-white/60 dark:bg-slate-800/60 backdrop-blur-xl border border-white/20 dark:border-slate-700/50 shadow-xl opacity-75">
+              <div className="absolute inset-0 bg-gradient-to-br from-gray-500/10 via-slate-500/5 to-gray-500/10" />
+              <div className="relative p-8">
+                <div className="flex items-center justify-between mb-6">
+                  <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-gray-400 to-gray-500 shadow-lg flex items-center justify-center">
+                    <Palette className="w-8 h-8 text-white" />
+                  </div>
+                  <div className="px-3 py-1 rounded-full bg-gray-200 dark:bg-gray-700 text-xs font-medium text-gray-600 dark:text-gray-300">
+                    Coming Soon
+                  </div>
+                </div>
+                <h3 className="text-2xl font-bold text-gray-700 dark:text-gray-300 mb-3">
+                  Theme Customizer
+                </h3>
+                <p className="text-gray-500 dark:text-gray-400 mb-6 leading-relaxed">
+                  Customize your site's appearance with our advanced theme editor and color schemes.
+                </p>
+                <div className="space-y-3">
+                  <div className="flex items-center space-x-3">
+                    <div className="w-2 h-2 rounded-full bg-gray-400" />
+                    <span className="text-sm text-gray-500 dark:text-gray-400">Color schemes</span>
+                  </div>
+                  <div className="flex items-center space-x-3">
+                    <div className="w-2 h-2 rounded-full bg-gray-400" />
+                    <span className="text-sm text-gray-500 dark:text-gray-400">Layout options</span>
+                  </div>
+                  <div className="flex items-center space-x-3">
+                    <div className="w-2 h-2 rounded-full bg-gray-400" />
+                    <span className="text-sm text-gray-500 dark:text-gray-400">Live preview</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Stats Section */}
+          <div className="mt-16 max-w-4xl mx-auto">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              <div className="text-center p-6 rounded-2xl bg-white/80 dark:bg-slate-800/80 backdrop-blur-xl border border-white/20 dark:border-slate-700/50 shadow-lg">
+                <div className="w-12 h-12 rounded-xl bg-gradient-to-r from-blue-500 to-blue-600 mx-auto mb-4 flex items-center justify-center">
+                  <FileText className="w-6 h-6 text-white" />
+                </div>
+                <div className="text-3xl font-bold text-gray-900 dark:text-white mb-2">24/7</div>
+                <div className="text-gray-600 dark:text-gray-300">File Management</div>
+              </div>
+              
+              <div className="text-center p-6 rounded-2xl bg-white/80 dark:bg-slate-800/80 backdrop-blur-xl border border-white/20 dark:border-slate-700/50 shadow-lg">
+                <div className="w-12 h-12 rounded-xl bg-gradient-to-r from-purple-500 to-purple-600 mx-auto mb-4 flex items-center justify-center">
+                  <Video className="w-6 h-6 text-white" />
+                </div>
+                <div className="text-3xl font-bold text-gray-900 dark:text-white mb-2">HD</div>
+                <div className="text-gray-600 dark:text-gray-300">Video Support</div>
+              </div>
+              
+              <div className="text-center p-6 rounded-2xl bg-white/80 dark:bg-slate-800/80 backdrop-blur-xl border border-white/20 dark:border-slate-700/50 shadow-lg">
+                <div className="w-12 h-12 rounded-xl bg-gradient-to-r from-green-500 to-green-600 mx-auto mb-4 flex items-center justify-center">
+                  <Upload className="w-6 h-6 text-white" />
+                </div>
+                <div className="text-3xl font-bold text-gray-900 dark:text-white mb-2">100MB</div>
+                <div className="text-gray-600 dark:text-gray-300">Max Upload Size</div>
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
     </DashboardLayout>
   );

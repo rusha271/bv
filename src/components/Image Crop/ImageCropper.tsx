@@ -691,45 +691,179 @@ const ImageCropper: React.FC<ImageCropperProps> = ({ imageUrl, onImageLoaded, on
     >
       {/* Shape type selector */}
       {!croppedImage && (
-        <Stack direction="row" spacing={1} justifyContent="center" sx={{ mb: 1 }}>
+        <Stack direction="row" spacing={1} justifyContent="center" sx={{ mb: 1 }} flexWrap="wrap">
           <Button
             variant={shapeType === 'rectangle' ? 'contained' : 'outlined'}
             onClick={() => setShapeType('rectangle')}
-            sx={{ fontSize: buttonFontSize, padding: buttonPadding, minWidth: '80px' }}
+            sx={{ 
+              fontSize: buttonFontSize, 
+              padding: buttonPadding, 
+              minWidth: '100px',
+              borderRadius: 3,
+              fontWeight: 600,
+              textTransform: 'none',
+              transition: 'all 0.3s ease',
+              ...(shapeType === 'rectangle' ? {
+                background: 'linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%)',
+                boxShadow: '0 4px 15px rgba(59, 130, 246, 0.3)',
+                '&:hover': {
+                  background: 'linear-gradient(135deg, #2563eb 0%, #7c3aed 100%)',
+                  transform: 'translateY(-2px)',
+                  boxShadow: '0 8px 25px rgba(59, 130, 246, 0.4)',
+                }
+              } : {
+                borderColor: theme.palette.mode === 'dark' ? 'rgba(148, 163, 184, 0.3)' : 'rgba(148, 163, 184, 0.5)',
+                color: theme.palette.text.primary,
+                '&:hover': {
+                  borderColor: '#3b82f6',
+                  backgroundColor: theme.palette.mode === 'dark' ? 'rgba(59, 130, 246, 0.1)' : 'rgba(59, 130, 246, 0.05)',
+                  transform: 'translateY(-1px)',
+                }
+              })
+            }}
           >
-            Rectangle
+            📐 Rectangle
           </Button>
           <Button
             variant={shapeType === 'square' ? 'contained' : 'outlined'}
             onClick={() => setShapeType('square')}
-            sx={{ fontSize: buttonFontSize, padding: buttonPadding, minWidth: '80px' }}
+            sx={{ 
+              fontSize: buttonFontSize, 
+              padding: buttonPadding, 
+              minWidth: '100px',
+              borderRadius: 3,
+              fontWeight: 600,
+              textTransform: 'none',
+              transition: 'all 0.3s ease',
+              ...(shapeType === 'square' ? {
+                background: 'linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%)',
+                boxShadow: '0 4px 15px rgba(59, 130, 246, 0.3)',
+                '&:hover': {
+                  background: 'linear-gradient(135deg, #2563eb 0%, #7c3aed 100%)',
+                  transform: 'translateY(-2px)',
+                  boxShadow: '0 8px 25px rgba(59, 130, 246, 0.4)',
+                }
+              } : {
+                borderColor: theme.palette.mode === 'dark' ? 'rgba(148, 163, 184, 0.3)' : 'rgba(148, 163, 184, 0.5)',
+                color: theme.palette.text.primary,
+                '&:hover': {
+                  borderColor: '#3b82f6',
+                  backgroundColor: theme.palette.mode === 'dark' ? 'rgba(59, 130, 246, 0.1)' : 'rgba(59, 130, 246, 0.05)',
+                  transform: 'translateY(-1px)',
+                }
+              })
+            }}
           >
-            Square
+            ⬜ Square
           </Button>
           {!isMobile && (
             <Button
               variant={shapeType === 'polygon' ? 'contained' : 'outlined'}
               onClick={() => setShapeType('polygon')}
-              sx={{ fontSize: buttonFontSize, padding: buttonPadding, minWidth: '80px' }}
+              sx={{ 
+                fontSize: buttonFontSize, 
+                padding: buttonPadding, 
+                minWidth: '100px',
+                borderRadius: 3,
+                fontWeight: 600,
+                textTransform: 'none',
+                transition: 'all 0.3s ease',
+                ...(shapeType === 'polygon' ? {
+                  background: 'linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%)',
+                  boxShadow: '0 4px 15px rgba(59, 130, 246, 0.3)',
+                  '&:hover': {
+                    background: 'linear-gradient(135deg, #2563eb 0%, #7c3aed 100%)',
+                    transform: 'translateY(-2px)',
+                    boxShadow: '0 8px 25px rgba(59, 130, 246, 0.4)',
+                  }
+                } : {
+                  borderColor: theme.palette.mode === 'dark' ? 'rgba(148, 163, 184, 0.3)' : 'rgba(148, 163, 184, 0.5)',
+                  color: theme.palette.text.primary,
+                  '&:hover': {
+                    borderColor: '#3b82f6',
+                    backgroundColor: theme.palette.mode === 'dark' ? 'rgba(59, 130, 246, 0.1)' : 'rgba(59, 130, 246, 0.05)',
+                    transform: 'translateY(-1px)',
+                  }
+                })
+              }}
             >
-              Polygon
+              🔷 Polygon
             </Button>
           )}
           <Button
-            variant="contained"
-            color="secondary"
-            onClick={handleAutoCrop}
-            sx={{ fontSize: buttonFontSize, padding: buttonPadding, minWidth: '80px' }}
+            variant="outlined"
+            disabled={true}
+            sx={{ 
+              fontSize: buttonFontSize, 
+              padding: buttonPadding, 
+              minWidth: '100px',
+              borderRadius: 3,
+              fontWeight: 600,
+              textTransform: 'none',
+              transition: 'all 0.3s ease',
+              position: 'relative',
+              borderColor: theme.palette.mode === 'dark' ? 'rgba(148, 163, 184, 0.1)' : 'rgba(148, 163, 184, 0.2)',
+              color: theme.palette.text.disabled,
+              '&:disabled': {
+                borderColor: theme.palette.mode === 'dark' ? 'rgba(148, 163, 184, 0.1)' : 'rgba(148, 163, 184, 0.2)',
+                color: theme.palette.text.disabled,
+                backgroundColor: 'transparent',
+                transform: 'none',
+              }
+            }}
           >
-            Auto Crop
+            🤖 Auto Crop
+            <Typography 
+              variant="caption" 
+              sx={{ 
+                position: 'absolute',
+                top: -8,
+                right: -8,
+                background: theme.palette.mode === 'dark' ? 'rgba(34, 197, 94, 0.2)' : 'rgba(34, 197, 94, 0.1)',
+                color: theme.palette.mode === 'dark' ? '#22c55e' : '#059669',
+                px: 1,
+                py: 0.5,
+                borderRadius: 1,
+                fontSize: '0.7rem',
+                fontWeight: 600,
+                border: theme.palette.mode === 'dark' ? '1px solid rgba(34, 197, 94, 0.3)' : '1px solid rgba(34, 197, 94, 0.2)',
+              }}
+            >
+              Coming Soon
+            </Typography>
           </Button>
         </Stack>
       )}
 
       {/* Instructions for mobile */}
       {isMobile && !croppedImage && (
-        <Box sx={{ mb: 1, p: 2, backgroundColor: theme.palette.background.paper, borderRadius: 1 }}>
-          <Typography variant="body2" sx={{ color: theme.palette.text.secondary, fontSize: '0.8rem' }}>
+        <Box sx={{ 
+          mb: 1, 
+          p: 3, 
+          background: theme.palette.mode === 'dark'
+            ? 'rgba(15, 23, 42, 0.8)'
+            : 'rgba(255, 255, 255, 0.8)',
+          backdropFilter: 'blur(20px)',
+          borderRadius: 3,
+          border: theme.palette.mode === 'dark'
+            ? '1px solid rgba(148, 163, 184, 0.1)'
+            : '1px solid rgba(148, 163, 184, 0.2)',
+          boxShadow: theme.palette.mode === 'dark'
+            ? '0 8px 32px rgba(0, 0, 0, 0.3)'
+            : '0 8px 32px rgba(0, 0, 0, 0.1)',
+        }}>
+          <Typography variant="body2" sx={{ 
+            color: theme.palette.text.secondary, 
+            fontSize: '0.9rem',
+            textAlign: 'center',
+            fontWeight: 500,
+            background: theme.palette.mode === 'dark'
+              ? 'linear-gradient(135deg, #60a5fa 0%, #a78bfa 100%)'
+              : 'linear-gradient(135deg, #1e40af 0%, #7c3aed 100%)',
+            backgroundClip: 'text',
+            WebkitBackgroundClip: 'text',
+            WebkitTextFillColor: 'transparent',
+          }}>
             {shapeType === 'polygon'
               ? '📱 Tap to add points • Tap close to first point to close • Touch & hold point to drag'
               : '📱 Drag to select area • Touch & hold corner to drag'}
@@ -800,44 +934,87 @@ const ImageCropper: React.FC<ImageCropperProps> = ({ imageUrl, onImageLoaded, on
           onClick={handleCrop}
           disabled={points.length < 3 || !isPolygonClosed || !!croppedImage}
           sx={{ 
-            backgroundColor: '#1976d2', 
-            '&:hover': { backgroundColor: '#115293' },
+            background: 'linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%)',
+            boxShadow: '0 4px 15px rgba(59, 130, 246, 0.3)',
+            borderRadius: 3,
+            fontWeight: 600,
+            textTransform: 'none',
             fontSize: buttonFontSize,
             padding: buttonPadding,
-            minHeight: isMobile ? '44px' : 'auto', // Touch-friendly height
+            minHeight: isMobile ? '44px' : 'auto',
+            transition: 'all 0.3s ease',
+            '&:hover': {
+              background: 'linear-gradient(135deg, #2563eb 0%, #7c3aed 100%)',
+              transform: 'translateY(-2px)',
+              boxShadow: '0 8px 25px rgba(59, 130, 246, 0.4)',
+            },
+            '&:disabled': {
+              background: theme.palette.mode === 'dark' ? 'rgba(148, 163, 184, 0.1)' : 'rgba(148, 163, 184, 0.05)',
+              color: theme.palette.text.disabled,
+              boxShadow: 'none',
+              transform: 'none',
+            }
           }}
         >
-          Crop
+          ✂️ Crop
         </Button>
         <Button
           variant="outlined"
           onClick={handleUndo}
           disabled={points.length === 0 || !!croppedImage}
           sx={{ 
-            borderColor: '#d32f2f', 
-            color: '#d32f2f', 
-            '&:hover': { borderColor: '#b71c1c' },
+            borderColor: theme.palette.mode === 'dark' ? 'rgba(148, 163, 184, 0.3)' : 'rgba(148, 163, 184, 0.5)',
+            color: theme.palette.text.primary,
+            borderRadius: 3,
+            fontWeight: 600,
+            textTransform: 'none',
             fontSize: buttonFontSize,
             padding: buttonPadding,
             minHeight: isMobile ? '44px' : 'auto',
+            transition: 'all 0.3s ease',
+            '&:hover': {
+              borderColor: '#3b82f6',
+              backgroundColor: theme.palette.mode === 'dark' ? 'rgba(59, 130, 246, 0.1)' : 'rgba(59, 130, 246, 0.05)',
+              transform: 'translateY(-1px)',
+            },
+            '&:disabled': {
+              borderColor: theme.palette.mode === 'dark' ? 'rgba(148, 163, 184, 0.1)' : 'rgba(148, 163, 184, 0.2)',
+              color: theme.palette.text.disabled,
+              backgroundColor: 'transparent',
+              transform: 'none',
+            }
           }}
         >
-          Undo
+          ↶ Undo
         </Button>
         <Button
           variant="outlined"
           onClick={handleReset}
           disabled={points.length === 0 && !croppedImage}
           sx={{ 
-            borderColor: '#0288d1', 
-            color: '#0288d1', 
-            '&:hover': { borderColor: '#01579b' },
+            borderColor: theme.palette.mode === 'dark' ? 'rgba(148, 163, 184, 0.3)' : 'rgba(148, 163, 184, 0.5)',
+            color: theme.palette.text.primary,
+            borderRadius: 3,
+            fontWeight: 600,
+            textTransform: 'none',
             fontSize: buttonFontSize,
             padding: buttonPadding,
             minHeight: isMobile ? '44px' : 'auto',
+            transition: 'all 0.3s ease',
+            '&:hover': {
+              borderColor: '#ef4444',
+              backgroundColor: theme.palette.mode === 'dark' ? 'rgba(239, 68, 68, 0.1)' : 'rgba(239, 68, 68, 0.05)',
+              transform: 'translateY(-1px)',
+            },
+            '&:disabled': {
+              borderColor: theme.palette.mode === 'dark' ? 'rgba(148, 163, 184, 0.1)' : 'rgba(148, 163, 184, 0.2)',
+              color: theme.palette.text.disabled,
+              backgroundColor: 'transparent',
+              transform: 'none',
+            }
           }}
         >
-          Reset
+          🔄 Reset
         </Button>
       </Stack>
     </Box>

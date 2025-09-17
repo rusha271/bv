@@ -12,6 +12,7 @@ import Slide from '@mui/material/Slide';
 import Image from 'next/image';
 import { useThemeContext } from '@/contexts/ThemeContext';
 import { apiService } from '@/utils/apiService';
+import { sessionCache } from '@/utils/apiCache';
 import MenuIcon from '@mui/icons-material/Menu';
 import Drawer from '@mui/material/Drawer';
 import List from '@mui/material/List';
@@ -32,11 +33,12 @@ import Dashboard from '@mui/icons-material/Dashboard';
 import Payment from '@mui/icons-material/Payment';
 import Logout from '@mui/icons-material/Logout';
 import Person from '@mui/icons-material/Person';
+import { Sparkles, Home, BookOpen, MessageSquare, Shield } from 'lucide-react';
 
 const menuItems = [
-  { label: 'Home', href: '/' },
-  { label: 'Blog', href: '/blog' },
-  { label: 'Contact Us', href: '/contact' },
+  { label: 'Home', href: '/', icon: Home },
+  { label: 'Blog', href: '/blog', icon: BookOpen },
+  { label: 'Contact Us', href: '/contact', icon: MessageSquare },
 ];
 
 function HideOnScroll({ children }: { children: React.ReactElement }) {
@@ -75,32 +77,55 @@ const Navbar = memo(function Navbar() {
   // Helper function to construct proper image URL
   const getImageUrl = (imagePath: string) => {
     if (imagePath.startsWith('http')) {
-      console.log('Using full URL:', imagePath);
+      // console.log('Using full URL:', imagePath);
       return imagePath;
     }
     // If the path doesn't start with http, it's likely a relative path from the API
     // We need to construct the full URL using the same base URL as the apiService
     const baseURL = apiService.getBaseURL();
     const fullUrl = imagePath.startsWith('/') ? `${baseURL}${imagePath}` : `${baseURL}/${imagePath}`;
-    console.log('Constructed URL:', fullUrl, 'from path:', imagePath, 'baseURL:', baseURL);
+    // console.log('Constructed URL:', fullUrl, 'from path:', imagePath, 'baseURL:', baseURL);
     return fullUrl;
   };
 
   useEffect(() => {
-    // Fetch uploaded logo
+    // Fetch uploaded logo from site settings with caching
     const fetchUploadedLogo = async () => {
       try {
-        const data = await apiService.admin.getLogo();
-        console.log('Logo data received:', data);
-        console.log('Image URL:', data.image_url);
-        setUploadedLogo(data.image_url);
+        // Check cache first
+        const cachedLogo = sessionCache.get('logo_url');
+        if (cachedLogo) {
+          setUploadedLogo(cachedLogo);
+          return;
+        }
+
+        const response = await apiService.siteSettings.getLatestByCategory('logo');
+        const logoUrl = response.file_url || response.data?.public_url || response.data?.file_path;
+        if (logoUrl) {
+          setUploadedLogo(logoUrl);
+          // Cache the logo URL for 1 hour
+          sessionCache.set('logo_url', logoUrl, 60 * 60 * 1000);
+        }
       } catch (error) {
         console.error('Error fetching uploaded logo:', error);
+        // Fallback to old admin API if site settings fails
+        try {
+          const fallbackData = await apiService.admin.getLogo();
+          if (fallbackData?.image_url) {
+            setUploadedLogo(fallbackData.image_url);
+            // Cache fallback logo too
+            sessionCache.set('logo_url', fallbackData.image_url, 60 * 60 * 1000);
+          }
+        } catch (fallbackError) {
+          console.error('Fallback logo fetch also failed:', fallbackError);
+        }
       }
     };
 
-    fetchUploadedLogo();
-  }, []);
+    if (isClient) {
+      fetchUploadedLogo();
+    }
+  }, [isClient]);
 
   // User menu handlers
   const handleUserMenuOpen = (event: React.MouseEvent<HTMLElement>) => {
@@ -117,7 +142,7 @@ const Navbar = memo(function Navbar() {
       handleUserMenuClose();
       router.push('/');
     } catch (error) {
-      console.error('Logout error:', error);
+      //  console.error('Logout error:', error);
     }
   };
 
@@ -144,59 +169,174 @@ const Navbar = memo(function Navbar() {
     setLoginDialogOpen(false);
   };
 
-  // Don't render until client-side to prevent hydration mismatch
-  if (!isClient) {
-    return null;
-  }
+  // Always render the same structure to prevent hydration mismatch
+  // Use opacity to hide/show content instead of conditional rendering
 
   return (
     <>
       <HideOnScroll>
         <AppBar
           position="fixed"
-          elevation={6}
+          elevation={0}
           sx={{
-            boxShadow: 6,
-            borderBottom: theme.palette.mode === 'dark' ? '1.5px solid #23234f' : '1.5px solid #e5e7eb',
-            background: theme.palette.mode === 'dark' ? 'rgba(30,30,30,0.85)' : 'rgba(255,255,255,0.85)',
+            background: theme.palette.mode === 'dark' 
+              ? 'linear-gradient(135deg, rgba(15, 23, 42, 0.95) 0%, rgba(30, 41, 59, 0.9) 100%)'
+              : 'linear-gradient(135deg, rgba(255, 255, 255, 0.95) 0%, rgba(248, 250, 252, 0.9) 100%)',
+            backdropFilter: 'blur(20px)',
+            borderBottom: theme.palette.mode === 'dark' 
+              ? '1px solid rgba(148, 163, 184, 0.1)' 
+              : '1px solid rgba(148, 163, 184, 0.2)',
+            boxShadow: theme.palette.mode === 'dark'
+              ? '0 8px 32px rgba(0, 0, 0, 0.3)'
+              : '0 8px 32px rgba(0, 0, 0, 0.1)',
             color: theme.palette.text.primary,
-            backdropFilter: 'blur(8px)',
+            transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+            zIndex: 1300,
           }}
         >
           <Toolbar sx={{ justifyContent: 'space-between' }}>
             <Box display="flex" alignItems="center" gap={2}>
-              {uploadedLogo && (
-                <Image
-                  src={getImageUrl(uploadedLogo)}
-                  alt="Uploaded Logo"
-                  width={48}
-                  height={48}
-                  style={{ borderRadius: 8 }}
-                  onError={(e) => {
-                    const target = e.target as HTMLImageElement;
-                    target.style.display = 'none';
-                  }}
-                />
-              )}
-              <Typography variant="h6" fontWeight={700} sx={{ color: theme.palette.primary.main }} onClick={() => router.push('/')} style={{ cursor: 'pointer' }}>
-                Brahma Vastu
-              </Typography>
+              {/* Loading state - shown when not client-side */}
+              <Box
+                sx={{
+                  opacity: isClient ? 0 : 1,
+                  transition: 'opacity 0.3s ease',
+                  position: isClient ? 'absolute' : 'static',
+                  pointerEvents: isClient ? 'none' : 'auto',
+                }}
+              >
+                <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
+                  Loading...
+                </Typography>
+              </Box>
+
+              {/* Main content - shown when client-side */}
+              <Box
+                sx={{
+                  opacity: isClient ? 1 : 0,
+                  transition: 'opacity 0.3s ease',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: 2,
+                  width: '100%',
+                }}
+              >
+                <Box display="flex" alignItems="center" gap={1.5}>
+                  <Box
+                    sx={{
+                      p: 1,
+                      borderRadius: 2,
+                      background: theme.palette.mode === 'dark'
+                        ? 'linear-gradient(135deg, rgba(59, 130, 246, 0.2) 0%, rgba(147, 51, 234, 0.2) 100%)'
+                        : 'linear-gradient(135deg, rgba(59, 130, 246, 0.1) 0%, rgba(147, 51, 234, 0.1) 100%)',
+                      border: theme.palette.mode === 'dark'
+                        ? '1px solid rgba(59, 130, 246, 0.3)'
+                        : '1px solid rgba(59, 130, 246, 0.2)',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      minWidth: 40,
+                      minHeight: 40,
+                    }}
+                  >
+                    <Image
+                      src={uploadedLogo ? getImageUrl(uploadedLogo) : "/images/bv.png"}
+                      alt="Brahma Vastu Logo"
+                      width={32}
+                      height={32}
+                      style={{ borderRadius: 6 }}
+                      onError={(e) => {
+                        const target = e.target as HTMLImageElement;
+                        target.src = "/images/bv.png";
+                      }}
+                    />
+                  </Box>
+                  <Typography 
+                    variant="h6" 
+                    fontWeight={800} 
+                    onClick={() => router.push('/')} 
+                    sx={{ 
+                      cursor: 'pointer',
+                      background: theme.palette.mode === 'dark'
+                        ? 'linear-gradient(135deg, #60a5fa 0%, #a78bfa 100%)'
+                        : 'linear-gradient(135deg, #1e40af 0%, #7c3aed 100%)',
+                      backgroundClip: 'text',
+                      WebkitBackgroundClip: 'text',
+                      WebkitTextFillColor: 'transparent',
+                      transition: 'all 0.3s ease',
+                      '&:hover': {
+                        transform: 'scale(1.05)',
+                        filter: 'brightness(1.1)',
+                      }
+                    }}
+                  >
+                    Brahma Vastu
+                  </Typography>
+                </Box>
+              </Box>
             </Box>
-            <Box display={{ xs: 'none', md: 'flex' }} gap={2} alignItems="center">
-              {menuItems.map((item) => (
-                <Button key={item.label} onClick={() => router.push(item.href)} sx={{ color: theme.palette.text.primary, fontWeight: 600 }}>
-                  {item.label}
-                </Button>
-              ))}
+            <Box 
+              display={{ xs: 'none', md: 'flex' }} 
+              gap={2} 
+              alignItems="center"
+              sx={{
+                opacity: isClient ? 1 : 0,
+                transition: 'opacity 0.3s ease',
+              }}
+            >
+              {menuItems.map((item) => {
+                const IconComponent = item.icon;
+                return (
+                  <Button 
+                    key={item.label} 
+                    onClick={() => router.push(item.href)} 
+                    startIcon={<IconComponent size={18} />}
+                    sx={{ 
+                      color: theme.palette.text.primary, 
+                      fontWeight: 600,
+                      px: 2,
+                      py: 1,
+                      borderRadius: 2,
+                      transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+                      background: 'transparent',
+                      '&:hover': {
+                        background: theme.palette.mode === 'dark'
+                          ? 'rgba(59, 130, 246, 0.1)'
+                          : 'rgba(59, 130, 246, 0.05)',
+                        transform: 'translateY(-2px)',
+                        boxShadow: theme.palette.mode === 'dark'
+                          ? '0 4px 20px rgba(59, 130, 246, 0.2)'
+                          : '0 4px 20px rgba(59, 130, 246, 0.1)',
+                      }
+                    }}
+                  >
+                    {item.label}
+                  </Button>
+                );
+              })}
               {isAdmin && (
                 <Button 
                   onClick={() => router.push('/dashboard')}
+                  startIcon={<Shield size={18} />}
                   sx={{ 
-                    color: theme.palette.text.primary, 
+                    color: theme.palette.mode === 'dark' ? '#fff' : '#fff',
                     fontWeight: 600,
-                    backgroundColor: theme.palette.mode === 'dark' ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.05)',
+                    px: 3,
+                    py: 1,
+                    borderRadius: 2,
+                    background: theme.palette.mode === 'dark'
+                      ? 'linear-gradient(135deg, #7c3aed 0%, #3b82f6 100%)'
+                      : 'linear-gradient(135deg, #1e40af 0%, #7c3aed 100%)',
+                    boxShadow: theme.palette.mode === 'dark'
+                      ? '0 4px 20px rgba(124, 58, 237, 0.3)'
+                      : '0 4px 20px rgba(30, 64, 175, 0.3)',
+                    transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
                     '&:hover': {
-                      backgroundColor: theme.palette.mode === 'dark' ? 'rgba(255,255,255,0.15)' : 'rgba(0,0,0,0.1)',
+                      transform: 'translateY(-2px)',
+                      boxShadow: theme.palette.mode === 'dark'
+                        ? '0 8px 30px rgba(124, 58, 237, 0.4)'
+                        : '0 8px 30px rgba(30, 64, 175, 0.4)',
+                      filter: 'brightness(1.1)',
                     }
                   }}
                 >
@@ -209,20 +349,35 @@ const Navbar = memo(function Navbar() {
                      onClick={handleUserMenuOpen}
                      sx={{
                        p: 0.5,
-                       border: `2px solid ${theme.palette.primary.main}`,
+                       borderRadius: 2,
+                       background: theme.palette.mode === 'dark'
+                         ? 'linear-gradient(135deg, rgba(59, 130, 246, 0.2) 0%, rgba(147, 51, 234, 0.2) 100%)'
+                         : 'linear-gradient(135deg, rgba(59, 130, 246, 0.1) 0%, rgba(147, 51, 234, 0.1) 100%)',
+                       border: theme.palette.mode === 'dark'
+                         ? '1px solid rgba(59, 130, 246, 0.3)'
+                         : '1px solid rgba(59, 130, 246, 0.2)',
+                       transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
                        '&:hover': {
-                         borderColor: theme.palette.primary.dark,
+                         transform: 'scale(1.05)',
+                         boxShadow: theme.palette.mode === 'dark'
+                           ? '0 4px 20px rgba(59, 130, 246, 0.3)'
+                           : '0 4px 20px rgba(59, 130, 246, 0.2)',
                        },
                      }}
                    >
                      <Avatar
                        sx={{
-                         width: 36,
-                         height: 36,
-                         bgcolor: theme.palette.primary.main,
-                         color: theme.palette.primary.contrastText,
-                         fontSize: '0.9rem',
-                         fontWeight: 600,
+                         width: 32,
+                         height: 32,
+                         background: theme.palette.mode === 'dark'
+                           ? 'linear-gradient(135deg, #3b82f6 0%, #7c3aed 100%)'
+                           : 'linear-gradient(135deg, #1e40af 0%, #7c3aed 100%)',
+                         color: '#fff',
+                         fontSize: '0.8rem',
+                         fontWeight: 700,
+                         boxShadow: theme.palette.mode === 'dark'
+                           ? '0 2px 10px rgba(59, 130, 246, 0.3)'
+                           : '0 2px 10px rgba(30, 64, 175, 0.3)',
                        }}
                      >
                        {user?.name ? user.name.charAt(0).toUpperCase() : 'U'}
@@ -233,16 +388,24 @@ const Navbar = memo(function Navbar() {
                 <Button
                   onClick={handleLoginClick}
                   sx={{
-                    color: theme.palette.mode === 'dark' ? '#fff' : theme.palette.primary.contrastText,
-                    background: theme.palette.mode === 'dark' ? theme.palette.primary.main : theme.palette.primary.dark,
+                    color: '#fff',
                     fontWeight: 600,
-                    ml: 2,
                     px: 3,
+                    py: 1,
                     borderRadius: 2,
-                    boxShadow: 2,
+                    background: theme.palette.mode === 'dark'
+                      ? 'linear-gradient(135deg, #3b82f6 0%, #7c3aed 100%)'
+                      : 'linear-gradient(135deg, #1e40af 0%, #7c3aed 100%)',
+                    boxShadow: theme.palette.mode === 'dark'
+                      ? '0 4px 20px rgba(59, 130, 246, 0.3)'
+                      : '0 4px 20px rgba(30, 64, 175, 0.3)',
+                    transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
                     '&:hover': {
-                      background: theme.palette.mode === 'dark' ? theme.palette.primary.light : theme.palette.primary.main,
-                      color: '#fff',
+                      transform: 'translateY(-2px)',
+                      boxShadow: theme.palette.mode === 'dark'
+                        ? '0 8px 30px rgba(59, 130, 246, 0.4)'
+                        : '0 8px 30px rgba(30, 64, 175, 0.4)',
+                      filter: 'brightness(1.1)',
                     },
                   }}
                 >
@@ -251,23 +414,113 @@ const Navbar = memo(function Navbar() {
               )}
               <ThemeSwitcher toggleTheme={toggleTheme} mode={mode} />
             </Box>
-            <Box display={{ xs: 'flex', md: 'none' }}>
-              <IconButton color="inherit" onClick={() => setDrawerOpen(true)}>
+            <Box 
+              display={{ xs: 'flex', md: 'none' }}
+              sx={{
+                opacity: isClient ? 1 : 0,
+                transition: 'opacity 0.3s ease',
+              }}
+            >
+              <IconButton 
+                onClick={() => setDrawerOpen(true)}
+                sx={{
+                  p: 1.5,
+                  borderRadius: 2,
+                  background: theme.palette.mode === 'dark'
+                    ? 'linear-gradient(135deg, rgba(59, 130, 246, 0.2) 0%, rgba(147, 51, 234, 0.2) 100%)'
+                    : 'linear-gradient(135deg, rgba(59, 130, 246, 0.1) 0%, rgba(147, 51, 234, 0.1) 100%)',
+                  border: theme.palette.mode === 'dark'
+                    ? '1px solid rgba(59, 130, 246, 0.3)'
+                    : '1px solid rgba(59, 130, 246, 0.2)',
+                  color: theme.palette.mode === 'dark' ? '#60a5fa' : '#1e40af',
+                  transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+                  '&:hover': {
+                    transform: 'scale(1.05)',
+                    boxShadow: theme.palette.mode === 'dark'
+                      ? '0 4px 20px rgba(59, 130, 246, 0.3)'
+                      : '0 4px 20px rgba(59, 130, 246, 0.2)',
+                  }
+                }}
+              >
                 <MenuIcon />
               </IconButton>
-              <Drawer anchor="right" open={drawerOpen} onClose={() => setDrawerOpen(false)}>
-                <Box sx={{ width: 220, p: 2 }} role="presentation">
+              <Drawer 
+                anchor="right" 
+                open={drawerOpen} 
+                onClose={() => setDrawerOpen(false)}
+                PaperProps={{
+                  sx: {
+                    width: 280,
+                    background: theme.palette.mode === 'dark'
+                      ? 'linear-gradient(135deg, rgba(15, 23, 42, 0.95) 0%, rgba(30, 41, 59, 0.9) 100%)'
+                      : 'linear-gradient(135deg, rgba(255, 255, 255, 0.95) 0%, rgba(248, 250, 252, 0.9) 100%)',
+                    backdropFilter: 'blur(20px)',
+                    borderLeft: theme.palette.mode === 'dark'
+                      ? '1px solid rgba(148, 163, 184, 0.1)'
+                      : '1px solid rgba(148, 163, 184, 0.2)',
+                    boxShadow: theme.palette.mode === 'dark'
+                      ? '0 8px 32px rgba(0, 0, 0, 0.3)'
+                      : '0 8px 32px rgba(0, 0, 0, 0.1)',
+                  }
+                }}
+              >
+                <Box sx={{ width: 280, p: 3 }} role="presentation">
+                  <Box sx={{ mb: 3, textAlign: 'center' }}>
+                    <Typography 
+                      variant="h6" 
+                      fontWeight={800}
+                      sx={{
+                        background: theme.palette.mode === 'dark'
+                          ? 'linear-gradient(135deg, #60a5fa 0%, #a78bfa 100%)'
+                          : 'linear-gradient(135deg, #1e40af 0%, #7c3aed 100%)',
+                        backgroundClip: 'text',
+                        WebkitBackgroundClip: 'text',
+                        WebkitTextFillColor: 'transparent',
+                      }}
+                    >
+                      Menu
+                    </Typography>
+                  </Box>
                   <List>
-                    {menuItems.map((item) => (
-                      <ListItem key={item.label} disablePadding>
-                        <ListItemButton onClick={() => {
-                          router.push(item.href);
-                          setDrawerOpen(false);
-                        }}>
-                          <ListItemText primary={item.label} sx={{ color: theme.palette.text.primary }} />
-                        </ListItemButton>
-                      </ListItem>
-                    ))}
+                    {menuItems.map((item) => {
+                      const IconComponent = item.icon;
+                      return (
+                        <ListItem key={item.label} disablePadding sx={{ mb: 1 }}>
+                          <ListItemButton 
+                            onClick={() => {
+                              router.push(item.href);
+                              setDrawerOpen(false);
+                            }}
+                            sx={{
+                              borderRadius: 2,
+                              px: 2,
+                              py: 1.5,
+                              transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+                              '&:hover': {
+                                background: theme.palette.mode === 'dark'
+                                  ? 'rgba(59, 130, 246, 0.1)'
+                                  : 'rgba(59, 130, 246, 0.05)',
+                                transform: 'translateX(4px)',
+                              }
+                            }}
+                          >
+                            <ListItemIcon sx={{ minWidth: 40 }}>
+                              <IconComponent 
+                                size={20} 
+                                className={theme.palette.mode === 'dark' ? 'text-blue-400' : 'text-blue-600'} 
+                              />
+                            </ListItemIcon>
+                            <ListItemText 
+                              primary={item.label} 
+                              sx={{ 
+                                color: theme.palette.text.primary,
+                                fontWeight: 600,
+                              }} 
+                            />
+                          </ListItemButton>
+                        </ListItem>
+                      );
+                    })}
                       {isAuthenticated && !isGuest ? (
                        <>
                          <Divider sx={{ my: 1 }} />
@@ -295,17 +548,19 @@ const Navbar = memo(function Navbar() {
                              </ListItemButton>
                            </ListItem>
                          )}
-                         <ListItem disablePadding>
-                           <ListItemButton onClick={() => {
-                             handlePaymentsClick();
-                             setDrawerOpen(false);
-                           }}>
-                             <ListItemIcon>
-                               <Payment />
-                             </ListItemIcon>
-                             <ListItemText primary="Payments & PDFs" sx={{ color: theme.palette.text.primary }} />
-                           </ListItemButton>
-                         </ListItem>
+                         {!isAdmin && (
+                           <ListItem disablePadding>
+                             <ListItemButton onClick={() => {
+                               handlePaymentsClick();
+                               setDrawerOpen(false);
+                             }}>
+                               <ListItemIcon>
+                                 <Payment />
+                               </ListItemIcon>
+                               <ListItemText primary="Payments & PDFs" sx={{ color: theme.palette.text.primary }} />
+                             </ListItemButton>
+                           </ListItem>
+                         )}
                          <Divider sx={{ my: 1 }} />
                          <ListItem disablePadding>
                            <ListItemButton onClick={() => {
@@ -349,41 +604,109 @@ const Navbar = memo(function Navbar() {
           PaperProps={{
             sx: {
               mt: 1,
-              minWidth: 200,
-              boxShadow: theme.palette.mode === 'dark' ? '0 8px 32px rgba(0,0,0,0.4)' : '0 8px 32px rgba(0,0,0,0.1)',
-              borderRadius: 2,
-              border: theme.palette.mode === 'dark' ? '1px solid #333' : '1px solid #e0e0e0',
+              minWidth: 220,
+              background: theme.palette.mode === 'dark'
+                ? 'linear-gradient(135deg, rgba(15, 23, 42, 0.95) 0%, rgba(30, 41, 59, 0.9) 100%)'
+                : 'linear-gradient(135deg, rgba(255, 255, 255, 0.95) 0%, rgba(248, 250, 252, 0.9) 100%)',
+              backdropFilter: 'blur(20px)',
+              boxShadow: theme.palette.mode === 'dark' 
+                ? '0 8px 32px rgba(0,0,0,0.4)' 
+                : '0 8px 32px rgba(0,0,0,0.1)',
+              borderRadius: 3,
+              border: theme.palette.mode === 'dark' 
+                ? '1px solid rgba(148, 163, 184, 0.1)' 
+                : '1px solid rgba(148, 163, 184, 0.2)',
+              overflow: 'hidden',
             },
           }}
           transformOrigin={{ horizontal: 'right', vertical: 'top' }}
           anchorOrigin={{ horizontal: 'right', vertical: 'bottom' }}
         >
-          <MenuItem onClick={handleProfileClick}>
-            <ListItemIcon>
-              <Person fontSize="small" />
+          <MenuItem 
+            onClick={handleProfileClick}
+            sx={{
+              py: 1.5,
+              px: 2,
+              transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+              '&:hover': {
+                background: theme.palette.mode === 'dark'
+                  ? 'rgba(59, 130, 246, 0.1)'
+                  : 'rgba(59, 130, 246, 0.05)',
+                transform: 'translateX(4px)',
+              }
+            }}
+          >
+            <ListItemIcon sx={{ minWidth: 40 }}>
+              <Person fontSize="small" className={theme.palette.mode === 'dark' ? 'text-blue-400' : 'text-blue-600'} />
             </ListItemIcon>
-            Profile
+            <Typography fontWeight={600}>Profile</Typography>
           </MenuItem>
           {isAdmin && (
-            <MenuItem onClick={handleDashboardClick}>
-              <ListItemIcon>
-                <Dashboard fontSize="small" />
+            <MenuItem 
+              onClick={handleDashboardClick}
+              sx={{
+                py: 1.5,
+                px: 2,
+                transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+                '&:hover': {
+                  background: theme.palette.mode === 'dark'
+                    ? 'rgba(59, 130, 246, 0.1)'
+                    : 'rgba(59, 130, 246, 0.05)',
+                  transform: 'translateX(4px)',
+                }
+              }}
+            >
+              <ListItemIcon sx={{ minWidth: 40 }}>
+                <Dashboard fontSize="small" className={theme.palette.mode === 'dark' ? 'text-blue-400' : 'text-blue-600'} />
               </ListItemIcon>
-              Admin Dashboard
+              <Typography fontWeight={600}>Admin Dashboard</Typography>
             </MenuItem>
           )}
-          <MenuItem onClick={handlePaymentsClick}>
-            <ListItemIcon>
-              <Payment fontSize="small" />
+          {!isAdmin && (
+            <MenuItem 
+              onClick={handlePaymentsClick}
+              sx={{
+                py: 1.5,
+                px: 2,
+                transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+                '&:hover': {
+                  background: theme.palette.mode === 'dark'
+                    ? 'rgba(59, 130, 246, 0.1)'
+                    : 'rgba(59, 130, 246, 0.05)',
+                  transform: 'translateX(4px)',
+                }
+              }}
+            >
+              <ListItemIcon sx={{ minWidth: 40 }}>
+                <Payment fontSize="small" className={theme.palette.mode === 'dark' ? 'text-blue-400' : 'text-blue-600'} />
+              </ListItemIcon>
+              <Typography fontWeight={600}>Payments & PDFs</Typography>
+            </MenuItem>
+          )}
+          <Divider sx={{ 
+            my: 1, 
+            borderColor: theme.palette.mode === 'dark' 
+              ? 'rgba(148, 163, 184, 0.1)' 
+              : 'rgba(148, 163, 184, 0.2)' 
+          }} />
+          <MenuItem 
+            onClick={handleLogout}
+            sx={{
+              py: 1.5,
+              px: 2,
+              transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+              '&:hover': {
+                background: theme.palette.mode === 'dark'
+                  ? 'rgba(239, 68, 68, 0.1)'
+                  : 'rgba(239, 68, 68, 0.05)',
+                transform: 'translateX(4px)',
+              }
+            }}
+          >
+            <ListItemIcon sx={{ minWidth: 40 }}>
+              <Logout fontSize="small" className={theme.palette.mode === 'dark' ? 'text-red-400' : 'text-red-600'} />
             </ListItemIcon>
-            Payments & PDFs
-          </MenuItem>
-          <Divider />
-          <MenuItem onClick={handleLogout}>
-            <ListItemIcon>
-              <Logout fontSize="small" />
-            </ListItemIcon>
-            Logout
+            <Typography fontWeight={600}>Logout</Typography>
           </MenuItem>
         </Menu>
       )}

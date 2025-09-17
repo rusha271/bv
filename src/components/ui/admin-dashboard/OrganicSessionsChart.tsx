@@ -25,19 +25,26 @@ const generateDummyData = () => {
 };
 
 export default function OrganicSessionsChart() {
-  const [data, setData] = useState(generateDummyData());
-  const [loading, setLoading] = useState(false);
+  const [mounted, setMounted] = useState(false);
+  const [data, setData] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const { mode } = useThemeContext();
 
   useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  useEffect(() => {
+    if (!mounted) return;
+
     const fetchSessionsData = async () => {
       try {
         setLoading(true);
-        setTimeout(() => {
-          setLoading(false);
-        }, 2000);
         setError(null);
+        
+        // Simulate API delay
+        await new Promise(resolve => setTimeout(resolve, 1000));
         
         // In a real implementation, you would fetch from your analytics API
         // const response = await fetch('/api/analytics/sessions');
@@ -45,19 +52,42 @@ export default function OrganicSessionsChart() {
         
         // For now, we'll use dummy data
         setData(generateDummyData());
+        setLoading(false);
       } catch (err) {
         console.error('Error fetching sessions data:', err);
         setError('Failed to load sessions data');
+        setLoading(false);
         // Keep using dummy data as fallback
+        setData(generateDummyData());
       }
     };
 
     fetchSessionsData();
-  }, []);
+  }, [mounted]);
+
+  // Don't render until mounted to prevent hydration mismatch
+  if (!mounted) {
+    return (
+      <div className={`rounded-xl shadow-lg p-6 border ${
+        mode === 'dark' 
+          ? 'bg-gray-800 border-gray-700' 
+          : 'bg-white border-gray-200'
+      }`}>
+        <div className="animate-pulse">
+          <div className={`h-6 rounded w-1/3 mb-4 ${
+            mode === 'dark' ? 'bg-gray-700' : 'bg-gray-200'
+          }`}></div>
+          <div className={`h-64 rounded ${
+            mode === 'dark' ? 'bg-gray-700' : 'bg-gray-200'
+          }`}></div>
+        </div>
+      </div>
+    );
+  }
 
   // Simple chart data display without Recharts
-  const maxSessions = Math.max(...data.map(d => d.sessions));
-  const maxVisitors = Math.max(...data.map(d => d.visitors));
+  const maxSessions = data.length > 0 ? Math.max(...data.map(d => d.sessions)) : 1;
+  const maxVisitors = data.length > 0 ? Math.max(...data.map(d => d.visitors)) : 1;
 
   if (loading) {
     return (
@@ -120,7 +150,7 @@ export default function OrganicSessionsChart() {
 
       <div className="h-64 p-4">
         <div className="h-full flex items-end justify-between space-x-1">
-          {data.slice(-14).map((item, index) => (
+          {data.length > 0 ? data.slice(-14).map((item, index) => (
             <div key={index} className="flex flex-col items-center flex-1">
               <div className="w-full flex flex-col items-center space-y-1">
                 <div 
@@ -146,7 +176,13 @@ export default function OrganicSessionsChart() {
                 {item.date}
               </div>
             </div>
-          ))}
+          )) : (
+            <div className="flex items-center justify-center w-full h-full">
+              <p className={`text-sm ${
+                mode === 'dark' ? 'text-gray-400' : 'text-gray-500'
+              }`}>No data available</p>
+            </div>
+          )}
         </div>
       </div>
 

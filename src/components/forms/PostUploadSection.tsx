@@ -19,6 +19,8 @@ import Typography from '@mui/material/Typography';
 import BookIcon from '@mui/icons-material/Book';
 import VideoLibraryIcon from '@mui/icons-material/VideoLibrary';
 import TipsAndUpdatesIcon from '@mui/icons-material/TipsAndUpdates';
+import PodcastsIcon from '@mui/icons-material/Podcasts';
+import { useAuthUser } from '@/contexts/AuthContext';
 
 // Yup schemas for validation
 const bookSchema = yup.object().shape({
@@ -29,13 +31,19 @@ const bookSchema = yup.object().shape({
     .mixed()
     .required('PDF file is required')
     .test('fileType', 'Please upload a PDF file', (value) => value instanceof File && value.type === 'application/pdf'),
-  rating: yup.number().min(0).max(5).nullable(),
-  pages: yup.number().integer().positive().nullable(),
-  price: yup.number().positive().nullable(),
-  publication_year: yup.number().integer().nullable(),
-  publisher: yup.string().nullable(),
-  category: yup.string().nullable(),
-  isbn: yup.string().nullable(),
+  rating: yup.number().min(0).max(5).optional(),
+  pages: yup.number().integer().positive().optional(),
+  price: yup.number().positive().optional(),
+  publication_year: yup.number().integer().optional(),
+  publisher: yup.string().transform((value, originalValue) => {
+    return originalValue === '' ? undefined : value;
+  }),
+  category: yup.string().transform((value, originalValue) => {
+    return originalValue === '' ? undefined : value;
+  }),
+  isbn: yup.string().transform((value, originalValue) => {
+    return originalValue === '' ? undefined : value;
+  }),
 });
 
 const videoSchema = yup.object({
@@ -48,7 +56,9 @@ const videoSchema = yup.object({
 const tipSchema = yup.object().shape({
   title: yup.string().required("Title is required"),
   content: yup.string().required("Content is required"),
-  category: yup.string().nullable(),
+  category: yup.string().transform((value, originalValue) => {
+    return originalValue === '' ? undefined : value;
+  }),
   image: yup
     .mixed<File>()
     .required("Image is required")
@@ -58,6 +68,31 @@ const tipSchema = yup.object().shape({
     .test("fileSize", "File size must be less than 5MB", (file) =>
       file ? file.size <= 5 * 1024 * 1024 : false
     ),
+});
+
+const podcastSchema = yup.object().shape({
+  title: yup.string().required('Title is required'),
+  description: yup.string().required('Description is required'),
+  audio: yup
+    .mixed<File>()
+    .required('Audio file is required')
+    .test('fileType', 'Only audio files are allowed', (file) =>
+      file ? ['audio/mpeg', 'audio/mp3', 'audio/wav', 'audio/ogg', 'audio/m4a'].includes(file.type) : false
+    )
+    .test('fileSize', 'File size must be less than 50MB', (file) =>
+      file ? file.size <= 50 * 1024 * 1024 : false
+    ),
+  thumbnail: yup
+    .mixed<File>()
+    .optional()
+    .test('fileType', 'Only image files are allowed', (file) =>
+      !file || ['image/jpeg', 'image/png', 'image/jpg', 'image/webp'].includes(file.type)
+    )
+    .test('fileSize', 'File size must be less than 5MB', (file) =>
+      !file || file.size <= 5 * 1024 * 1024
+    ),
+  category: yup.string().optional(),
+  duration: yup.string().optional(),
 });
 
 const categories = [
@@ -75,11 +110,18 @@ export default function PostUploadSection({ onUpload }: { onUpload?: () => void 
   const [videoPreview, setVideoPreview] = useState<string | null>(null);
   const [videoThumbnail, setVideoThumbnail] = useState<string | null>(null);
   const [bookFileName, setBookFileName] = useState<string | null>(null);
+  const [audioPreview, setAudioPreview] = useState<string | null>(null);
+  const [audioFileName, setAudioFileName] = useState<string | null>(null);
   const videoRef = useRef<HTMLVideoElement>(null);
+  const audioRef = useRef<HTMLAudioElement>(null);
 
   // Add theme and device type
   const { theme } = useThemeContext();
   const { isMobile, isTablet, isDesktop } = useDeviceType();
+  
+  // Check if user is admin
+  const user = useAuthUser();
+  const isAdmin = user?.role?.name === 'admin';
 
   // Book form
   const {
@@ -95,10 +137,10 @@ export default function PostUploadSection({ onUpload }: { onUpload?: () => void 
       author: '',
       summary: '',
       pdf: undefined,
-      rating: null,
-      pages: null,
-      price: null,
-      publication_year: null,
+      rating: undefined,
+      pages: undefined,
+      price: undefined,
+      publication_year: undefined,
       publisher: '',
       category: '',
       isbn: '',
@@ -136,6 +178,25 @@ export default function PostUploadSection({ onUpload }: { onUpload?: () => void 
       content: '',
       category: '',
       image: undefined,
+    },
+  });
+
+  // Podcast form
+  const {
+    control: podcastControl,
+    handleSubmit: handlePodcastSubmit,
+    reset: resetPodcast,
+    setValue: setPodcastValue,
+    formState: { errors: podcastErrors },
+  } = useForm({
+    resolver: yupResolver(podcastSchema),
+    defaultValues: {
+      title: '',
+      description: '',
+      audio: undefined,
+      thumbnail: undefined,
+      category: '',
+      duration: '',
     },
   });
 
@@ -193,11 +254,11 @@ export default function PostUploadSection({ onUpload }: { onUpload?: () => void 
       // PDF file (required)
       if (data.pdf instanceof File) {
         formData.append('pdf', data.pdf);
-        console.log('PDF file details:', {
-          name: data.pdf.name,
-          size: data.pdf.size,
-          type: data.pdf.type
-        });
+        // console.log('PDF file details:', {
+        //   name: data.pdf.name,
+        //   size: data.pdf.size,
+        //   type: data.pdf.type
+        // });
       } else {
         throw new Error('PDF file is required');
       }
@@ -212,9 +273,9 @@ export default function PostUploadSection({ onUpload }: { onUpload?: () => void 
       if (data.isbn) formData.append('isbn', data.isbn);
   
       // Debug: Log FormData contents
-      console.log('📚 Book FormData payload:');
+      // console.log('📚 Book FormData payload:');
       for (let [key, value] of formData.entries()) {
-        console.log(`  ${key}:`, value instanceof File ? `File: ${value.name} (${value.size} bytes, ${value.type})` : value);
+        // console.log(`  ${key}:`, value instanceof File ? `File: ${value.name} (${value.size} bytes, ${value.type})` : value);
       }
   
       const response = await apiService.books.create(formData);
@@ -230,7 +291,7 @@ export default function PostUploadSection({ onUpload }: { onUpload?: () => void 
         setError('Failed to upload book: No response from server.');
       }
     } catch (error: any) {
-      console.error('❌ Book Upload Error:', error);
+      // console.error('❌ Book Upload Error:', error);
       let errorMessage = error.message || 'An error occurred while uploading the book.';
       
       if (error.response?.status === 404) {
@@ -263,11 +324,11 @@ export default function PostUploadSection({ onUpload }: { onUpload?: () => void 
       // Video file (required)
       if (data.video instanceof File) {
         formData.append('video', data.video);
-        console.log('Video file details:', {
-          name: data.video.name,
-          size: data.video.size,
-          type: data.video.type
-        });
+        // console.log('Video file details:', {
+        //   name: data.video.name,
+        //   size: data.video.size,
+        //   type: data.video.type
+        // });
       } else {
         throw new Error('Video file is required');
       }
@@ -279,13 +340,13 @@ export default function PostUploadSection({ onUpload }: { onUpload?: () => void 
           const blob = await response.blob();
           const thumbnailFile = new File([blob], 'thumbnail.png', { type: 'image/png' });
           formData.append('thumbnail', thumbnailFile);
-          console.log('Thumbnail file created:', {
-            name: thumbnailFile.name,
-            size: thumbnailFile.size,
-            type: thumbnailFile.type
-          });
+          // console.log('Thumbnail file created:', {
+          //   name: thumbnailFile.name,
+          //   size: thumbnailFile.size,
+          //   type: thumbnailFile.type
+          // });
         } catch (thumbnailError) {
-          console.warn('Failed to create thumbnail:', thumbnailError);
+          // console.warn('Failed to create thumbnail:', thumbnailError);
           // Continue without thumbnail - backend can generate one
         }
       }
@@ -296,9 +357,9 @@ export default function PostUploadSection({ onUpload }: { onUpload?: () => void 
       }
   
       // Debug: Log FormData contents
-      console.log('🎥 Video FormData payload:');
+      // console.log('🎥 Video FormData payload:');
       for (let [key, value] of formData.entries()) {
-        console.log(`  ${key}:`, value instanceof File ? `File: ${value.name} (${value.size} bytes, ${value.type})` : value);
+        // console.log(`  ${key}:`, value instanceof File ? `File: ${value.name} (${value.size} bytes, ${value.type})` : value);
       }
   
       // Call API
@@ -317,7 +378,7 @@ export default function PostUploadSection({ onUpload }: { onUpload?: () => void 
         setError('Failed to upload video: No response from server.');
       }
     } catch (error: any) {
-      console.error('❌ Video Upload Error:', error);
+      // console.error('❌ Video Upload Error:', error);
       let errorMessage = error.message || 'An error occurred while uploading the video.';
       
       if (error.response?.status === 404) {
@@ -352,11 +413,11 @@ export default function PostUploadSection({ onUpload }: { onUpload?: () => void 
       // Image file (required)
       if (data.image instanceof File) {
         formData.append("image", data.image);
-        console.log('Image file details:', {
-          name: data.image.name,
-          size: data.image.size,
-          type: data.image.type
-        });
+        // console.log('Image file details:', {
+        //   name: data.image.name,
+        //   size: data.image.size,
+        //   type: data.image.type
+        // });
       } else {
         throw new Error('Image file is required');
       }
@@ -367,9 +428,9 @@ export default function PostUploadSection({ onUpload }: { onUpload?: () => void 
       }
   
       // Debug: Log FormData contents
-      console.log('💡 Tip FormData payload:');
+      // console.log('💡 Tip FormData payload:');
       for (let [key, value] of formData.entries()) {
-        console.log(`  ${key}:`, value instanceof File ? `File: ${value.name} (${value.size} bytes, ${value.type})` : value);
+        // console.log(`  ${key}:`, value instanceof File ? `File: ${value.name} (${value.size} bytes, ${value.type})` : value);
       }
   
       const response = await apiService.tips.create(formData);
@@ -384,7 +445,7 @@ export default function PostUploadSection({ onUpload }: { onUpload?: () => void 
         setError("Failed to upload tip: No response from server.");
       }
     } catch (error: any) {
-      console.error("❌ Tip Upload Error:", error);
+      // console.error("❌ Tip Upload Error:", error);
       let errorMessage = error.message || "An error occurred while uploading the tip.";
       
       if (error.response?.status === 404) {
@@ -404,8 +465,90 @@ export default function PostUploadSection({ onUpload }: { onUpload?: () => void 
       setLoading(false);
     }
   };
-  
-  
+
+  // Podcast handlers
+  const handleAudioFile = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      (setPodcastValue as any)('audio', file);
+      setAudioFileName(file.name);
+      const url = URL.createObjectURL(file);
+      setAudioPreview(url);
+    }
+  };
+
+  const handlePodcastThumbnail = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      (setPodcastValue as any)('thumbnail', file);
+    }
+  };
+
+  const onPodcastSubmit = async (data: any) => {
+    setLoading(true);
+    setError('');
+    
+    try {
+      const formData = new FormData();
+      
+      // Required fields
+      formData.append('title', data.title);
+      formData.append('description', data.description);
+      
+      // Audio file (required)
+      if (data.audio instanceof File) {
+        formData.append('audio', data.audio);
+      } else {
+        throw new Error('Audio file is required');
+      }
+      
+      // Optional fields
+      if (data.thumbnail instanceof File) {
+        formData.append('thumbnail', data.thumbnail);
+      }
+      if (data.category) formData.append('category', data.category);
+      if (data.duration) formData.append('duration', data.duration);
+
+      const response = await apiService.podcasts.create(formData);
+      if (response) {
+        setSuccess('Podcast uploaded successfully!');
+        resetPodcast();
+        setAudioFileName(null);
+        setAudioPreview(null);
+        // Reset file inputs
+        const audioInput = document.querySelector('input[type="file"][accept="audio/*"]') as HTMLInputElement;
+        const thumbnailInput = document.querySelector('input[type="file"][accept="image/*"]') as HTMLInputElement;
+        if (audioInput) audioInput.value = '';
+        if (thumbnailInput) thumbnailInput.value = '';
+        onUpload?.();
+      } else {
+        setError('Failed to upload podcast: No response from server.');
+      }
+    } catch (error: any) {
+      let errorMessage = error.message || 'An error occurred while uploading the podcast.';
+      
+      if (error.response?.status === 404) {
+        errorMessage = 'Podcast upload endpoint not found. Please contact support.';
+      } else if (error.response?.status === 401) {
+        errorMessage = 'Unauthorized: Please log in to upload a podcast.';
+      } else if (error.response?.status === 400) {
+        errorMessage = error.response.data?.detail || 'Invalid input data.';
+      } else if (error.response?.status === 413) {
+        errorMessage = 'File too large. Please upload a smaller audio file.';
+      } else if (error.response?.status === 415) {
+        errorMessage = 'Unsupported audio format. Please use MP3, WAV, or OGG files.';
+      }
+      
+      setError(errorMessage);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Don't render if user is not admin
+  if (!isAdmin) {
+    return null;
+  }
 
   return (
     <Box
@@ -427,7 +570,7 @@ export default function PostUploadSection({ onUpload }: { onUpload?: () => void 
           textAlign: 'center',
         }}
       >
-        Share Your Knowledge
+        Admin - Share Your Knowledge
       </Typography>
       <Tabs
         value={tab}
@@ -444,6 +587,7 @@ export default function PostUploadSection({ onUpload }: { onUpload?: () => void 
       >
         <Tab icon={<BookIcon />} label="Book" sx={{ fontWeight: 700, fontSize: isMobile ? '0.95rem' : isTablet ? '1.05rem' : '1.15rem', color: theme.palette.text.primary, minHeight: isMobile ? 44 : 56 }} />
         <Tab icon={<VideoLibraryIcon />} label="Video" sx={{ fontWeight: 700, fontSize: isMobile ? '0.95rem' : isTablet ? '1.05rem' : '1.15rem', color: theme.palette.text.primary, minHeight: isMobile ? 44 : 56 }} />
+        <Tab icon={<PodcastsIcon />} label="Podcast" sx={{ fontWeight: 700, fontSize: isMobile ? '0.95rem' : isTablet ? '1.05rem' : '1.15rem', color: theme.palette.text.primary, minHeight: isMobile ? 44 : 56 }} />
         <Tab icon={<TipsAndUpdatesIcon />} label="Tip" sx={{ fontWeight: 700, fontSize: isMobile ? '0.95rem' : isTablet ? '1.05rem' : '1.15rem', color: theme.palette.text.primary, minHeight: isMobile ? 44 : 56 }} />
       </Tabs>
       <Card
@@ -650,6 +794,80 @@ export default function PostUploadSection({ onUpload }: { onUpload?: () => void 
               />
               <Button type="submit" variant="contained" color="primary" disabled={loading} fullWidth sx={{ mt: 2, py: 1.5, fontWeight: 600 }}>
                 {loading ? 'Uploading...' : 'Upload Tip'}
+              </Button>
+            </form>
+          )}
+          {tab === 3 && (
+            <form onSubmit={handlePodcastSubmit(onPodcastSubmit)} className="space-y-4 animate-fadein">
+              <Controller name="title" control={podcastControl} render={({ field }) => (
+                <TextField {...field} label="Title" fullWidth error={!!podcastErrors.title} helperText={podcastErrors.title?.message} />
+              )} />
+              <Controller name="description" control={podcastControl} render={({ field }) => (
+                <TextField {...field} label="Description" fullWidth multiline rows={3} error={!!podcastErrors.description} helperText={podcastErrors.description?.message} />
+              )} />
+              <Controller name="category" control={podcastControl} render={({ field }) => (
+                <TextField {...field} label="Category" select fullWidth error={!!podcastErrors.category} helperText={podcastErrors.category?.message} >
+                  <MenuItem value="">None</MenuItem>
+                  {categories.map((cat) => (
+                    <MenuItem key={cat} value={cat}>{cat}</MenuItem>
+                  ))}
+                </TextField>
+              )} />
+              <Controller name="duration" control={podcastControl} render={({ field }) => (
+                <TextField {...field} label="Duration (e.g., 15:30)" fullWidth error={!!podcastErrors.duration} helperText={podcastErrors.duration?.message} />
+              )} />
+              <Controller
+                name="audio"
+                control={podcastControl}
+                render={({ field }) => (
+                  <>
+                    <input
+                      type="file"
+                      accept="audio/*"
+                      onChange={handleAudioFile}
+                      style={{ display: 'block', marginBottom: 8 }}
+                    />
+                    {audioFileName && (
+                      <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
+                        Selected: {audioFileName}
+                      </Typography>
+                    )}
+                    {audioPreview && (
+                      <Box sx={{ mt: 1 }}>
+                        <audio ref={audioRef} controls style={{ width: '100%' }}>
+                          <source src={audioPreview} type="audio/mpeg" />
+                          Your browser does not support the audio element.
+                        </audio>
+                      </Box>
+                    )}
+                    {podcastErrors.audio && (
+                      <Typography color="error" variant="body2">{podcastErrors.audio.message}</Typography>
+                    )}
+                  </>
+                )}
+              />
+              <Controller
+                name="thumbnail"
+                control={podcastControl}
+                render={({ field }) => (
+                  <>
+                    <input
+                      type="file"
+                      accept="image/*"
+                      onChange={handlePodcastThumbnail}
+                      style={{ display: 'block', marginBottom: 8 }}
+                    />
+                    <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
+                      Optional: Upload a thumbnail image
+                    </Typography>
+                    {podcastErrors.thumbnail && (
+                      <Typography color="error" variant="body2">{podcastErrors.thumbnail.message}</Typography>
+                    )}
+                  </>
+                )}
+              />
+              <Button type="submit" variant="contained" color="primary" disabled={loading} fullWidth sx={{ mt: 2, py: 1.5, fontWeight: 600 }}>
+                {loading ? 'Uploading...' : 'Upload Podcast'}
               </Button>
             </form>
           )}

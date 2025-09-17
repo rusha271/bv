@@ -204,7 +204,7 @@ function Chatbot() {
 
   // Don't render anything until client-side
   if (!isClient) {
-    return null;
+    return <div style={{ display: 'none' }} />;
   }
 
   return (

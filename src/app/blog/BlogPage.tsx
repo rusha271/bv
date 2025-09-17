@@ -5,23 +5,79 @@ import Navbar from '@/components/ui/Navbar';
 import Footer from '@/components/ui/Footer';
 import dynamic from 'next/dynamic';
 import PostUploadSection from '@/components/forms/PostUploadSection';
-const BlogCardsList = dynamic(() => import('@/components/Card/BlogCardsList'), {
-  ssr: true,
-  loading: () => <div style={{ height: '200px', textAlign: 'center' }}>Loading...</div>,
-});
-const VideoCardsList = dynamic(() => import('@/components/Card/VideoCardsList'), {
-  ssr: true,
-  loading: () => <div style={{ height: '200px', textAlign: 'center' }}>Loading...</div>,
-});
-const BookCardsList = dynamic(() => import('@/components/Card/BookCardsList'), {
-  ssr: true,
-  loading: () => <div style={{ height: '200px', textAlign: 'center' }}>Loading...</div>,
-});
 import { useThemeContext } from '@/contexts/ThemeContext';
 import { useDeviceType } from '@/utils/useDeviceType';
+import { useAuthUser } from '@/contexts/AuthContext';
 import Tabs from '@mui/material/Tabs';
 import Tab from '@mui/material/Tab';
 import Box from '@mui/material/Box';
+import Typography from '@mui/material/Typography';
+import { BookOpen, Video, Headphones, Lightbulb, FileText, Sparkles } from 'lucide-react';
+
+const BlogCardsList = dynamic(() => import('@/components/Card/BlogCardsList'), {
+  ssr: true,
+  loading: () => (
+    <Box sx={{ 
+      height: '200px', 
+      display: 'flex', 
+      alignItems: 'center', 
+      justifyContent: 'center',
+      background: 'linear-gradient(135deg, rgba(59, 130, 246, 0.05) 0%, rgba(147, 51, 234, 0.05) 100%)',
+      borderRadius: 3,
+      border: '1px dashed rgba(59, 130, 246, 0.2)',
+    }}>
+      <Typography variant="body2" color="text.secondary">Loading...</Typography>
+    </Box>
+  ),
+});
+const VideoCardsList = dynamic(() => import('@/components/Card/VideoCardsList'), {
+  ssr: true,
+  loading: () => (
+    <Box sx={{ 
+      height: '200px', 
+      display: 'flex', 
+      alignItems: 'center', 
+      justifyContent: 'center',
+      background: 'linear-gradient(135deg, rgba(59, 130, 246, 0.05) 0%, rgba(147, 51, 234, 0.05) 100%)',
+      borderRadius: 3,
+      border: '1px dashed rgba(59, 130, 246, 0.2)',
+    }}>
+      <Typography variant="body2" color="text.secondary">Loading...</Typography>
+    </Box>
+  ),
+});
+const BookCardsList = dynamic(() => import('@/components/Card/BookCardsList'), {
+  ssr: true,
+  loading: () => (
+    <Box sx={{ 
+      height: '200px', 
+      display: 'flex', 
+      alignItems: 'center', 
+      justifyContent: 'center',
+      background: 'linear-gradient(135deg, rgba(59, 130, 246, 0.05) 0%, rgba(147, 51, 234, 0.05) 100%)',
+      borderRadius: 3,
+      border: '1px dashed rgba(59, 130, 246, 0.2)',
+    }}>
+      <Typography variant="body2" color="text.secondary">Loading...</Typography>
+    </Box>
+  ),
+});
+const PodcastCardsList = dynamic(() => import('@/components/Card/PodcastCardsList'), {
+  ssr: true,
+  loading: () => (
+    <Box sx={{ 
+      height: '200px', 
+      display: 'flex', 
+      alignItems: 'center', 
+      justifyContent: 'center',
+      background: 'linear-gradient(135deg, rgba(59, 130, 246, 0.05) 0%, rgba(147, 51, 234, 0.05) 100%)',
+      borderRadius: 3,
+      border: '1px dashed rgba(59, 130, 246, 0.2)',
+    }}>
+      <Typography variant="body2" color="text.secondary">Loading...</Typography>
+    </Box>
+  ),
+});
 
 function FadeInSection({ children }: { children: React.ReactNode }) {
   return (
@@ -35,13 +91,23 @@ function FadeInSection({ children }: { children: React.ReactNode }) {
 function BlogTabs() {
   const { theme } = useThemeContext();
   const { isMobile, isTablet, isDesktop } = useDeviceType();
+  const user = useAuthUser();
+  const isAdmin = user?.role?.name === 'admin';
   const [tab, setTab] = useState(0);
 
-  const tabFontSize = isMobile ? '0.95rem' : isTablet ? '1.05rem' : '1.15rem';
-  const tabPaddingX = isMobile ? 1 : isTablet ? 2 : 3;
+  const tabFontSize = isMobile ? '0.9rem' : isTablet ? '1rem' : '1.1rem';
+  const tabPaddingX = isMobile ? 1.5 : isTablet ? 2 : 2.5;
+
+  const tabs = [
+    { label: "Videos", icon: Video, index: 0 },
+    { label: "Books", icon: BookOpen, index: 1 },
+    { label: "Podcasts", icon: Headphones, index: 2 },
+    { label: "Tips", icon: Lightbulb, index: 3 },
+    ...(isAdmin ? [{ label: "Posts", icon: FileText, index: 4 }] : [])
+  ];
 
   return (
-    <Box sx={{ width: '100%', mb: { xs: 2, sm: 4 } }}>
+    <Box sx={{ width: '100%', mb: { xs: 0.5, sm: 1 } }}>
       <Tabs
         value={tab}
         onChange={(_, newValue) => setTab(newValue)}
@@ -50,33 +116,69 @@ function BlogTabs() {
         allowScrollButtonsMobile
         aria-label="Blog content tabs"
         sx={{
-          background: theme.palette.background.paper,
-          borderRadius: 16,
-          boxShadow: theme.palette.mode === 'dark' ? '0 2px 16px #23234f' : '0 2px 16px #e5e7eb',
-          border: `1.5px solid ${theme.palette.divider}`,
-          mb: 2,
-          minHeight: isMobile ? 44 : 56,
+          background: theme.palette.mode === 'dark'
+            ? 'linear-gradient(135deg, rgba(15, 23, 42, 0.95) 0%, rgba(30, 41, 59, 0.9) 100%)'
+            : 'linear-gradient(135deg, rgba(255, 255, 255, 0.95) 0%, rgba(248, 250, 252, 0.9) 100%)',
+          backdropFilter: 'blur(20px)',
+          borderRadius: 4,
+          boxShadow: theme.palette.mode === 'dark'
+            ? '0 8px 32px rgba(0, 0, 0, 0.3)'
+            : '0 8px 32px rgba(0, 0, 0, 0.1)',
+          border: theme.palette.mode === 'dark'
+            ? '1px solid rgba(148, 163, 184, 0.1)'
+            : '1px solid rgba(148, 163, 184, 0.2)',
+          mb: 1,
+          minHeight: isMobile ? 40 : 48,
           '.MuiTabs-flexContainer': {
             justifyContent: { xs: 'flex-start', sm: 'center' },
+            gap: 0.25,
           },
           '.MuiTabs-scrollButtons': {
-            color: theme.palette.text.primary,
+            color: theme.palette.mode === 'dark' ? '#60a5fa' : '#1e40af',
             '&.Mui-disabled': { opacity: 0.3 },
           },
           '.MuiTabs-indicator': {
-            transform: 'scaleX(0.8)',
-            transformOrigin: 'center',
-            height: 4,
+            background: theme.palette.mode === 'dark'
+              ? 'linear-gradient(135deg, #60a5fa 0%, #a78bfa 100%)'
+              : 'linear-gradient(135deg, #1e40af 0%, #7c3aed 100%)',
+            height: 3,
             borderRadius: 2,
+            boxShadow: theme.palette.mode === 'dark'
+              ? '0 2px 8px rgba(96, 165, 250, 0.3)'
+              : '0 2px 8px rgba(30, 64, 175, 0.3)',
           },
         }}
       >
-        <Tab label="Videos" sx={{ fontWeight: 700, fontSize: tabFontSize, color: theme.palette.text.primary, minHeight: isMobile ? 44 : 56, px: tabPaddingX }} />
-        <Tab label="Books" sx={{ fontWeight: 700, fontSize: tabFontSize, color: theme.palette.text.primary, minHeight: isMobile ? 44 : 56, px: tabPaddingX }} />
-        <Tab label="Tips" sx={{ fontWeight: 700, fontSize: tabFontSize, color: theme.palette.text.primary, minHeight: isMobile ? 44 : 56, px: tabPaddingX }} />
-        <Tab label="Posts" sx={{ fontWeight: 700, fontSize: tabFontSize, color: theme.palette.text.primary, minHeight: isMobile ? 44 : 56, px: tabPaddingX }} />
+        {tabs.map(({ label, icon: IconComponent, index }) => (
+          <Tab 
+            key={label}
+            label={
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                <IconComponent size={18} className={theme.palette.mode === 'dark' ? 'text-blue-400' : 'text-blue-600'} />
+                <span>{label}</span>
+              </Box>
+            }
+            sx={{ 
+              fontWeight: 600, 
+              fontSize: tabFontSize, 
+              color: theme.palette.text.primary, 
+              minHeight: isMobile ? 44 : 52, 
+              px: tabPaddingX,
+              textTransform: 'none',
+              transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+              '&:hover': {
+                color: theme.palette.mode === 'dark' ? '#60a5fa' : '#1e40af',
+                transform: 'translateY(-1px)',
+              },
+              '&.Mui-selected': {
+                color: theme.palette.mode === 'dark' ? '#60a5fa' : '#1e40af',
+                fontWeight: 700,
+              }
+            }} 
+          />
+        ))}
       </Tabs>
-      <Box sx={{ mt: 2, minHeight: 'auto', px: { xs: 2, sm: 2, md: 4 }, overflowX: 'hidden', overflowY: 'auto' }}>
+      <Box sx={{ mt: 0.5, minHeight: 'auto', px: { xs: 0.5, sm: 1, md: 2 }, overflowX: 'hidden', overflowY: 'auto' }}>
         {tab === 0 && (
           <FadeInSection>
             <VideoCardsList />
@@ -89,10 +191,15 @@ function BlogTabs() {
         )}
         {tab === 2 && (
           <FadeInSection>
-            <BlogCardsList />
+            <PodcastCardsList />
           </FadeInSection>
         )}
         {tab === 3 && (
+          <FadeInSection>
+            <BlogCardsList />
+          </FadeInSection>
+        )}
+        {isAdmin && tab === 4 && (
           <FadeInSection>
             <PostUploadSection />
           </FadeInSection>
@@ -105,45 +212,133 @@ function BlogTabs() {
 export default function BlogPage() {
   const { theme } = useThemeContext();
   const { isMobile, isTablet, isDesktop } = useDeviceType();
-  const sectionTitleSize = isMobile ? '1.25rem' : isTablet ? '1.75rem' : '2.25rem';
 
   return (
-    <div
-      className="relative min-h-screen flex flex-col"
-      style={{ background: theme.palette.background.default }}
+    <Box
+      sx={{
+        minHeight: '100vh',
+        width: '100%',
+        background: theme.palette.mode === 'dark'
+          ? 'linear-gradient(135deg, #0f172a 0%, #1e293b 25%, #334155 50%, #1e293b 75%, #0f172a 100%)'
+          : 'linear-gradient(135deg, #f8fafc 0%, #e2e8f0 25%, #cbd5e1 50%, #e2e8f0 75%, #f8fafc 100%)',
+        display: 'flex',
+        flexDirection: 'column',
+      }}
     >
-      {/* Animated gradient background */}
-      <div className="absolute inset-0 -z-10 animate-gradient bg-gradient-to-br from-blue-100 via-yellow-50 to-pink-100 dark:from-zinc-900 dark:via-zinc-800 dark:to-zinc-900" />
+      {/* Animated gradient overlay */}
+      <Box
+        sx={{
+          position: 'absolute',
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          background: theme.palette.mode === 'dark'
+            ? 'linear-gradient(45deg, rgba(59, 130, 246, 0.1) 0%, rgba(147, 51, 234, 0.1) 50%, rgba(59, 130, 246, 0.1) 100%)'
+            : 'linear-gradient(45deg, rgba(59, 130, 246, 0.05) 0%, rgba(147, 51, 234, 0.05) 50%, rgba(59, 130, 246, 0.05) 100%)',
+          animation: 'gradientShift 8s ease-in-out infinite',
+          '@keyframes gradientShift': {
+            '0%, 100%': {
+              opacity: 0.3,
+              transform: 'scale(1)',
+            },
+            '50%': {
+              opacity: 0.6,
+              transform: 'scale(1.1)',
+            },
+          },
+        }}
+      />
+      
       <Navbar />
+      
       {/* Main content container */}
-      <main
-        className="flex-1 w-full max-w-6xl mx-auto rounded-xl shadow-md px-4 py-6 sm:px-6 sm:py-8 lg:px-8 lg:py-10 box-border"
-
-        style={{
-          background: theme.palette.background.paper,
-          borderColor: theme.palette.divider,
-          color: theme.palette.text.primary,
-          minHeight: '80vh', // Prevent shifting by reserving height
-          marginTop: isMobile ? '4.5rem' : '5.5rem',
-          marginBottom: isMobile ? '1.5rem' : '2.5rem',
+      <Box
+        component="main"
+        sx={{
+          flex: 1,
+          width: '100%',
+          px: { xs: 1, sm: 2, md: 3 },
+          py: { xs: 1, sm: 2, md: 3 },
+          pt: { xs: '7rem', sm: '8rem', md: '4.9rem' },
+          position: 'relative',
+          zIndex: 1,
+          
         }}
       >
-        <style jsx>{`
-          h2 {
-            color: ${theme.palette.primary.main};
-            font-size: 1.25rem;
-            font-family: 'Roboto', sans-serif;
-            font-weight: bold;
-            margin-bottom: 1rem;
-            text-align: center;
-          }
-          @media (min-width: 640px) { h2 { font-size: 1.75rem; } }
-          @media (min-width: 1024px) { h2 { font-size: 2.25rem; } }
-        `}</style>
-        <h2>Explore Vastu Resources</h2>
-        <BlogTabs />
-      </main>
+        <Box
+          sx={{
+            background: theme.palette.mode === 'dark'
+              ? 'linear-gradient(135deg, rgba(15, 23, 42, 0.95) 0%, rgba(30, 41, 59, 0.9) 100%)'
+              : 'linear-gradient(135deg, rgba(255, 255, 255, 0.95) 0%, rgba(248, 250, 252, 0.9) 100%)',
+            backdropFilter: 'blur(20px)',
+            borderRadius: 4,
+            boxShadow: theme.palette.mode === 'dark'
+              ? '0 25px 50px -12px rgba(0, 0, 0, 0.5)'
+              : '0 25px 50px -12px rgba(0, 0, 0, 0.25)',
+            border: theme.palette.mode === 'dark'
+              ? '1px solid rgba(148, 163, 184, 0.1)'
+              : '1px solid rgba(148, 163, 184, 0.2)',
+            p: { xs: 1.5, sm: 2, md: 3 },
+            width: '100%',
+            minHeight: 'calc(100vh - 12rem)',
+          }}
+        >
+          {/* Header Section */}
+          <Box sx={{ textAlign: 'center', mb: 2 }}>
+            <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 1, mb: 1 }}>
+              <Box
+                sx={{
+                  p: 0.75,
+                  borderRadius: 2,
+                  background: theme.palette.mode === 'dark'
+                    ? 'linear-gradient(135deg, rgba(59, 130, 246, 0.2) 0%, rgba(147, 51, 234, 0.2) 100%)'
+                    : 'linear-gradient(135deg, rgba(59, 130, 246, 0.1) 0%, rgba(147, 51, 234, 0.1) 100%)',
+                  border: theme.palette.mode === 'dark'
+                    ? '1px solid rgba(59, 130, 246, 0.3)'
+                    : '1px solid rgba(59, 130, 246, 0.2)',
+                }}
+              >
+                <Sparkles 
+                  size={35} 
+                  className={theme.palette.mode === 'dark' ? 'text-blue-400' : 'text-blue-600'} 
+                />
+              </Box>
+            </Box>
+            <Typography
+              variant="h6"
+              fontWeight={800}
+              sx={{
+                background: theme.palette.mode === 'dark'
+                  ? 'linear-gradient(135deg, #60a5fa 0%, #a78bfa 100%)'
+                  : 'linear-gradient(135deg, #1e40af 0%, #7c3aed 100%)',
+                backgroundClip: 'text',
+                WebkitBackgroundClip: 'text',
+                WebkitTextFillColor: 'transparent',
+                fontSize: { xs: '1.1rem', sm: '1.3rem', md: '1.5rem' },
+                mb: 0.5,
+              }}
+            >
+              Explore Vastu Resources
+            </Typography>
+            <Typography
+              variant="body2"
+              sx={{
+                color: theme.palette.text.secondary,
+                fontSize: { xs: '0.75rem', sm: '0.85rem' },
+                maxWidth: '400px',
+                mx: 'auto',
+              }}
+            >
+              Discover videos, books, podcasts, and tips to enhance your understanding of Vastu
+            </Typography>
+          </Box>
+          
+          <BlogTabs />
+        </Box>
+      </Box>
+      
       <Footer />
-    </div>
+    </Box>
   );
 }

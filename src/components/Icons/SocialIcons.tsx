@@ -7,6 +7,7 @@ import InstagramIcon from '@mui/icons-material/Instagram';
 import WhatsAppIcon from '@mui/icons-material/WhatsApp';
 import YouTubeIcon from '@mui/icons-material/YouTube';
 import { useTheme } from '@mui/material/styles';
+import { useThemeContext } from '@/contexts/ThemeContext';
 
 const icons = [
   { icon: <LinkedInIcon />, label: 'Linked In', href: 'https://www.linkedin.com/in/karishmakori/?originalSubdomain=in' },
@@ -17,6 +18,8 @@ const icons = [
 
 export default function SocialIcons({ direction = 'row' }: { direction?: 'row' | 'column' }) {
   const theme = useTheme();
+  const { mode } = useThemeContext();
+  
   return (
     <Box
       sx={{
@@ -25,8 +28,21 @@ export default function SocialIcons({ direction = 'row' }: { direction?: 'row' |
         gap: 2,
         justifyContent: 'center',
         alignItems: 'center',
-        width: '100%',
-        p: 1,
+        width: '50%',
+        p: 2,
+        background: mode === 'dark'
+          ? 'linear-gradient(135deg, rgba(15, 23, 42, 0.8) 0%, rgba(30, 41, 59, 0.6) 100%)'
+          : 'linear-gradient(135deg, rgba(255, 255, 255, 0.8) 0%, rgba(248, 250, 252, 0.6) 100%)',
+        backdropFilter: 'blur(20px)',
+        borderRadius: 4,
+        border: mode === 'dark'
+          ? '1px solid rgba(148, 163, 184, 0.1)'
+          : '1px solid rgba(148, 163, 184, 0.2)',
+        boxShadow: mode === 'dark'
+          ? '0 8px 32px rgba(0, 0, 0, 0.3)'
+          : '0 8px 32px rgba(0, 0, 0, 0.1)',
+        minWidth: { xs: "90vw", sm: 480 },
+        maxWidth: { xs: "90vw", sm: 480 },
       }}
     >
       {icons.map(({ icon, label, href }) => (
@@ -36,13 +52,28 @@ export default function SocialIcons({ direction = 'row' }: { direction?: 'row' |
             target="_blank"
             rel="noopener"
             sx={{
-              color: theme.palette.mode === 'dark' ? '#fff' : theme.palette.primary.main,
-              background: 'transparent',
-              transition: 'transform 0.2s, background 0.2s',
+              width: 48,
+              height: 48,
+              borderRadius: 3,
+              background: mode === 'dark'
+                ? 'linear-gradient(135deg, rgba(59, 130, 246, 0.1) 0%, rgba(147, 51, 234, 0.1) 100%)'
+                : 'linear-gradient(135deg, rgba(59, 130, 246, 0.05) 0%, rgba(147, 51, 234, 0.05) 100%)',
+              border: mode === 'dark'
+                ? '1px solid rgba(59, 130, 246, 0.2)'
+                : '1px solid rgba(59, 130, 246, 0.1)',
+              color: mode === 'dark' ? '#60a5fa' : '#1e40af',
+              transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
               '&:hover': {
-                transform: 'scale(1.15) translateY(-2px)',
-                background: theme.palette.primary.main,
-                color: '#fff',
+                transform: 'scale(1.1) translateY(-4px) rotate(5deg)',
+                background: mode === 'dark'
+                  ? 'linear-gradient(135deg, rgba(59, 130, 246, 0.2) 0%, rgba(147, 51, 234, 0.2) 100%)'
+                  : 'linear-gradient(135deg, rgba(59, 130, 246, 0.1) 0%, rgba(147, 51, 234, 0.1) 100%)',
+                boxShadow: mode === 'dark'
+                  ? '0 12px 40px rgba(59, 130, 246, 0.3)'
+                  : '0 12px 40px rgba(59, 130, 246, 0.2)',
+                border: mode === 'dark'
+                  ? '1px solid rgba(59, 130, 246, 0.4)'
+                  : '1px solid rgba(59, 130, 246, 0.3)',
               },
             }}
             size="large"

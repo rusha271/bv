@@ -1,92 +1,127 @@
-// "use client";
+"use client";
 
-import React from 'react';
-import { Box, Typography } from '@mui/material';
+import React, { useState, useEffect } from 'react';
+import { Box, Typography, useMediaQuery, useTheme } from '@mui/material';
 import { useThemeContext } from '@/contexts/ThemeContext';
-import { useDeviceType } from '@/utils/useDeviceType'; // Import the hook
 import Link from 'next/link';
+import { Heart, Shield, FileText, Mail } from 'lucide-react';
 
 export default function Footer() {
   const { theme } = useThemeContext();
-  const { isMobile, isTablet } = useDeviceType();
+  const muiTheme = useTheme();
+  const [isClient, setIsClient] = useState(false);
+  
+  // Prevent hydration mismatch
+  useEffect(() => {
+    setIsClient(true);
+  }, []);
 
-  // Responsive font sizes and padding
-  const linkFontSize = isMobile ? '0.75rem' : isTablet ? '0.875rem' : '1rem';
-  const copyrightFontSize = isMobile ? '0.65rem' : isTablet ? '0.75rem' : '0.875rem';
-  const paddingY = isMobile ? 2 : isTablet ? 3 : 3;
-  const gap = isMobile ? 1 : isTablet ? 1.5 : 2;
+  const isMobile = useMediaQuery(muiTheme.breakpoints.down('sm'));
+  const isTablet = useMediaQuery(muiTheme.breakpoints.between('sm', 'md'));
+
+  // Responsive font sizes and padding - use consistent values on server
+  const linkFontSize = isClient && isMobile ? '0.75rem' : isClient && isTablet ? '0.875rem' : '1rem';
+  const copyrightFontSize = isClient && isMobile ? '0.65rem' : isClient && isTablet ? '0.75rem' : '0.875rem';
+  const paddingY = isClient && isMobile ? 2 : isClient && isTablet ? 3 : 3;
+  const gap = isClient && isMobile ? 1 : isClient && isTablet ? 1.5 : 2;
+
+  const footerLinks = [
+    { label: 'Privacy Policy', href: '#', icon: Shield },
+    { label: 'Terms of Service', href: '#', icon: FileText },
+    { label: 'Contact Us', href: '#', icon: Mail },
+  ];
 
   return (
     <Box
       component="footer"
       sx={{
-        bgcolor: theme.palette.background.paper,
+        background: theme.palette.mode === 'dark'
+          ? 'linear-gradient(135deg, rgba(15, 23, 42, 0.95) 0%, rgba(30, 41, 59, 0.9) 100%)'
+          : 'linear-gradient(135deg, rgba(255, 255, 255, 0.95) 0%, rgba(248, 250, 252, 0.9) 100%)',
+        backdropFilter: 'blur(20px)',
+        borderTop: theme.palette.mode === 'dark'
+          ? '1px solid rgba(148, 163, 184, 0.1)'
+          : '1px solid rgba(148, 163, 184, 0.2)',
         color: theme.palette.text.primary,
         py: paddingY,
-        px: 2,
+        px: 3,
         mt: 'auto',
         textAlign: 'center',
-        borderTop: `1px solid ${theme.palette.divider}`,
+        position: 'relative',
+        zIndex: 2,
       }}
     >
-      <Box sx={{ display: 'flex', justifyContent: 'center', gap: gap, mb: 2 }}>
-        <Link href="#" passHref>
-          <Typography
-            variant="body2"
-            sx={{
-              fontSize: linkFontSize,
-              color: theme.palette.text.secondary,
-              '&:hover': { color: theme.palette.primary.main },
-            }}
-          >
-            Privacy Policy
-          </Typography>
-        </Link>
-        <Link href="#" passHref>
-          <Typography
-            variant="body2"
-            sx={{
-              fontSize: linkFontSize,
-              color: theme.palette.text.secondary,
-              '&:hover': { color: theme.palette.primary.main },
-            }}
-          >
-            Terms of Service
-          </Typography>
-        </Link>
-        <Link href="#" passHref>
-          <Typography
-            variant="body2"
-            sx={{
-              fontSize: linkFontSize,
-              color: theme.palette.text.secondary,
-              '&:hover': { color: theme.palette.primary.main },
-            }}
-          >
-            Contact Us
-          </Typography>
-        </Link>
+      <Box sx={{ display: 'flex', justifyContent: 'center', gap: gap, mb: 3, flexWrap: 'wrap' }}>
+        {footerLinks.map(({ label, href, icon: IconComponent }) => (
+          <Link key={label} href={href} passHref>
+            <Box
+              sx={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: 1,
+                px: 2,
+                py: 1,
+                borderRadius: 2,
+                transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+                cursor: 'pointer',
+                '&:hover': {
+                  background: theme.palette.mode === 'dark'
+                    ? 'rgba(59, 130, 246, 0.1)'
+                    : 'rgba(59, 130, 246, 0.05)',
+                  transform: 'translateY(-2px)',
+                },
+              }}
+            >
+              <IconComponent 
+                size={16} 
+                className={theme.palette.mode === 'dark' ? 'text-blue-400' : 'text-blue-600'} 
+              />
+              <Typography
+                variant="body2"
+                sx={{
+                  fontSize: linkFontSize,
+                  color: theme.palette.text.secondary,
+                  fontWeight: 500,
+                  '&:hover': { 
+                    color: theme.palette.mode === 'dark' ? '#60a5fa' : '#1e40af',
+                  },
+                }}
+              >
+                {label}
+              </Typography>
+            </Box>
+          </Link>
+        ))}
       </Box>
-      <Typography
-        variant="body2"
-        sx={{
-          fontSize: copyrightFontSize,
-          color: theme.palette.text.secondary,
-          mt: 1,
-        }}
-      >
-        Copyrights © {new Date().getFullYear()} Brahma Vastu – All rights reserved.
-      </Typography>
-      <Typography
-        variant="body2"
-        sx={{
-          fontSize: copyrightFontSize,
-          color: theme.palette.text.secondary,
-          mt: 1,
-        }}
-      >
-        Made with ❤️ by Brahma Vastu
-      </Typography>
+      
+      <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 1 }}>
+        <Typography
+          variant="body2"
+          sx={{
+            fontSize: copyrightFontSize,
+            color: theme.palette.text.secondary,
+            fontWeight: 500,
+          }}
+        >
+          Copyrights © {new Date().getFullYear()} Brahma Vastu – All rights reserved.
+        </Typography>
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+          <Heart 
+            size={16} 
+            className={theme.palette.mode === 'dark' ? 'text-red-400' : 'text-red-500'} 
+          />
+          <Typography
+            variant="body2"
+            sx={{
+              fontSize: copyrightFontSize,
+              color: theme.palette.text.secondary,
+              fontWeight: 500,
+            }}
+          >
+            Made with love by Brahma Vastu
+          </Typography>
+        </Box>
+      </Box>
     </Box>
   );
 }

@@ -7,7 +7,12 @@ export const fetchBooks = createAsyncThunk(
   'blog/fetchBooks',
   async (_, { rejectWithValue }) => {
     try {
-      const response = await apiService.books.getAll();
+      const response = await cachedApiCall(
+        () => apiService.books.getAll(),
+        '/api/blog/books',
+        undefined,
+        { ttl: 5 * 60 * 1000 } // Cache for 5 minutes to match backend
+      );
       return response;
     } catch (error: any) {
       return rejectWithValue(error.message || 'Failed to fetch books');
@@ -31,7 +36,7 @@ export const fetchVideos = createAsyncThunk(
         () => apiService.videos.getAll(),
         '/api/blog/videos',
         undefined,
-        { ttl: 10 * 60 * 1000 } // Cache for 10 minutes
+        { ttl: 5 * 60 * 1000 } // Cache for 5 minutes to match backend
       );
       return response;
     } catch (error: any) {
@@ -52,7 +57,12 @@ export const fetchTips = createAsyncThunk(
   'blog/fetchTips',
   async (_, { rejectWithValue }) => {
     try {
-      const response = await apiService.tips.getAll();
+      const response = await cachedApiCall(
+        () => apiService.tips.getAll(),
+        '/api/blog/tips',
+        undefined,
+        { ttl: 5 * 60 * 1000 } // Cache for 5 minutes to match backend
+      );
       return response;
     } catch (error: any) {
       return rejectWithValue(error.message || 'Failed to fetch tips');
@@ -62,6 +72,31 @@ export const fetchTips = createAsyncThunk(
 
 export const clearTipsError = createAsyncThunk(
   'blog/clearTipsError',
+  async () => {
+    return null;
+  }
+);
+
+// Async thunks for Podcasts
+export const fetchPodcasts = createAsyncThunk(
+  'blog/fetchPodcasts',
+  async (_, { rejectWithValue }) => {
+    try {
+      const response = await cachedApiCall(
+        () => apiService.podcasts.getAll(),
+        '/api/blog/podcasts',
+        undefined,
+        { ttl: 5 * 60 * 1000 } // Cache for 5 minutes to match backend
+      );
+      return response;
+    } catch (error: any) {
+      return rejectWithValue(error.message || 'Failed to fetch podcasts');
+    }
+  }
+);
+
+export const clearPodcastsError = createAsyncThunk(
+  'blog/clearPodcastsError',
   async () => {
     return null;
   }
@@ -84,6 +119,11 @@ interface BlogState {
     loading: boolean;
     error: string | null;
   };
+  podcasts: {
+    data: any[] | null;
+    loading: boolean;
+    error: string | null;
+  };
 }
 
 // Initial state
@@ -99,6 +139,11 @@ const initialState: BlogState = {
     error: null,
   },
   tips: {
+    data: null,
+    loading: false,
+    error: null,
+  },
+  podcasts: {
     data: null,
     loading: false,
     error: null,
@@ -163,6 +208,24 @@ const blogSlice = createSlice({
       })
       .addCase(clearTipsError.fulfilled, (state) => {
         state.tips.error = null;
+      });
+
+    // Podcasts reducers
+    builder
+      .addCase(fetchPodcasts.pending, (state) => {
+        state.podcasts.loading = true;
+        state.podcasts.error = null;
+      })
+      .addCase(fetchPodcasts.fulfilled, (state, action) => {
+        state.podcasts.loading = false;
+        state.podcasts.data = action.payload;
+      })
+      .addCase(fetchPodcasts.rejected, (state, action) => {
+        state.podcasts.loading = false;
+        state.podcasts.error = action.payload as string;
+      })
+      .addCase(clearPodcastsError.fulfilled, (state) => {
+        state.podcasts.error = null;
       });
   },
 });

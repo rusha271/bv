@@ -81,7 +81,7 @@ export default function VideoModal({ video, isOpen, onClose }: VideoModalProps) 
   const handleVideoEnded = () => {
     if (videoRef.current && isTrackingStarted) {
       const watchTime = videoRef.current.currentTime;
-      trackVideoView(video.id, watchTime, videoDuration);
+      trackVideoView(video.id, watchTime, videoDuration, video.category);
       stopVideoTracking(video.id);
     }
   };
@@ -92,10 +92,10 @@ export default function VideoModal({ video, isOpen, onClose }: VideoModalProps) 
       // Check if we should track the view on pause (e.g., if user watched enough)
       const percentage = (watchTime / videoDuration) * 100;
       if (videoDuration < 15 && percentage >= 90) {
-        trackVideoView(video.id, watchTime, videoDuration);
+        trackVideoView(video.id, watchTime, videoDuration, video.category);
         stopVideoTracking(video.id);
       } else if (videoDuration >= 15 && (watchTime >= 30 || percentage >= 50)) {
-        trackVideoView(video.id, watchTime, videoDuration);
+        trackVideoView(video.id, watchTime, videoDuration, video.category);
         stopVideoTracking(video.id);
       }
     }

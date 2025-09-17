@@ -42,10 +42,18 @@ function TeamMemberBox({ member, imageOnRight = false }: { member: any, imageOnR
 
   return (
     <div
-      className="relative overflow-hidden rounded-2xl shadow-lg transition-all duration-500"
+      className="relative overflow-hidden rounded-2xl transition-all duration-500 hover:scale-105 hover:shadow-2xl"
       style={{
-        background: theme.palette.background.paper,
-        border: `2px solid ${theme.palette.divider}`,
+        background: theme.palette.mode === 'dark'
+          ? 'rgba(15, 23, 42, 0.8)'
+          : 'rgba(255, 255, 255, 0.8)',
+        backdropFilter: 'blur(20px)',
+        border: theme.palette.mode === 'dark'
+          ? '1px solid rgba(148, 163, 184, 0.1)'
+          : '1px solid rgba(148, 163, 184, 0.2)',
+        boxShadow: theme.palette.mode === 'dark'
+          ? '0 8px 32px rgba(0, 0, 0, 0.3)'
+          : '0 8px 32px rgba(0, 0, 0, 0.1)',
       }}
       onClick={() => setIsClicked(true)}
     >
@@ -110,13 +118,27 @@ function TeamMemberBox({ member, imageOnRight = false }: { member: any, imageOnR
         >
           <h3
             className="text-xl font-bold mb-2"
-            style={{ color: theme.palette.primary.main }}
+            style={{ 
+              background: theme.palette.mode === 'dark'
+                ? 'linear-gradient(135deg, #60a5fa 0%, #a78bfa 100%)'
+                : 'linear-gradient(135deg, #1e40af 0%, #7c3aed 100%)',
+              backgroundClip: 'text',
+              WebkitBackgroundClip: 'text',
+              WebkitTextFillColor: 'transparent',
+            }}
           >
             {member.name}
           </h3>
           <p
             className="font-semibold mb-3"
-            style={{ color: theme.palette.secondary.main }}
+            style={{ 
+              background: theme.palette.mode === 'dark'
+                ? 'linear-gradient(135deg, #34d399 0%, #10b981 100%)'
+                : 'linear-gradient(135deg, #059669 0%, #047857 100%)',
+              backgroundClip: 'text',
+              WebkitBackgroundClip: 'text',
+              WebkitTextFillColor: 'transparent',
+            }}
           >
             {member.title}
           </p>
@@ -130,10 +152,15 @@ function TeamMemberBox({ member, imageOnRight = false }: { member: any, imageOnR
             {member.expertise.map((skill: string, index: number) => (
               <span
                 key={index}
-                className="px-3 py-1 rounded-full text-xs font-medium"
+                className="px-3 py-1 rounded-full text-xs font-medium transition-all duration-300 hover:scale-105"
                 style={{
-                  background: theme.palette.primary.light,
-                  color: theme.palette.primary.contrastText,
+                  background: theme.palette.mode === 'dark'
+                    ? 'rgba(59, 130, 246, 0.2)'
+                    : 'rgba(59, 130, 246, 0.1)',
+                  color: theme.palette.mode === 'dark' ? '#60a5fa' : '#1e40af',
+                  border: theme.palette.mode === 'dark'
+                    ? '1px solid rgba(59, 130, 246, 0.3)'
+                    : '1px solid rgba(59, 130, 246, 0.2)',
                 }}
               >
                 {skill}
@@ -141,15 +168,33 @@ function TeamMemberBox({ member, imageOnRight = false }: { member: any, imageOnR
             ))}
           </div>
           <div className="flex items-center space-x-4 text-sm">
-            <div className="flex items-center space-x-1">
-              <Star className="w-4 h-4" style={{ color: theme.palette.primary.main }} />
-              <span style={{ color: theme.palette.text.secondary }}>
+            <div className="flex items-center space-x-2 p-2 rounded-lg"
+              style={{
+                background: theme.palette.mode === 'dark'
+                  ? 'rgba(34, 197, 94, 0.1)'
+                  : 'rgba(34, 197, 94, 0.05)',
+                border: theme.palette.mode === 'dark'
+                  ? '1px solid rgba(34, 197, 94, 0.2)'
+                  : '1px solid rgba(34, 197, 94, 0.1)',
+              }}
+            >
+              <Star className="w-4 h-4" style={{ color: '#22c55e' }} />
+              <span style={{ color: theme.palette.text.secondary, fontSize: '0.875rem' }}>
                 {member.experience}
               </span>
             </div>
-            <div className="flex items-center space-x-1">
-              <Star className="w-4 h-4" style={{ color: theme.palette.primary.main }} />
-              <span style={{ color: theme.palette.text.secondary }}>
+            <div className="flex items-center space-x-2 p-2 rounded-lg"
+              style={{
+                background: theme.palette.mode === 'dark'
+                  ? 'rgba(34, 197, 94, 0.1)'
+                  : 'rgba(34, 197, 94, 0.05)',
+                border: theme.palette.mode === 'dark'
+                  ? '1px solid rgba(34, 197, 94, 0.2)'
+                  : '1px solid rgba(34, 197, 94, 0.1)',
+              }}
+            >
+              <Star className="w-4 h-4" style={{ color: '#22c55e' }} />
+              <span style={{ color: theme.palette.text.secondary, fontSize: '0.875rem' }}>
                 {member.clients}
               </span>
             </div>
@@ -177,10 +222,18 @@ function ConsultantBox({ member, imageOnRight = false }: { member: any, imageOnR
 
   return (
     <div
-      className="relative overflow-hidden rounded-2xl shadow-lg transition-all duration-500"
+      className="relative overflow-hidden rounded-2xl transition-all duration-500 hover:scale-105 hover:shadow-2xl"
       style={{
-        background: theme.palette.background.paper,
-        border: `2px solid ${theme.palette.divider}`,
+        background: theme.palette.mode === 'dark'
+          ? 'rgba(15, 23, 42, 0.8)'
+          : 'rgba(255, 255, 255, 0.8)',
+        backdropFilter: 'blur(20px)',
+        border: theme.palette.mode === 'dark'
+          ? '1px solid rgba(148, 163, 184, 0.1)'
+          : '1px solid rgba(148, 163, 184, 0.2)',
+        boxShadow: theme.palette.mode === 'dark'
+          ? '0 8px 32px rgba(0, 0, 0, 0.3)'
+          : '0 8px 32px rgba(0, 0, 0, 0.1)',
       }}
       onClick={() => setIsClicked(true)}
     >
@@ -245,13 +298,27 @@ function ConsultantBox({ member, imageOnRight = false }: { member: any, imageOnR
         >
           <h3
             className="text-xl font-bold mb-2"
-            style={{ color: theme.palette.primary.main }}
+            style={{ 
+              background: theme.palette.mode === 'dark'
+                ? 'linear-gradient(135deg, #60a5fa 0%, #a78bfa 100%)'
+                : 'linear-gradient(135deg, #1e40af 0%, #7c3aed 100%)',
+              backgroundClip: 'text',
+              WebkitBackgroundClip: 'text',
+              WebkitTextFillColor: 'transparent',
+            }}
           >
             {member.name}
           </h3>
           <p
             className="font-semibold mb-3"
-            style={{ color: theme.palette.secondary.main }}
+            style={{ 
+              background: theme.palette.mode === 'dark'
+                ? 'linear-gradient(135deg, #34d399 0%, #10b981 100%)'
+                : 'linear-gradient(135deg, #059669 0%, #047857 100%)',
+              backgroundClip: 'text',
+              WebkitBackgroundClip: 'text',
+              WebkitTextFillColor: 'transparent',
+            }}
           >
             {member.title}
           </p>
@@ -265,10 +332,15 @@ function ConsultantBox({ member, imageOnRight = false }: { member: any, imageOnR
             {member.expertise.map((skill: string, index: number) => (
               <span
                 key={index}
-                className="px-3 py-1 rounded-full text-xs font-medium"
+                className="px-3 py-1 rounded-full text-xs font-medium transition-all duration-300 hover:scale-105"
                 style={{
-                  background: theme.palette.primary.light,
-                  color: theme.palette.primary.contrastText,
+                  background: theme.palette.mode === 'dark'
+                    ? 'rgba(59, 130, 246, 0.2)'
+                    : 'rgba(59, 130, 246, 0.1)',
+                  color: theme.palette.mode === 'dark' ? '#60a5fa' : '#1e40af',
+                  border: theme.palette.mode === 'dark'
+                    ? '1px solid rgba(59, 130, 246, 0.3)'
+                    : '1px solid rgba(59, 130, 246, 0.2)',
                 }}
               >
                 {skill}
@@ -276,15 +348,33 @@ function ConsultantBox({ member, imageOnRight = false }: { member: any, imageOnR
             ))}
           </div>
           <div className="flex items-center space-x-4 text-sm">
-            <div className="flex items-center space-x-1">
-              <Star className="w-4 h-4" style={{ color: theme.palette.primary.main }} />
-              <span style={{ color: theme.palette.text.secondary }}>
+            <div className="flex items-center space-x-2 p-2 rounded-lg"
+              style={{
+                background: theme.palette.mode === 'dark'
+                  ? 'rgba(34, 197, 94, 0.1)'
+                  : 'rgba(34, 197, 94, 0.05)',
+                border: theme.palette.mode === 'dark'
+                  ? '1px solid rgba(34, 197, 94, 0.2)'
+                  : '1px solid rgba(34, 197, 94, 0.1)',
+              }}
+            >
+              <Star className="w-4 h-4" style={{ color: '#22c55e' }} />
+              <span style={{ color: theme.palette.text.secondary, fontSize: '0.875rem' }}>
                 {member.experience}
               </span>
             </div>
-            <div className="flex items-center space-x-1">
-              <Star className="w-4 h-4" style={{ color: theme.palette.primary.main }} />
-              <span style={{ color: theme.palette.text.secondary }}>
+            <div className="flex items-center space-x-2 p-2 rounded-lg"
+              style={{
+                background: theme.palette.mode === 'dark'
+                  ? 'rgba(34, 197, 94, 0.1)'
+                  : 'rgba(34, 197, 94, 0.05)',
+                border: theme.palette.mode === 'dark'
+                  ? '1px solid rgba(34, 197, 94, 0.2)'
+                  : '1px solid rgba(34, 197, 94, 0.1)',
+              }}
+            >
+              <Star className="w-4 h-4" style={{ color: '#22c55e' }} />
+              <span style={{ color: theme.palette.text.secondary, fontSize: '0.875rem' }}>
                 {member.clients}
               </span>
             </div>
@@ -435,10 +525,18 @@ export default function ModernContactPage() {
       <div className="absolute inset-0 -z-10 animate-gradient bg-gradient-to-br from-blue-100 via-yellow-50 to-pink-100 dark:from-zinc-900 dark:via-zinc-800 dark:to-zinc-900" />
       <Navbar />
       <main
-        className="flex-1 w-full max-w-7xl mx-auto rounded-xl shadow-md px-4 py-6 sm:px-6 sm:py-8 lg:px-8 lg:py-10 box-border"
+        className="flex-1 w-full max-w-7xl mx-auto rounded-2xl px-4 py-6 sm:px-6 sm:py-8 lg:px-8 lg:py-10 box-border"
         style={{
-          background: theme.palette.background.paper,
-          borderColor: theme.palette.divider,
+          background: theme.palette.mode === 'dark' 
+            ? 'rgba(15, 23, 42, 0.95)' 
+            : 'rgba(255, 255, 255, 0.95)',
+          backdropFilter: 'blur(20px)',
+          border: theme.palette.mode === 'dark'
+            ? '1px solid rgba(148, 163, 184, 0.1)'
+            : '1px solid rgba(148, 163, 184, 0.2)',
+          boxShadow: theme.palette.mode === 'dark'
+            ? '0 25px 50px -12px rgba(0, 0, 0, 0.5)'
+            : '0 25px 50px -12px rgba(0, 0, 0, 0.25)',
           color: theme.palette.text.primary,
           minHeight: '80vh',
           marginTop: isMobile ? '2rem' : '3rem',
@@ -447,7 +545,18 @@ export default function ModernContactPage() {
       >
         <h1
           className="font-bold mb-8 text-center"
-          style={{ color: theme.palette.primary.main, fontSize: sectionTitleSize }}
+          style={{ 
+            fontSize: sectionTitleSize,
+            background: theme.palette.mode === 'dark'
+              ? 'linear-gradient(135deg, #60a5fa 0%, #a78bfa 100%)'
+              : 'linear-gradient(135deg, #1e40af 0%, #7c3aed 100%)',
+            backgroundClip: 'text',
+            WebkitBackgroundClip: 'text',
+            WebkitTextFillColor: 'transparent',
+            textShadow: theme.palette.mode === 'dark' 
+              ? '0 2px 4px rgba(0, 0, 0, 0.1)' 
+              : '0 2px 4px rgba(0, 0, 0, 0.1)',
+          }}
         >
           Connect with Brahma Vastu Experts
         </h1>
@@ -456,7 +565,14 @@ export default function ModernContactPage() {
         <FadeInSection>
           <h2
             className="text-2xl font-bold mb-6 text-center"
-            style={{ color: theme.palette.primary.main }}
+            style={{ 
+              background: theme.palette.mode === 'dark'
+                ? 'linear-gradient(135deg, #60a5fa 0%, #a78bfa 100%)'
+                : 'linear-gradient(135deg, #1e40af 0%, #7c3aed 100%)',
+              backgroundClip: 'text',
+              WebkitBackgroundClip: 'text',
+              WebkitTextFillColor: 'transparent',
+            }}
           >
             Our Leadership
           </h2>
@@ -470,7 +586,14 @@ export default function ModernContactPage() {
         <FadeInSection>
           <h2
             className="text-2xl font-bold mb-6 text-center"
-            style={{ color: theme.palette.primary.main }}
+            style={{ 
+              background: theme.palette.mode === 'dark'
+                ? 'linear-gradient(135deg, #60a5fa 0%, #a78bfa 100%)'
+                : 'linear-gradient(135deg, #1e40af 0%, #7c3aed 100%)',
+              backgroundClip: 'text',
+              WebkitBackgroundClip: 'text',
+              WebkitTextFillColor: 'transparent',
+            }}
           >
             Our Consultants
           </h2>
@@ -489,27 +612,66 @@ export default function ModernContactPage() {
         <FadeInSection>
           <h2
             className="text-2xl font-bold mb-6 text-center"
-            style={{ color: theme.palette.primary.main }}
+            style={{ 
+              background: theme.palette.mode === 'dark'
+                ? 'linear-gradient(135deg, #60a5fa 0%, #a78bfa 100%)'
+                : 'linear-gradient(135deg, #1e40af 0%, #7c3aed 100%)',
+              backgroundClip: 'text',
+              WebkitBackgroundClip: 'text',
+              WebkitTextFillColor: 'transparent',
+            }}
           >
             Contact Information
           </h2>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-12">
             <div
-              className="p-6 rounded-2xl shadow-lg"
+              className="p-6 rounded-2xl transition-all duration-300 hover:scale-105 hover:shadow-2xl"
               style={{
-                background: theme.palette.background.paper,
-                border: `2px solid ${theme.palette.divider}`
+                background: theme.palette.mode === 'dark'
+                  ? 'rgba(15, 23, 42, 0.8)'
+                  : 'rgba(255, 255, 255, 0.8)',
+                backdropFilter: 'blur(20px)',
+                border: theme.palette.mode === 'dark'
+                  ? '1px solid rgba(148, 163, 184, 0.1)'
+                  : '1px solid rgba(148, 163, 184, 0.2)',
+                boxShadow: theme.palette.mode === 'dark'
+                  ? '0 8px 32px rgba(0, 0, 0, 0.3)'
+                  : '0 8px 32px rgba(0, 0, 0, 0.1)',
               }}
             >
               <h3
                 className="text-2xl font-bold mb-6"
-                style={{ color: theme.palette.primary.main }}
+                style={{ 
+                  background: theme.palette.mode === 'dark'
+                    ? 'linear-gradient(135deg, #60a5fa 0%, #a78bfa 100%)'
+                    : 'linear-gradient(135deg, #1e40af 0%, #7c3aed 100%)',
+                  backgroundClip: 'text',
+                  WebkitBackgroundClip: 'text',
+                  WebkitTextFillColor: 'transparent',
+                }}
               >
                 Get in Touch
               </h3>
               <div className="space-y-4">
-                <div className="flex items-center space-x-4 p-3 rounded-lg hover:bg-opacity-10 hover:bg-blue-500 transition-all duration-200">
-                  <Phone className="w-6 h-6" style={{ color: theme.palette.primary.main }} />
+                <div className="flex items-center space-x-4 p-4 rounded-xl transition-all duration-300 hover:scale-105"
+                  style={{
+                    background: theme.palette.mode === 'dark'
+                      ? 'rgba(59, 130, 246, 0.1)'
+                      : 'rgba(59, 130, 246, 0.05)',
+                    border: theme.palette.mode === 'dark'
+                      ? '1px solid rgba(59, 130, 246, 0.2)'
+                      : '1px solid rgba(59, 130, 246, 0.1)',
+                  }}
+                >
+                  <div className="p-2 rounded-lg"
+                    style={{
+                      background: theme.palette.mode === 'dark'
+                        ? 'rgba(59, 130, 246, 0.2)'
+                        : 'rgba(59, 130, 246, 0.1)',
+                    }}
+                  >
+                    <Phone className="w-6 h-6" style={{ color: '#3b82f6' }} />
+                  </div>
                   <div>
                     <p className="font-semibold" style={{ color: theme.palette.text.primary }}>
                       +91 98765 43210
@@ -519,8 +681,25 @@ export default function ModernContactPage() {
                     </p>
                   </div>
                 </div>
-                <div className="flex items-center space-x-4 p-3 rounded-lg hover:bg-opacity-10 hover:bg-blue-500 transition-all duration-200">
-                  <Mail className="w-6 h-6" style={{ color: theme.palette.primary.main }} />
+                <div className="flex items-center space-x-4 p-4 rounded-xl transition-all duration-300 hover:scale-105"
+                  style={{
+                    background: theme.palette.mode === 'dark'
+                      ? 'rgba(59, 130, 246, 0.1)'
+                      : 'rgba(59, 130, 246, 0.05)',
+                    border: theme.palette.mode === 'dark'
+                      ? '1px solid rgba(59, 130, 246, 0.2)'
+                      : '1px solid rgba(59, 130, 246, 0.1)',
+                  }}
+                >
+                  <div className="p-2 rounded-lg"
+                    style={{
+                      background: theme.palette.mode === 'dark'
+                        ? 'rgba(59, 130, 246, 0.2)'
+                        : 'rgba(59, 130, 246, 0.1)',
+                    }}
+                  >
+                    <Mail className="w-6 h-6" style={{ color: '#3b82f6' }} />
+                  </div>
                   <div>
                     <p className="font-semibold" style={{ color: theme.palette.text.primary }}>
                       info@brahmavastu.com
@@ -530,8 +709,25 @@ export default function ModernContactPage() {
                     </p>
                   </div>
                 </div>
-                <div className="flex items-center space-x-4 p-3 rounded-lg hover:bg-opacity-10 hover:bg-blue-500 transition-all duration-200">
-                  <MapPin className="w-6 h-6" style={{ color: theme.palette.primary.main }} />
+                <div className="flex items-center space-x-4 p-4 rounded-xl transition-all duration-300 hover:scale-105"
+                  style={{
+                    background: theme.palette.mode === 'dark'
+                      ? 'rgba(59, 130, 246, 0.1)'
+                      : 'rgba(59, 130, 246, 0.05)',
+                    border: theme.palette.mode === 'dark'
+                      ? '1px solid rgba(59, 130, 246, 0.2)'
+                      : '1px solid rgba(59, 130, 246, 0.1)',
+                  }}
+                >
+                  <div className="p-2 rounded-lg"
+                    style={{
+                      background: theme.palette.mode === 'dark'
+                        ? 'rgba(59, 130, 246, 0.2)'
+                        : 'rgba(59, 130, 246, 0.1)',
+                    }}
+                  >
+                    <MapPin className="w-6 h-6" style={{ color: '#3b82f6' }} />
+                  </div>
                   <div>
                     <p className="font-semibold" style={{ color: theme.palette.text.primary }}>
                       Mumbai, Delhi, Bangalore
@@ -541,8 +737,25 @@ export default function ModernContactPage() {
                     </p>
                   </div>
                 </div>
-                <div className="flex items-center space-x-4 p-3 rounded-lg hover:bg-opacity-10 hover:bg-blue-500 transition-all duration-200">
-                  <Clock className="w-6 h-6" style={{ color: theme.palette.primary.main }} />
+                <div className="flex items-center space-x-4 p-4 rounded-xl transition-all duration-300 hover:scale-105"
+                  style={{
+                    background: theme.palette.mode === 'dark'
+                      ? 'rgba(59, 130, 246, 0.1)'
+                      : 'rgba(59, 130, 246, 0.05)',
+                    border: theme.palette.mode === 'dark'
+                      ? '1px solid rgba(59, 130, 246, 0.2)'
+                      : '1px solid rgba(59, 130, 246, 0.1)',
+                  }}
+                >
+                  <div className="p-2 rounded-lg"
+                    style={{
+                      background: theme.palette.mode === 'dark'
+                        ? 'rgba(59, 130, 246, 0.2)'
+                        : 'rgba(59, 130, 246, 0.1)',
+                    }}
+                  >
+                    <Clock className="w-6 h-6" style={{ color: '#3b82f6' }} />
+                  </div>
                   <div>
                     <p className="font-semibold" style={{ color: theme.palette.text.primary }}>
                       Mon - Sat: 9 AM - 8 PM
@@ -555,15 +768,30 @@ export default function ModernContactPage() {
               </div>
             </div>
             <div
-              className="p-6 rounded-2xl shadow-lg"
+              className="p-6 rounded-2xl transition-all duration-300 hover:scale-105 hover:shadow-2xl"
               style={{
-                background: theme.palette.background.paper,
-                border: `2px solid ${theme.palette.divider}`
+                background: theme.palette.mode === 'dark'
+                  ? 'rgba(15, 23, 42, 0.8)'
+                  : 'rgba(255, 255, 255, 0.8)',
+                backdropFilter: 'blur(20px)',
+                border: theme.palette.mode === 'dark'
+                  ? '1px solid rgba(148, 163, 184, 0.1)'
+                  : '1px solid rgba(148, 163, 184, 0.2)',
+                boxShadow: theme.palette.mode === 'dark'
+                  ? '0 8px 32px rgba(0, 0, 0, 0.3)'
+                  : '0 8px 32px rgba(0, 0, 0, 0.1)',
               }}
             >
               <h3
                 className="text-2xl font-bold mb-6"
-                style={{ color: theme.palette.primary.main }}
+                style={{ 
+                  background: theme.palette.mode === 'dark'
+                    ? 'linear-gradient(135deg, #60a5fa 0%, #a78bfa 100%)'
+                    : 'linear-gradient(135deg, #1e40af 0%, #7c3aed 100%)',
+                  backgroundClip: 'text',
+                  WebkitBackgroundClip: 'text',
+                  WebkitTextFillColor: 'transparent',
+                }}
               >
                 Our Services
               </h3>
@@ -580,9 +808,25 @@ export default function ModernContactPage() {
                 ].map((service, index) => (
                   <div
                     key={index}
-                    className="flex items-center space-x-3 p-2 rounded-lg hover:bg-opacity-10 hover:bg-green-500 transition-all duration-200"
+                    className="flex items-center space-x-3 p-3 rounded-xl transition-all duration-300 hover:scale-105"
+                    style={{
+                      background: theme.palette.mode === 'dark'
+                        ? 'rgba(34, 197, 94, 0.1)'
+                        : 'rgba(34, 197, 94, 0.05)',
+                      border: theme.palette.mode === 'dark'
+                        ? '1px solid rgba(34, 197, 94, 0.2)'
+                        : '1px solid rgba(34, 197, 94, 0.1)',
+                    }}
                   >
-                    <Star className="w-4 h-4" style={{ color: theme.palette.secondary.main }} />
+                    <div className="p-1 rounded-lg"
+                      style={{
+                        background: theme.palette.mode === 'dark'
+                          ? 'rgba(34, 197, 94, 0.2)'
+                          : 'rgba(34, 197, 94, 0.1)',
+                      }}
+                    >
+                      <Star className="w-4 h-4" style={{ color: '#22c55e' }} />
+                    </div>
                     <span style={{ color: theme.palette.text.primary }}>{service}</span>
                   </div>
                 ))}
@@ -594,15 +838,30 @@ export default function ModernContactPage() {
         {/* Request Consultation Form */}
         <FadeInSection>
         <div
-          className="max-w-2xl mx-auto p-8 rounded-2xl shadow-lg"
+          className="max-w-2xl mx-auto p-8 rounded-2xl transition-all duration-300 hover:shadow-2xl"
           style={{
-            background: theme.palette.background.paper,
-            border: `2px solid ${theme.palette.divider}`,
+            background: theme.palette.mode === 'dark'
+              ? 'rgba(15, 23, 42, 0.8)'
+              : 'rgba(255, 255, 255, 0.8)',
+            backdropFilter: 'blur(20px)',
+            border: theme.palette.mode === 'dark'
+              ? '1px solid rgba(148, 163, 184, 0.1)'
+              : '1px solid rgba(148, 163, 184, 0.2)',
+            boxShadow: theme.palette.mode === 'dark'
+              ? '0 8px 32px rgba(0, 0, 0, 0.3)'
+              : '0 8px 32px rgba(0, 0, 0, 0.1)',
           }}
         >
           <h3
             className="text-2xl font-bold mb-6 text-center"
-            style={{ color: theme.palette.primary.main }}
+            style={{ 
+              background: theme.palette.mode === 'dark'
+                ? 'linear-gradient(135deg, #60a5fa 0%, #a78bfa 100%)'
+                : 'linear-gradient(135deg, #1e40af 0%, #7c3aed 100%)',
+              backgroundClip: 'text',
+              WebkitBackgroundClip: 'text',
+              WebkitTextFillColor: 'transparent',
+            }}
           >
             Request Consultation
           </h3>
@@ -611,27 +870,57 @@ export default function ModernContactPage() {
               <input
                 type="text"
                 name="name"
-                placeholder="Full Name"
+                placeholder="👤 Enter your full name"
                 value={formData.name}
                 onChange={handleInputChange}
-                className="w-full p-3 rounded-lg border-2 transition-all duration-200 focus:border-blue-500 focus:outline-none"
+                className="w-full p-4 rounded-xl border-2 transition-all duration-300 focus:outline-none focus:scale-105"
                 style={{
-                  borderColor: theme.palette.divider,
-                  background: theme.palette.background.default,
+                  borderColor: theme.palette.mode === 'dark' 
+                    ? 'rgba(148, 163, 184, 0.2)' 
+                    : 'rgba(148, 163, 184, 0.3)',
+                  background: theme.palette.mode === 'dark'
+                    ? 'rgba(15, 23, 42, 0.5)'
+                    : 'rgba(255, 255, 255, 0.7)',
+                  backdropFilter: 'blur(10px)',
                   color: theme.palette.text.primary,
+                }}
+                onFocus={(e) => {
+                  e.target.style.borderColor = '#3b82f6';
+                  e.target.style.boxShadow = '0 0 0 3px rgba(59, 130, 246, 0.1)';
+                }}
+                onBlur={(e) => {
+                  e.target.style.borderColor = theme.palette.mode === 'dark' 
+                    ? 'rgba(148, 163, 184, 0.2)' 
+                    : 'rgba(148, 163, 184, 0.3)';
+                  e.target.style.boxShadow = 'none';
                 }}
               />
               <input
                 type="email"
                 name="email"
-                placeholder="Email Address"
+                placeholder="📧 Enter your email address"
                 value={formData.email}
                 onChange={handleInputChange}
-                className="w-full p-3 rounded-lg border-2 transition-all duration-200 focus:border-blue-500 focus:outline-none"
+                className="w-full p-4 rounded-xl border-2 transition-all duration-300 focus:outline-none focus:scale-105"
                 style={{
-                  borderColor: theme.palette.divider,
-                  background: theme.palette.background.default,
+                  borderColor: theme.palette.mode === 'dark' 
+                    ? 'rgba(148, 163, 184, 0.2)' 
+                    : 'rgba(148, 163, 184, 0.3)',
+                  background: theme.palette.mode === 'dark'
+                    ? 'rgba(15, 23, 42, 0.5)'
+                    : 'rgba(255, 255, 255, 0.7)',
+                  backdropFilter: 'blur(10px)',
                   color: theme.palette.text.primary,
+                }}
+                onFocus={(e) => {
+                  e.target.style.borderColor = '#3b82f6';
+                  e.target.style.boxShadow = '0 0 0 3px rgba(59, 130, 246, 0.1)';
+                }}
+                onBlur={(e) => {
+                  e.target.style.borderColor = theme.palette.mode === 'dark' 
+                    ? 'rgba(148, 163, 184, 0.2)' 
+                    : 'rgba(148, 163, 184, 0.3)';
+                  e.target.style.boxShadow = 'none';
                 }}
               />
             </div>
@@ -656,6 +945,7 @@ export default function ModernContactPage() {
                 <input
                   type="text"
                   placeholder="Loading date picker..."
+                  value={formData.preferred_date}
                   disabled
                   className="w-full p-3 rounded-lg border-2 transition-all duration-200 focus:border-blue-500 focus:outline-none"
                   style={{
@@ -669,14 +959,29 @@ export default function ModernContactPage() {
                 <input
                   type="tel"
                   name="phone"
-                  placeholder="Phone Number"
+                  placeholder="📱 Enter your phone number"
                   value={formData.phone}
                   onChange={handleInputChange}
-                  className="w-full p-3 rounded-lg border-2 transition-all duration-200 focus:border-blue-500 focus:outline-none"
+                  className="w-full p-4 rounded-xl border-2 transition-all duration-300 focus:outline-none focus:scale-105"
                   style={{
-                    borderColor: theme.palette.divider,
-                    background: theme.palette.background.default,
+                    borderColor: theme.palette.mode === 'dark' 
+                      ? 'rgba(148, 163, 184, 0.2)' 
+                      : 'rgba(148, 163, 184, 0.3)',
+                    background: theme.palette.mode === 'dark'
+                      ? 'rgba(15, 23, 42, 0.5)'
+                      : 'rgba(255, 255, 255, 0.7)',
+                    backdropFilter: 'blur(10px)',
                     color: theme.palette.text.primary,
+                  }}
+                  onFocus={(e) => {
+                    e.target.style.borderColor = '#3b82f6';
+                    e.target.style.boxShadow = '0 0 0 3px rgba(59, 130, 246, 0.1)';
+                  }}
+                  onBlur={(e) => {
+                    e.target.style.borderColor = theme.palette.mode === 'dark' 
+                      ? 'rgba(148, 163, 184, 0.2)' 
+                      : 'rgba(148, 163, 184, 0.3)';
+                    e.target.style.boxShadow = 'none';
                   }}
                 />
               </div>
@@ -685,44 +990,139 @@ export default function ModernContactPage() {
               name="consultationType"
               value={formData.consultationType}
               onChange={handleInputChange}
-              className="w-full p-3 rounded-lg border-2 transition-all duration-200 focus:border-blue-500 focus:outline-none"
+              className="w-full p-4 rounded-xl border-2 transition-all duration-300 focus:outline-none focus:scale-105 appearance-none cursor-pointer"
               style={{
-                borderColor: theme.palette.divider,
-                background: theme.palette.background.default,
+                borderColor: theme.palette.mode === 'dark' 
+                  ? 'rgba(148, 163, 184, 0.2)' 
+                  : 'rgba(148, 163, 184, 0.3)',
+                background: theme.palette.mode === 'dark'
+                  ? 'rgba(15, 23, 42, 0.5)'
+                  : 'rgba(255, 255, 255, 0.7)',
+                backdropFilter: 'blur(10px)',
                 color: theme.palette.text.primary,
+                backgroundImage: `url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='m6 8 4 4 4-4'/%3e%3c/svg%3e")`,
+                backgroundPosition: 'right 12px center',
+                backgroundRepeat: 'no-repeat',
+                backgroundSize: '16px',
+                paddingRight: '40px',
+              }}
+              onFocus={(e) => {
+                e.target.style.borderColor = '#3b82f6';
+                e.target.style.boxShadow = '0 0 0 3px rgba(59, 130, 246, 0.1)';
+                e.target.style.backgroundImage = `url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%233b82f6' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='m6 8 4 4 4-4'/%3e%3c/svg%3e")`;
+              }}
+              onBlur={(e) => {
+                e.target.style.borderColor = theme.palette.mode === 'dark' 
+                  ? 'rgba(148, 163, 184, 0.2)' 
+                  : 'rgba(148, 163, 184, 0.3)';
+                e.target.style.boxShadow = 'none';
+                e.target.style.backgroundImage = `url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='m6 8 4 4 4-4'/%3e%3c/svg%3e")`;
               }}
             >
-              <option value="">Select Consultation Type</option>
-              <option value="Residential Vastu">Residential Vastu</option>
-              <option value="Commercial Vastu">Commercial Vastu</option>
-              <option value="Plot Selection">Plot Selection</option>
-              <option value="Remedial Solutions">Remedial Solutions</option>
-              <option value="Online Consultation">Online Consultation</option>
+              <option value="" style={{ 
+                background: theme.palette.mode === 'dark' ? '#1e293b' : '#f8fafc',
+                color: theme.palette.text.secondary 
+              }}>
+                🏠 Select Consultation Type
+              </option>
+              <option value="Residential Vastu" style={{ 
+                background: theme.palette.mode === 'dark' ? '#1e293b' : '#f8fafc',
+                color: theme.palette.text.primary 
+              }}>
+                🏡 Residential Vastu
+              </option>
+              <option value="Commercial Vastu" style={{ 
+                background: theme.palette.mode === 'dark' ? '#1e293b' : '#f8fafc',
+                color: theme.palette.text.primary 
+              }}>
+                🏢 Commercial Vastu
+              </option>
+              <option value="Plot Selection" style={{ 
+                background: theme.palette.mode === 'dark' ? '#1e293b' : '#f8fafc',
+                color: theme.palette.text.primary 
+              }}>
+                📍 Plot Selection
+              </option>
+              <option value="Remedial Solutions" style={{ 
+                background: theme.palette.mode === 'dark' ? '#1e293b' : '#f8fafc',
+                color: theme.palette.text.primary 
+              }}>
+                🔧 Remedial Solutions
+              </option>
+              <option value="Online Consultation" style={{ 
+                background: theme.palette.mode === 'dark' ? '#1e293b' : '#f8fafc',
+                color: theme.palette.text.primary 
+              }}>
+                💻 Online Consultation
+              </option>
             </select>
             <textarea
               name="message"
-              placeholder="Tell us about your requirements..."
+              placeholder="💬 Tell us about your requirements and what you hope to achieve..."
               value={formData.message}
               onChange={handleInputChange}
               rows={4}
-              className="w-full p-3 rounded-lg border-2 transition-all duration-200 focus:border-blue-500 focus:outline-none resize-none"
+              className="w-full p-4 rounded-xl border-2 transition-all duration-300 focus:outline-none focus:scale-105 resize-none"
               style={{
-                borderColor: theme.palette.divider,
-                background: theme.palette.background.default,
+                borderColor: theme.palette.mode === 'dark' 
+                  ? 'rgba(148, 163, 184, 0.2)' 
+                  : 'rgba(148, 163, 184, 0.3)',
+                background: theme.palette.mode === 'dark'
+                  ? 'rgba(15, 23, 42, 0.5)'
+                  : 'rgba(255, 255, 255, 0.7)',
+                backdropFilter: 'blur(10px)',
                 color: theme.palette.text.primary,
+                fontFamily: 'inherit',
+                lineHeight: '1.6',
+              }}
+              onFocus={(e) => {
+                e.target.style.borderColor = '#3b82f6';
+                e.target.style.boxShadow = '0 0 0 3px rgba(59, 130, 246, 0.1)';
+              }}
+              onBlur={(e) => {
+                e.target.style.borderColor = theme.palette.mode === 'dark' 
+                  ? 'rgba(148, 163, 184, 0.2)' 
+                  : 'rgba(148, 163, 184, 0.3)';
+                e.target.style.boxShadow = 'none';
               }}
             />
             <button
               onClick={handleSubmit}
-              className="w-full py-4 px-6 rounded-lg font-semibold text-lg transition-all duration-200 transform hover:scale-105 hover:shadow-lg"
+              className="w-full py-4 px-6 rounded-xl font-bold text-lg transition-all duration-300 transform hover:scale-105 hover:shadow-2xl"
               style={{
-                background: theme.palette.primary.main,
-                color: theme.palette.primary.contrastText,
+                background: 'linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%)',
+                color: 'white',
+                boxShadow: '0 8px 25px rgba(59, 130, 246, 0.3)',
+                border: 'none',
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.background = 'linear-gradient(135deg, #2563eb 0%, #7c3aed 100%)';
+                e.currentTarget.style.boxShadow = '0 12px 35px rgba(59, 130, 246, 0.4)';
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.background = 'linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%)';
+                e.currentTarget.style.boxShadow = '0 8px 25px rgba(59, 130, 246, 0.3)';
               }}
             >
               <Calendar className="w-5 h-5 inline-block mr-2" />
-              Book Consultation
+              🚀 Book Your Consultation
             </button>
+            
+            {/* Helper Text */}
+            <div className="mt-4 text-center">
+              <p className="text-sm" style={{ 
+                color: theme.palette.text.secondary,
+                opacity: 0.8 
+              }}>
+                💡 <strong>Quick Response:</strong> We'll get back to you within 24 hours
+              </p>
+              <p className="text-xs mt-1" style={{ 
+                color: theme.palette.text.secondary,
+                opacity: 0.6 
+              }}>
+                🔒 Your information is secure and will never be shared
+              </p>
+            </div>
           </div>
         </div>
       </FadeInSection>

@@ -21,28 +21,28 @@ export default function GuestBanner() {
 
   // Debug logging
   React.useEffect(() => {
-    console.log('GuestBanner Debug:', {
-      isGuest,
-      user: user ? { name: user.name, email: user.email, role: user.role } : null,
-      showBanner,
-      bannerDismissed: typeof window !== 'undefined' ? sessionStorage.getItem('guest_banner_dismissed') : 'N/A',
-      guestAccountCreated: typeof window !== 'undefined' ? sessionStorage.getItem('guest_account_created') : 'N/A',
-      debugMode: typeof window !== 'undefined' ? window.location.search.includes('debug=banner') : false,
-      willShow: isGuest && showBanner
-    });
+    // console.log('GuestBanner Debug:', {
+    //   isGuest,
+    //   user: user ? { name: user.name, email: user.email, role: user.role } : null,
+    //   showBanner,
+    //   bannerDismissed: typeof window !== 'undefined' ? sessionStorage.getItem('guest_banner_dismissed') : 'N/A',
+    //   guestAccountCreated: typeof window !== 'undefined' ? sessionStorage.getItem('guest_account_created') : 'N/A',
+    //   debugMode: typeof window !== 'undefined' ? window.location.search.includes('debug=banner') : false,
+    //   willShow: isGuest && showBanner
+    // });
   }, [isGuest, user, showBanner]);
 
   // Check if banner was dismissed
   React.useEffect(() => {
     if (typeof window !== 'undefined') {
       const bannerDismissed = sessionStorage.getItem('guest_banner_dismissed');
-      console.log('Banner dismissed check:', bannerDismissed);
+      // console.log('Banner dismissed check:', bannerDismissed);
       
       // If banner was dismissed but we have a new guest account, reset the banner
       if (bannerDismissed === 'true' && isGuest) {
         const guestAccountCreated = sessionStorage.getItem('guest_account_created');
         if (guestAccountCreated === 'true') {
-          console.log('Resetting banner for new guest account');
+          // console.log('Resetting banner for new guest account');
           sessionStorage.removeItem('guest_banner_dismissed');
           setShowBanner(true);
         } else {
@@ -66,10 +66,8 @@ export default function GuestBanner() {
     };
   }, []);
 
-  // Don't render until client-side to prevent hydration mismatch
-  if (!isClient) {
-    return null;
-  }
+  // Always render the same structure to prevent hydration mismatch
+  // Use opacity and visibility to hide/show content instead of conditional rendering
 
   // Temporary debug mode - force banner to show for testing
   const debugMode = typeof window !== 'undefined' && window.location.search.includes('debug=banner');
@@ -77,30 +75,41 @@ export default function GuestBanner() {
   // Debug: Add manual guest account creation button
   const handleCreateGuestAccount = async () => {
     try {
-      console.log('Manually creating guest account...');
+      // console.log('Manually creating guest account...');
       // Trigger guest account creation via custom event
       window.dispatchEvent(new CustomEvent('createGuestAccount'));
     } catch (error) {
-      console.error('Failed to create guest account manually:', error);
+      // console.error('Failed to create guest account manually:', error);
     }
   };
 
   // Debug: Reset banner state
   const handleResetBanner = () => {
-    console.log('Resetting banner state...');
+    //  console.log('Resetting banner state...');
     sessionStorage.removeItem('guest_banner_dismissed');
     setShowBanner(true);
   };
   
-  // Don't show banner if user is not a guest or banner is dismissed (unless in debug mode)
-  if ((!isGuest || !showBanner) && !debugMode) {
-    return null;
-  }
+  // Determine if banner should be visible
+  const shouldShowBanner = (isGuest && showBanner) || debugMode;
+  const isVisible = isClient && shouldShowBanner;
 
   return (
     <>
-      <div className="bg-gradient-to-r from-blue-500 to-purple-600 text-white px-4 py-3 shadow-lg"
-      style={{zIndex:12,position:'fixed',bottom:0,left:0,right:0}}>
+      <div 
+        className="bg-gradient-to-r from-blue-500 to-purple-600 text-white px-4 py-3 shadow-lg"
+        style={{
+          zIndex: 12,
+          position: 'fixed',
+          bottom: 0,
+          left: 0,
+          right: 0,
+          opacity: isVisible ? 1 : 0,
+          visibility: isVisible ? 'visible' : 'hidden',
+          transition: 'opacity 0.3s ease, visibility 0.3s ease',
+          pointerEvents: isVisible ? 'auto' : 'none',
+        }}
+      >
         <div className="max-w-7xl mx-auto flex items-center justify-between">
           <div className="flex items-center space-x-3">
             <div className="flex-shrink-0">

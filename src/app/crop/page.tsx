@@ -7,7 +7,8 @@ import { useDeviceType } from '@/utils/useDeviceType';
 import Navbar from '@/components/ui/Navbar';
 import Footer from '@/components/ui/Footer';
 import ImageCropper from '@/components/Image Crop/ImageCropper';
-import { Box, Typography, Container, Skeleton , CircularProgress } from '@mui/material';
+import AdvancedImageCropper from '@/components/Image Crop/AdvancedImageCropper';
+import { Box, Typography, Container, Skeleton, CircularProgress, Button } from '@mui/material';
 import { useRouter } from 'next/navigation';
 import styles from './cropPage.module.css';
 import Disclaimer from '@/components/Policies/Disclaimer';
@@ -71,6 +72,7 @@ export default function CropPage() {
   const [processingError, setProcessingError] = useState<string | null>(null);
   const [errorDialogOpen, setErrorDialogOpen] = useState(false);
   const [hasCropped, setHasCropped] = useState(false);
+  const [useAdvancedCropper, setUseAdvancedCropper] = useState(true);
 
   // Lazy loading hooks for different sections
   const vastuSection = useLazyLoad();
@@ -89,22 +91,22 @@ export default function CropPage() {
     }
     
     setSessionData(data);
-    console.log('CropPage: Session data loaded', data);
+    // console.log('CropPage: Session data loaded', data);
   }, []);
 
   const handleCrop = useCallback((cropData: any, userInteracted: boolean, croppedImageUrl?: string) => {
-    console.log('CropPage: handleCrop called with:', { cropData, userInteracted, croppedImageUrl });
+    // console.log('CropPage: handleCrop called with:', { cropData, userInteracted, croppedImageUrl });
     
     if (cropData && userInteracted && croppedImageUrl) {
       setCroppedUrl(croppedImageUrl);
       setCropData(cropData); // Store cropData
       setHasCropped(true);
-      console.log('CropPage: croppedUrl set to', croppedImageUrl.substring(0, 50) + '...', 'cropData:', cropData);
+      // console.log('CropPage: croppedUrl set to', croppedImageUrl.substring(0, 50) + '...', 'cropData:', cropData);
     } else {
       setCroppedUrl(null);
       setCropData(null);
       setHasCropped(false);
-      console.log('CropPage: croppedUrl reset to null');
+      // console.log('CropPage: croppedUrl reset to null');
     }
   }, []);
 
@@ -114,7 +116,7 @@ export default function CropPage() {
       setProcessingError(null);
       setErrorDialogOpen(false);
   
-      console.log('handleNext: Starting with croppedUrl:', croppedUrl ? 'exists' : 'null', 'cropData:', cropData);
+      // console.log('handleNext: Starting with croppedUrl:', croppedUrl ? 'exists' : 'null', 'cropData:', cropData);
   
       if (!sessionData?.originalImage) {
         throw new Error('Please upload an image before proceeding.');
@@ -123,7 +125,7 @@ export default function CropPage() {
       // Check if user has cropped the image
       if (croppedUrl && cropData) {
         // User has cropped the image, use the cropped version
-        console.log('handleNext: Using cropped image', croppedUrl.substring(0, 50) + '...');
+        // console.log('handleNext: Using cropped image', croppedUrl.substring(0, 50) + '...');
         
         // Convert cropped URL to blob and store
         const response = await fetch(croppedUrl);
@@ -131,7 +133,7 @@ export default function CropPage() {
         
         const croppedBlobUrl = URL.createObjectURL(croppedBlob);
         
-        console.log('handleNext: Cropped blob created, size:', croppedBlob.size);
+        // console.log('handleNext: Cropped blob created, size:', croppedBlob.size);
         
         // Store the cropped image in session
         sessionStorageManager.storeCroppedImage(croppedBlobUrl, cropData);
@@ -141,7 +143,7 @@ export default function CropPage() {
       }
       
       // If no cropping is done, use the original image
-      console.log('handleNext: Using original image (no crop)');
+      // console.log('handleNext: Using original image (no crop)');
       const originalBlobUrl = sessionData.originalImage.blobUrl;
       
       // Convert blob URL to blob for storage
@@ -149,7 +151,7 @@ export default function CropPage() {
       const blob = await response.blob();
       const newBlobUrl = URL.createObjectURL(blob);
       
-      console.log('handleNext: Original blob created, size:', blob.size);
+      // console.log('handleNext: Original blob created, size:', blob.size);
       
       // Store original image as cropped (no crop applied)
       sessionStorageManager.storeCroppedImage(newBlobUrl, {
@@ -160,7 +162,7 @@ export default function CropPage() {
       router.push('/chakra-overlay');
       
     } catch (error) {
-      console.error('Error processing crop:', error);
+      //  console.error('Error processing crop:', error);
       setProcessingError(error instanceof Error ? error.message : "An error occurred. Please try again.");
       setErrorDialogOpen(true);
     } finally {
@@ -233,15 +235,19 @@ export default function CropPage() {
             sx={{
               fontWeight: 700,
               mb: 2,
-              color: theme.palette.primary.main,
               fontSize: sectionTitleSize,
-              background: `linear-gradient(135deg, ${theme.palette.primary.main}, ${theme.palette.primary.dark})`,
+              background: theme.palette.mode === 'dark'
+                ? 'linear-gradient(135deg, #60a5fa 0%, #a78bfa 100%)'
+                : 'linear-gradient(135deg, #1e40af 0%, #7c3aed 100%)',
               backgroundClip: 'text',
               WebkitBackgroundClip: 'text',
               WebkitTextFillColor: 'transparent',
+              textShadow: theme.palette.mode === 'dark' 
+                ? '0 2px 4px rgba(0, 0, 0, 0.1)' 
+                : '0 2px 4px rgba(0, 0, 0, 0.1)',
             }}
           >
-            Crop Your Floor Plan
+            ✂️ Crop Your Floor Plan
           </Typography>
 
           <Box
@@ -250,16 +256,107 @@ export default function CropPage() {
               width: '100%',
               height: '100%',
               mb: 4,
-              background: theme.palette.background.paper,
-              boxShadow: theme.palette.mode === 'dark' ? '0 8px 32px rgba(0, 0, 0, 0.3)' : '0 8px 32px rgba(0, 0, 0, 0.1)',
-              borderColor: theme.palette.divider,
+              background: theme.palette.mode === 'dark'
+                ? 'rgba(15, 23, 42, 0.8)'
+                : 'rgba(255, 255, 255, 0.8)',
+              backdropFilter: 'blur(20px)',
+              border: theme.palette.mode === 'dark'
+                ? '1px solid rgba(148, 163, 184, 0.1)'
+                : '1px solid rgba(148, 163, 184, 0.2)',
+              boxShadow: theme.palette.mode === 'dark'
+                ? '0 8px 32px rgba(0, 0, 0, 0.3)'
+                : '0 8px 32px rgba(0, 0, 0, 0.1)',
+              transition: 'all 0.3s ease',
+              '&:hover': {
+                transform: 'translateY(-2px)',
+                boxShadow: theme.palette.mode === 'dark'
+                  ? '0 12px 40px rgba(0, 0, 0, 0.4)'
+                  : '0 12px 40px rgba(0, 0, 0, 0.15)',
+              },
               '&::before': {
-                background: `linear-gradient(135deg, ${theme.palette.primary.main}20, ${theme.palette.secondary.main}20)`,
+                background: `linear-gradient(135deg, rgba(59, 130, 246, 0.1), rgba(139, 92, 246, 0.1))`,
               },
             }}
           >
             {sessionData?.originalImage ? (
-              <ImageCropper imageUrl={sessionData.originalImage.blobUrl} onCropComplete={handleCrop} />
+              <Box>
+                {/* Cropper Type Toggle */}
+                <Box sx={{ mb: 2, display: 'flex', justifyContent: 'center', gap: 2 }}>
+                  <Button
+                    variant={useAdvancedCropper ? 'contained' : 'outlined'}
+                    onClick={() => setUseAdvancedCropper(true)}
+                    sx={{ 
+                      minWidth: '140px',
+                      borderRadius: 3,
+                      fontWeight: 600,
+                      textTransform: 'none',
+                      transition: 'all 0.3s ease',
+                      ...(useAdvancedCropper ? {
+                        background: 'linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%)',
+                        boxShadow: '0 4px 15px rgba(59, 130, 246, 0.3)',
+                        '&:hover': {
+                          background: 'linear-gradient(135deg, #2563eb 0%, #7c3aed 100%)',
+                          transform: 'translateY(-2px)',
+                          boxShadow: '0 8px 25px rgba(59, 130, 246, 0.4)',
+                        }
+                      } : {
+                        borderColor: theme.palette.mode === 'dark' ? 'rgba(148, 163, 184, 0.3)' : 'rgba(148, 163, 184, 0.5)',
+                        color: theme.palette.text.primary,
+                        '&:hover': {
+                          borderColor: '#3b82f6',
+                          backgroundColor: theme.palette.mode === 'dark' ? 'rgba(59, 130, 246, 0.1)' : 'rgba(59, 130, 246, 0.05)',
+                          transform: 'translateY(-1px)',
+                        }
+                      })
+                    }}
+                  >
+                    🛠️ Advanced Tools
+                  </Button>
+                  <Button
+                    variant={!useAdvancedCropper ? 'contained' : 'outlined'}
+                    onClick={() => setUseAdvancedCropper(false)}
+                    sx={{ 
+                      minWidth: '140px',
+                      borderRadius: 3,
+                      fontWeight: 600,
+                      textTransform: 'none',
+                      transition: 'all 0.3s ease',
+                      ...(!useAdvancedCropper ? {
+                        background: 'linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%)',
+                        boxShadow: '0 4px 15px rgba(59, 130, 246, 0.3)',
+                        '&:hover': {
+                          background: 'linear-gradient(135deg, #2563eb 0%, #7c3aed 100%)',
+                          transform: 'translateY(-2px)',
+                          boxShadow: '0 8px 25px rgba(59, 130, 246, 0.4)',
+                        }
+                      } : {
+                        borderColor: theme.palette.mode === 'dark' ? 'rgba(148, 163, 184, 0.3)' : 'rgba(148, 163, 184, 0.5)',
+                        color: theme.palette.text.primary,
+                        '&:hover': {
+                          borderColor: '#3b82f6',
+                          backgroundColor: theme.palette.mode === 'dark' ? 'rgba(59, 130, 246, 0.1)' : 'rgba(59, 130, 246, 0.05)',
+                          transform: 'translateY(-1px)',
+                        }
+                      })
+                    }}
+                  >
+                    🔧 Basic Tools
+                  </Button>
+                </Box>
+                
+                {/* Cropper Component */}
+                {useAdvancedCropper ? (
+                  <AdvancedImageCropper 
+                    imageUrl={sessionData.originalImage.blobUrl} 
+                    onCropComplete={handleCrop} 
+                  />
+                ) : (
+                  <ImageCropper 
+                    imageUrl={sessionData.originalImage.blobUrl} 
+                    onCropComplete={handleCrop} 
+                  />
+                )}
+              </Box>
             ) : (
               <Typography variant="body1" color="text.secondary" sx={{ textAlign: 'center', mt: 4 }}>
                 No image to display
@@ -271,16 +368,40 @@ export default function CropPage() {
           {hasCropped && (
             <Box sx={{ 
               mb: 2, 
-              p: 2, 
-              borderRadius: 2, 
-              background: theme.palette.success.light + '20', 
-              border: `1px solid ${theme.palette.success.main}`,
+              p: 3, 
+              borderRadius: 3, 
+              background: theme.palette.mode === 'dark'
+                ? 'rgba(34, 197, 94, 0.1)'
+                : 'rgba(34, 197, 94, 0.05)',
+              border: theme.palette.mode === 'dark'
+                ? '1px solid rgba(34, 197, 94, 0.3)'
+                : '1px solid rgba(34, 197, 94, 0.2)',
               display: 'flex',
               alignItems: 'center',
-              gap: 1
+              gap: 2,
+              transition: 'all 0.3s ease',
+              '&:hover': {
+                transform: 'translateY(-1px)',
+                boxShadow: theme.palette.mode === 'dark'
+                  ? '0 8px 25px rgba(34, 197, 94, 0.2)'
+                  : '0 8px 25px rgba(34, 197, 94, 0.1)',
+              }
             }}>
-              <Typography variant="body2" sx={{ color: theme.palette.success.main, fontWeight: 600 }}>
-                ✅ Image cropped successfully! Ready to proceed.
+              <Box sx={{
+                p: 1,
+                borderRadius: 2,
+                background: theme.palette.mode === 'dark'
+                  ? 'rgba(34, 197, 94, 0.2)'
+                  : 'rgba(34, 197, 94, 0.1)',
+              }}>
+                <Typography variant="h6" sx={{ color: '#22c55e' }}>✅</Typography>
+              </Box>
+              <Typography variant="body2" sx={{ 
+                color: theme.palette.mode === 'dark' ? '#22c55e' : '#059669', 
+                fontWeight: 600,
+                fontSize: '1rem'
+              }}>
+                🎉 Image cropped successfully! Ready to proceed to the next step.
               </Typography>
             </Box>
           )}
@@ -334,13 +455,21 @@ export default function CropPage() {
         <Box
           className={styles.contentCard}
           sx={{
-            background: theme.palette.background.paper,
-            border: `1px solid ${theme.palette.divider}`,
+            background: theme.palette.mode === 'dark' 
+              ? 'rgba(15, 23, 42, 0.95)' 
+              : 'rgba(255, 255, 255, 0.95)',
+            backdropFilter: 'blur(20px)',
+            border: theme.palette.mode === 'dark'
+              ? '1px solid rgba(148, 163, 184, 0.1)'
+              : '1px solid rgba(148, 163, 184, 0.2)',
+            boxShadow: theme.palette.mode === 'dark'
+              ? '0 25px 50px -12px rgba(0, 0, 0, 0.5)'
+              : '0 25px 50px -12px rgba(0, 0, 0, 0.25)',
             p: { xs: 4, md: 6 },
             flexGrow: 1,
             height: '100%',
             '&::before': {
-              background: `linear-gradient(90deg, ${theme.palette.primary.main}, ${theme.palette.secondary.main}, ${theme.palette.primary.main})`,
+              background: `linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%)`,
             },
           }}
         >
@@ -355,43 +484,143 @@ export default function CropPage() {
                   display: 'flex', 
                   alignItems: 'center', 
                   justifyContent: 'center',
-                  background: theme.palette.background.paper,
-                  borderRadius: 2,
-                  border: `1px solid ${theme.palette.divider}`
+                  background: theme.palette.mode === 'dark'
+                    ? 'rgba(15, 23, 42, 0.8)'
+                    : 'rgba(255, 255, 255, 0.8)',
+                  backdropFilter: 'blur(20px)',
+                  borderRadius: 3,
+                  border: theme.palette.mode === 'dark'
+                    ? '1px solid rgba(148, 163, 184, 0.1)'
+                    : '1px solid rgba(148, 163, 184, 0.2)',
+                  boxShadow: theme.palette.mode === 'dark'
+                    ? '0 8px 32px rgba(0, 0, 0, 0.3)'
+                    : '0 8px 32px rgba(0, 0, 0, 0.1)',
                 }}>
                   <Skeleton 
                     variant="rectangular" 
                     width="100%" 
                     height="100%" 
                     animation="wave"
-                    sx={{ borderRadius: 2 }}
+                    sx={{ 
+                      borderRadius: 3,
+                      background: theme.palette.mode === 'dark'
+                        ? 'rgba(148, 163, 184, 0.1)'
+                        : 'rgba(148, 163, 184, 0.05)',
+                    }}
                   />
                 </Box>
               )}
             </Box>
             <Box sx={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 4 }}>
               <Box
-                sx={{ p: 3, borderRadius: 2, background: theme.palette.background.paper, border: `1px solid ${theme.palette.divider}`, boxShadow: theme.shadows[2] }}
+                sx={{ 
+                  p: 4, 
+                  borderRadius: 3, 
+                  background: theme.palette.mode === 'dark'
+                    ? 'rgba(15, 23, 42, 0.8)'
+                    : 'rgba(255, 255, 255, 0.8)',
+                  backdropFilter: 'blur(20px)',
+                  border: theme.palette.mode === 'dark'
+                    ? '1px solid rgba(148, 163, 184, 0.1)'
+                    : '1px solid rgba(148, 163, 184, 0.2)',
+                  boxShadow: theme.palette.mode === 'dark'
+                    ? '0 8px 32px rgba(0, 0, 0, 0.3)'
+                    : '0 8px 32px rgba(0, 0, 0, 0.1)',
+                  transition: 'all 0.3s ease',
+                  '&:hover': {
+                    transform: 'translateY(-2px)',
+                    boxShadow: theme.palette.mode === 'dark'
+                      ? '0 12px 40px rgba(0, 0, 0, 0.4)'
+                      : '0 12px 40px rgba(0, 0, 0, 0.15)',
+                  }
+                }}
               >
-                <Typography variant="h6" sx={{ mb: 2, color: theme.palette.primary.main, fontWeight: 600 }}>
-                  Before analyzing the Vastu
+                <Typography variant="h6" sx={{ 
+                  mb: 3, 
+                  background: theme.palette.mode === 'dark'
+                    ? 'linear-gradient(135deg, #60a5fa 0%, #a78bfa 100%)'
+                    : 'linear-gradient(135deg, #1e40af 0%, #7c3aed 100%)',
+                  backgroundClip: 'text',
+                  WebkitBackgroundClip: 'text',
+                  WebkitTextFillColor: 'transparent',
+                  fontWeight: 700,
+                  fontSize: '1.25rem'
+                }}>
+                  📋 Before analyzing the Vastu
                 </Typography>
-                <Typography variant="body1" sx={{ mb: 2, color: theme.palette.text.secondary, fontSize: isMobile ? '0.9rem' : '1rem' }}>
-                  Please crop the white space from the floorplan/floor blueprint image border.
+                <Typography variant="body1" sx={{ 
+                  mb: 3, 
+                  color: theme.palette.text.secondary, 
+                  fontSize: isMobile ? '0.95rem' : '1.05rem',
+                  lineHeight: 1.6
+                }}>
+                  🎯 Please crop the white space from the floorplan/floor blueprint image border for accurate analysis.
                 </Typography>
-                <Typography variant="h6" sx={{ mb: 2, color: theme.palette.text.primary, fontWeight: 600 }}>
-                  Steps to crop the selected image:
+                <Typography variant="h6" sx={{ 
+                  mb: 2, 
+                  color: theme.palette.text.primary, 
+                  fontWeight: 600,
+                  fontSize: '1.1rem'
+                }}>
+                  📝 Steps to crop the selected image:
                 </Typography>
-                <Box component="ul" sx={{ pl: 2 }}>
-                  <Typography component="li" sx={{ mb: 1, color: theme.palette.text.secondary, fontSize: isMobile ? '0.9rem' : '1rem' }}>
-                    Drag on the image to select the area (preview updates in real-time).
-                  </Typography>
-                  <Typography component="li" sx={{ mb: 1, color: theme.palette.text.secondary, fontSize: isMobile ? '0.9rem' : '1rem' }}>
-                    Use undo/redo buttons to adjust your selection.
-                  </Typography>
-                  <Typography component="li" sx={{ color: theme.palette.text.secondary, fontSize: isMobile ? '0.9rem' : '1rem' }}>
-                    Click Next button to proceed
-                  </Typography>
+                <Box component="ul" sx={{ pl: 0 }}>
+                  <Box sx={{ 
+                    mb: 2, 
+                    p: 2, 
+                    borderRadius: 2,
+                    background: theme.palette.mode === 'dark'
+                      ? 'rgba(59, 130, 246, 0.1)'
+                      : 'rgba(59, 130, 246, 0.05)',
+                    border: theme.palette.mode === 'dark'
+                      ? '1px solid rgba(59, 130, 246, 0.2)'
+                      : '1px solid rgba(59, 130, 246, 0.1)',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: 2
+                  }}>
+                    <Typography sx={{ color: '#3b82f6', fontSize: '1.2rem' }}>1️⃣</Typography>
+                    <Typography sx={{ color: theme.palette.text.secondary, fontSize: isMobile ? '0.9rem' : '1rem' }}>
+                      Drag on the image to select the area (preview updates in real-time)
+                    </Typography>
+                  </Box>
+                  <Box sx={{ 
+                    mb: 2, 
+                    p: 2, 
+                    borderRadius: 2,
+                    background: theme.palette.mode === 'dark'
+                      ? 'rgba(59, 130, 246, 0.1)'
+                      : 'rgba(59, 130, 246, 0.05)',
+                    border: theme.palette.mode === 'dark'
+                      ? '1px solid rgba(59, 130, 246, 0.2)'
+                      : '1px solid rgba(59, 130, 246, 0.1)',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: 2
+                  }}>
+                    <Typography sx={{ color: '#3b82f6', fontSize: '1.2rem' }}>2️⃣</Typography>
+                    <Typography sx={{ color: theme.palette.text.secondary, fontSize: isMobile ? '0.9rem' : '1rem' }}>
+                      Use undo/redo buttons to adjust your selection
+                    </Typography>
+                  </Box>
+                  <Box sx={{ 
+                    p: 2, 
+                    borderRadius: 2,
+                    background: theme.palette.mode === 'dark'
+                      ? 'rgba(34, 197, 94, 0.1)'
+                      : 'rgba(34, 197, 94, 0.05)',
+                    border: theme.palette.mode === 'dark'
+                      ? '1px solid rgba(34, 197, 94, 0.2)'
+                      : '1px solid rgba(34, 197, 94, 0.1)',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: 2
+                  }}>
+                    <Typography sx={{ color: '#22c55e', fontSize: '1.2rem' }}>3️⃣</Typography>
+                    <Typography sx={{ color: theme.palette.text.secondary, fontSize: isMobile ? '0.9rem' : '1rem' }}>
+                      Click Next button to proceed to Vastu analysis
+                    </Typography>
+                  </Box>
                 </Box>
               </Box>
               <Disclaimer />
@@ -408,20 +637,41 @@ export default function CropPage() {
                   display: 'flex', 
                   alignItems: 'center', 
                   justifyContent: 'center',
-                  background: theme.palette.background.paper,
-                  borderRadius: 2,
-                  border: `1px solid ${theme.palette.divider}`,
+                  background: theme.palette.mode === 'dark'
+                    ? 'rgba(15, 23, 42, 0.8)'
+                    : 'rgba(255, 255, 255, 0.8)',
+                  backdropFilter: 'blur(20px)',
+                  borderRadius: 3,
+                  border: theme.palette.mode === 'dark'
+                    ? '1px solid rgba(148, 163, 184, 0.1)'
+                    : '1px solid rgba(148, 163, 184, 0.2)',
+                  boxShadow: theme.palette.mode === 'dark'
+                    ? '0 8px 32px rgba(0, 0, 0, 0.3)'
+                    : '0 8px 32px rgba(0, 0, 0, 0.1)',
                   flexDirection: 'column'
                 }}>
                   <CircularProgress 
                     size={48}
-                    sx={{ color: theme.palette.primary.main, mb: 2 }}
+                    sx={{ 
+                      color: '#3b82f6', 
+                      mb: 2,
+                      filter: 'drop-shadow(0 4px 8px rgba(59, 130, 246, 0.3))'
+                    }}
                   />
                   <Typography 
                     variant="body2" 
-                    color="text.secondary"
+                    sx={{
+                      color: theme.palette.text.secondary,
+                      fontWeight: 500,
+                      background: theme.palette.mode === 'dark'
+                        ? 'linear-gradient(135deg, #60a5fa 0%, #a78bfa 100%)'
+                        : 'linear-gradient(135deg, #1e40af 0%, #7c3aed 100%)',
+                      backgroundClip: 'text',
+                      WebkitBackgroundClip: 'text',
+                      WebkitTextFillColor: 'transparent',
+                    }}
                   >
-                    Loading Vastu animation...
+                    🎬 Loading Vastu animation...
                   </Typography>
                 </Box>
               }>
@@ -434,20 +684,41 @@ export default function CropPage() {
                 display: 'flex', 
                 alignItems: 'center', 
                 justifyContent: 'center',
-                background: theme.palette.background.paper,
-                borderRadius: 2,
-                border: `1px solid ${theme.palette.divider}`,
+                background: theme.palette.mode === 'dark'
+                  ? 'rgba(15, 23, 42, 0.8)'
+                  : 'rgba(255, 255, 255, 0.8)',
+                backdropFilter: 'blur(20px)',
+                borderRadius: 3,
+                border: theme.palette.mode === 'dark'
+                  ? '1px solid rgba(148, 163, 184, 0.1)'
+                  : '1px solid rgba(148, 163, 184, 0.2)',
+                boxShadow: theme.palette.mode === 'dark'
+                  ? '0 8px 32px rgba(0, 0, 0, 0.3)'
+                  : '0 8px 32px rgba(0, 0, 0, 0.1)',
                 flexDirection: 'column'
               }}>
                 <CircularProgress 
                   size={48}
-                  sx={{ color: theme.palette.primary.main, mb: 2 }}
+                  sx={{ 
+                    color: '#3b82f6', 
+                    mb: 2,
+                    filter: 'drop-shadow(0 4px 8px rgba(59, 130, 246, 0.3))'
+                  }}
                 />
                 <Typography 
                   variant="body2" 
-                  color="text.secondary"
+                  sx={{
+                    color: theme.palette.text.secondary,
+                    fontWeight: 500,
+                    background: theme.palette.mode === 'dark'
+                      ? 'linear-gradient(135deg, #60a5fa 0%, #a78bfa 100%)'
+                      : 'linear-gradient(135deg, #1e40af 0%, #7c3aed 100%)',
+                    backgroundClip: 'text',
+                    WebkitBackgroundClip: 'text',
+                    WebkitTextFillColor: 'transparent',
+                  }}
                 >
-                  Loading Vastu animation...
+                  🎬 Loading Vastu animation...
                 </Typography>
               </Box>
             )}
@@ -463,20 +734,41 @@ export default function CropPage() {
                   display: 'flex', 
                   alignItems: 'center', 
                   justifyContent: 'center',
-                  background: theme.palette.background.paper,
-                  borderRadius: 2,
-                  border: `1px solid ${theme.palette.divider}`,
+                  background: theme.palette.mode === 'dark'
+                    ? 'rgba(15, 23, 42, 0.8)'
+                    : 'rgba(255, 255, 255, 0.8)',
+                  backdropFilter: 'blur(20px)',
+                  borderRadius: 3,
+                  border: theme.palette.mode === 'dark'
+                    ? '1px solid rgba(148, 163, 184, 0.1)'
+                    : '1px solid rgba(148, 163, 184, 0.2)',
+                  boxShadow: theme.palette.mode === 'dark'
+                    ? '0 8px 32px rgba(0, 0, 0, 0.3)'
+                    : '0 8px 32px rgba(0, 0, 0, 0.1)',
                   flexDirection: 'column'
                 }}>
                   <CircularProgress 
                     size={48}
-                    sx={{ color: theme.palette.primary.main, mb: 2 }}
+                    sx={{ 
+                      color: '#8b5cf6', 
+                      mb: 2,
+                      filter: 'drop-shadow(0 4px 8px rgba(139, 92, 246, 0.3))'
+                    }}
                   />
                   <Typography 
                     variant="body2" 
-                    color="text.secondary"
+                    sx={{
+                      color: theme.palette.text.secondary,
+                      fontWeight: 500,
+                      background: theme.palette.mode === 'dark'
+                        ? 'linear-gradient(135deg, #a78bfa 0%, #ec4899 100%)'
+                        : 'linear-gradient(135deg, #7c3aed 0%, #db2777 100%)',
+                      backgroundClip: 'text',
+                      WebkitBackgroundClip: 'text',
+                      WebkitTextFillColor: 'transparent',
+                    }}
                   >
-                    Loading zodiac signs...
+                    ⭐ Loading zodiac signs...
                   </Typography>
                 </Box>
               }>
@@ -489,20 +781,41 @@ export default function CropPage() {
                 display: 'flex', 
                 alignItems: 'center', 
                 justifyContent: 'center',
-                background: theme.palette.background.paper,
-                borderRadius: 2,
-                border: `1px solid ${theme.palette.divider}`,
+                background: theme.palette.mode === 'dark'
+                  ? 'rgba(15, 23, 42, 0.8)'
+                  : 'rgba(255, 255, 255, 0.8)',
+                backdropFilter: 'blur(20px)',
+                borderRadius: 3,
+                border: theme.palette.mode === 'dark'
+                  ? '1px solid rgba(148, 163, 184, 0.1)'
+                  : '1px solid rgba(148, 163, 184, 0.2)',
+                boxShadow: theme.palette.mode === 'dark'
+                  ? '0 8px 32px rgba(0, 0, 0, 0.3)'
+                  : '0 8px 32px rgba(0, 0, 0, 0.1)',
                 flexDirection: 'column'
               }}>
                 <CircularProgress 
                   size={48}
-                  sx={{ color: theme.palette.primary.main, mb: 2 }}
+                  sx={{ 
+                    color: '#8b5cf6', 
+                    mb: 2,
+                    filter: 'drop-shadow(0 4px 8px rgba(139, 92, 246, 0.3))'
+                  }}
                 />
                 <Typography 
                   variant="body2" 
-                  color="text.secondary"
+                  sx={{
+                    color: theme.palette.text.secondary,
+                    fontWeight: 500,
+                    background: theme.palette.mode === 'dark'
+                      ? 'linear-gradient(135deg, #a78bfa 0%, #ec4899 100%)'
+                      : 'linear-gradient(135deg, #7c3aed 0%, #db2777 100%)',
+                    backgroundClip: 'text',
+                    WebkitBackgroundClip: 'text',
+                    WebkitTextFillColor: 'transparent',
+                  }}
                 >
-                  Loading zodiac signs...
+                  ⭐ Loading zodiac signs...
                 </Typography>
               </Box>
             )}
@@ -518,16 +831,37 @@ export default function CropPage() {
         PaperProps={{
           sx: { 
             borderRadius: 4, 
-            boxShadow: 12, 
-            background: theme.palette.background.paper 
+            boxShadow: theme.palette.mode === 'dark'
+              ? '0 25px 50px -12px rgba(0, 0, 0, 0.5)'
+              : '0 25px 50px -12px rgba(0, 0, 0, 0.25)',
+            background: theme.palette.mode === 'dark'
+              ? 'rgba(15, 23, 42, 0.95)'
+              : 'rgba(255, 255, 255, 0.95)',
+            backdropFilter: 'blur(20px)',
+            border: theme.palette.mode === 'dark'
+              ? '1px solid rgba(148, 163, 184, 0.1)'
+              : '1px solid rgba(148, 163, 184, 0.2)',
           },
         }}
       >
         <DialogContent sx={{ p: 4, textAlign: 'center' }}>
-          <Typography variant="h5" fontWeight={700} color="error.main" mb={2}>
-            Processing Error
+          <Typography variant="h5" fontWeight={700} mb={2}
+            sx={{
+              background: theme.palette.mode === 'dark'
+                ? 'linear-gradient(135deg, #ef4444 0%, #dc2626 100%)'
+                : 'linear-gradient(135deg, #dc2626 0%, #b91c1c 100%)',
+              backgroundClip: 'text',
+              WebkitBackgroundClip: 'text',
+              WebkitTextFillColor: 'transparent',
+            }}
+          >
+            ⚠️ Processing Error
           </Typography>
-          <Typography variant="body1" color="text.secondary" whiteSpace="pre-line" sx={{ mb: 3 }}>
+          <Typography variant="body1" color="text.secondary" whiteSpace="pre-line" sx={{ 
+            mb: 3,
+            fontSize: '1.05rem',
+            lineHeight: 1.6
+          }}>
             {processingError}
           </Typography>
           <button

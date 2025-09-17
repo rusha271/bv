@@ -65,11 +65,11 @@ apiClient.interceptors.request.use(
       }
     }
     
-    console.log(`Making ${config.method?.toUpperCase()} request to ${config.baseURL}${config.url}`);
+    // console.log(`Making ${config.method?.toUpperCase()} request to ${config.baseURL}${config.url}`);
     return config;
   },
   (error) => {
-    console.error('Request error:', error);
+    // console.error('Request error:', error);
     return Promise.reject(error);
   }
 );
@@ -77,11 +77,11 @@ apiClient.interceptors.request.use(
 // Response interceptor - Enhanced error handling
 apiClient.interceptors.response.use(
   (response: AxiosResponse) => {
-    console.log(`Response received from ${response.config.url}:`, response.status);
+    // console.log(`Response received from ${response.config.url}:`, response.status);
     return response;
   },
   async (error: AxiosError) => {
-    console.error('Response error:', error);
+    // console.error('Response error:', error);
     
     const originalRequest = error.config as InternalAxiosRequestConfig;
     
@@ -109,7 +109,7 @@ apiClient.interceptors.response.use(
           return apiClient(originalRequest);
         } catch (refreshError) {
           // Refresh failed, clear tokens and redirect to login
-          console.error('Token refresh failed:', refreshError);
+          // console.error('Token refresh failed:', refreshError);
           clearTokens();
           
           // Dispatch custom event for auth context to handle
@@ -143,21 +143,21 @@ apiClient.interceptors.response.use(
         });
       }
     } else if (error.response?.status === 403) {
-      console.error('Access forbidden');
+      // console.error('Access forbidden');
       return Promise.reject({
         status: 403,
         message: 'Access forbidden. You do not have permission to perform this action.',
         data: null,
       });
     } else if (error.response?.status === 500) {
-      console.error('Server error occurred');
+      // console.error('Server error occurred');
       return Promise.reject({
         status: 500,
         message: 'Server error occurred. Please try again later.',
         data: null,
       });
     } else if (error.code === 'ECONNABORTED') {
-      console.error('Request timeout');
+      //  console.error('Request timeout');
       return Promise.reject({
         status: 0,
         message: 'Request timeout. Please check your connection and try again.',

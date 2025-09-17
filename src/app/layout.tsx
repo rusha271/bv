@@ -239,7 +239,7 @@ export default function RootLayout({
                       <ClientOnly>
                         <SmartPageLoader />
                         <GuestBanner />
-                        <ConditionalChatbot />
+                        {/* <ConditionalChatbot /> */}
                       </ClientOnly>
                       {children}
                     </LegalProvider>

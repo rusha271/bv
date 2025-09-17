@@ -63,7 +63,7 @@ export default function VastuForm() {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (validateForm()) {
-      console.log('Form submitted:', formData);
+      // console.log('Form submitted:', formData);
       // Add your form submission logic here (e.g., API call)
     }
   };

@@ -1,242 +1,205 @@
 /**
- * API Caching Utility
- * 
- * Provides intelligent caching for API calls to reduce server load and improve performance.
- * Supports different cache strategies and automatic expiration.
+ * API Cache Utility
+ * Provides caching functionality for API calls to reduce redundant requests
  */
 
-export interface CacheOptions {
-  ttl?: number; // Time to live in milliseconds
-  maxSize?: number; // Maximum number of cached items
-  strategy?: 'memory' | 'session' | 'local'; // Cache storage strategy
-  keyGenerator?: (url: string, params?: any) => string; // Custom key generator
-}
-
-export interface CacheEntry<T = any> {
-  data: T;
+interface CacheEntry {
+  data: any;
   timestamp: number;
-  ttl: number;
-  key: string;
+  expiry: number;
 }
 
-export interface CacheStats {
-  hits: number;
-  misses: number;
-  size: number;
-  hitRate: number;
-}
-
-class APICacheManager {
-  private memoryCache: Map<string, CacheEntry> = new Map();
-  private stats: { hits: number; misses: number } = { hits: 0, misses: 0 };
-  private defaultOptions: CacheOptions = {
-    ttl: 5 * 60 * 1000, // 5 minutes
-    maxSize: 100,
-    strategy: 'memory'
-  };
+class ApiCache {
+  private cache = new Map<string, CacheEntry>();
+  private defaultTTL = 60 * 60 * 1000; // 1 hour in milliseconds
 
   /**
-   * Generate cache key from URL and parameters
+   * Get cached data if it exists and is not expired
    */
-  private generateKey(url: string, params?: any, keyGenerator?: (url: string, params?: any) => string): string {
-    if (keyGenerator) {
-      return keyGenerator(url, params);
-    }
+  get(key: string): any | null {
+    const entry = this.cache.get(key);
+    if (!entry) return null;
 
-    const baseKey = url;
-    if (params) {
-      const sortedParams = Object.keys(params)
-        .sort()
-        .map(key => `${key}=${JSON.stringify(params[key])}`)
-        .join('&');
-      return `${baseKey}?${sortedParams}`;
-    }
-    return baseKey;
-  }
-
-  /**
-   * Check if cache entry is valid
-   */
-  private isValid(entry: CacheEntry): boolean {
-    return Date.now() - entry.timestamp < entry.ttl;
-  }
-
-  /**
-   * Clean expired entries
-   */
-  private cleanExpired(): void {
     const now = Date.now();
-    for (const [key, entry] of this.memoryCache.entries()) {
-      if (now - entry.timestamp >= entry.ttl) {
-        this.memoryCache.delete(key);
-      }
+    if (now > entry.expiry) {
+      this.cache.delete(key);
+      return null;
     }
+
+    return entry.data;
   }
 
   /**
-   * Enforce max size limit
+   * Set data in cache with TTL
    */
-  private enforceMaxSize(maxSize: number): void {
-    if (this.memoryCache.size > maxSize) {
-      const entries = Array.from(this.memoryCache.entries());
-      // Sort by timestamp (oldest first)
-      entries.sort((a, b) => a[1].timestamp - b[1].timestamp);
-      
-      // Remove oldest entries
-      const toRemove = entries.slice(0, this.memoryCache.size - maxSize);
-      toRemove.forEach(([key]) => this.memoryCache.delete(key));
-    }
-  }
-
-  /**
-   * Get cached data
-   */
-  get<T>(url: string, params?: any, options: CacheOptions = {}): T | null {
-    const opts = { ...this.defaultOptions, ...options };
-    const key = this.generateKey(url, params, opts.keyGenerator);
-
-    // Clean expired entries periodically
-    if (Math.random() < 0.1) { // 10% chance
-      this.cleanExpired();
-    }
-
-    const entry = this.memoryCache.get(key);
-    if (entry && this.isValid(entry)) {
-      this.stats.hits++;
-      return entry.data as T;
-    }
-
-    this.stats.misses++;
-    return null;
-  }
-
-  /**
-   * Set cached data
-   */
-  set<T>(url: string, data: T, params?: any, options: CacheOptions = {}): void {
-    const opts = { ...this.defaultOptions, ...options };
-    const key = this.generateKey(url, params, opts.keyGenerator);
-
-    // Enforce max size
-    if (opts.maxSize) {
-      this.enforceMaxSize(opts.maxSize);
-    }
-
-    const entry: CacheEntry<T> = {
+  set(key: string, data: any, ttl: number = this.defaultTTL): void {
+    const now = Date.now();
+    this.cache.set(key, {
       data,
-      timestamp: Date.now(),
-      ttl: opts.ttl || this.defaultOptions.ttl!,
-      key
-    };
-
-    this.memoryCache.set(key, entry);
+      timestamp: now,
+      expiry: now + ttl
+    });
   }
 
   /**
-   * Delete cached data
+   * Clear specific cache entry
    */
-  delete(url: string, params?: any, options: CacheOptions = {}): boolean {
-    const opts = { ...this.defaultOptions, ...options };
-    const key = this.generateKey(url, params, opts.keyGenerator);
-    return this.memoryCache.delete(key);
+  delete(key: string): void {
+    this.cache.delete(key);
   }
 
   /**
-   * Clear all cached data
+   * Clear all cache entries
    */
   clear(): void {
-    this.memoryCache.clear();
-    this.stats = { hits: 0, misses: 0 };
+    this.cache.clear();
+  }
+
+  /**
+   * Clear expired entries
+   */
+  cleanup(): void {
+    const now = Date.now();
+    for (const [key, entry] of this.cache.entries()) {
+      if (now > entry.expiry) {
+        this.cache.delete(key);
+      }
+    }
   }
 
   /**
    * Get cache statistics
    */
-  getStats(): CacheStats {
-    const total = this.stats.hits + this.stats.misses;
+  getStats(): { size: number; keys: string[] } {
     return {
-      hits: this.stats.hits,
-      misses: this.stats.misses,
-      size: this.memoryCache.size,
-      hitRate: total > 0 ? this.stats.hits / total : 0
+      size: this.cache.size,
+      keys: Array.from(this.cache.keys())
     };
-  }
-
-  /**
-   * Check if data exists in cache
-   */
-  has(url: string, params?: any, options: CacheOptions = {}): boolean {
-    const opts = { ...this.defaultOptions, ...options };
-    const key = this.generateKey(url, params, opts.keyGenerator);
-    const entry = this.memoryCache.get(key);
-    return entry ? this.isValid(entry) : false;
-  }
-
-  /**
-   * Get cache size
-   */
-  size(): number {
-    return this.memoryCache.size;
-  }
-
-  /**
-   * Update default options
-   */
-  updateOptions(options: Partial<CacheOptions>): void {
-    this.defaultOptions = { ...this.defaultOptions, ...options };
   }
 }
 
 // Create singleton instance
-export const apiCache = new APICacheManager();
+export const apiCache = new ApiCache();
+
+// Cleanup expired entries every 5 minutes
+setInterval(() => {
+  apiCache.cleanup();
+}, 5 * 60 * 1000);
 
 /**
- * Cached API call wrapper
+ * Higher-order function to wrap API calls with caching
+ */
+export function withCache<T extends any[], R>(
+  apiFunction: (...args: T) => Promise<R>,
+  keyGenerator: (...args: T) => string,
+  ttl?: number
+) {
+  return async (...args: T): Promise<R> => {
+    const cacheKey = keyGenerator(...args);
+    
+    // Try to get from cache first
+    const cached = apiCache.get(cacheKey);
+    if (cached !== null) {
+      return cached;
+    }
+
+    // If not in cache, make API call
+    const result = await apiFunction(...args);
+    
+    // Cache the result
+    apiCache.set(cacheKey, result, ttl);
+    
+    return result;
+  };
+}
+
+/**
+ * Cached API call function for Redux thunks
+ * This function provides a simple interface for caching API calls
  */
 export async function cachedApiCall<T>(
-  apiCall: () => Promise<T>,
-  url: string,
-  params?: any,
-  options: CacheOptions = {}
+  apiFunction: () => Promise<T>,
+  cacheKey: string,
+  options?: any,
+  config?: { ttl?: number }
 ): Promise<T> {
+  const ttl = config?.ttl || 60 * 60 * 1000; // Default 1 hour
+  
   // Try to get from cache first
-  const cached = apiCache.get<T>(url, params, options);
+  const cached = apiCache.get(cacheKey);
   if (cached !== null) {
     return cached;
   }
 
-  // Make API call
-  const data = await apiCall();
+  // If not in cache, make API call
+  const result = await apiFunction();
   
   // Cache the result
-  apiCache.set(url, data, params, options);
+  apiCache.set(cacheKey, result, ttl);
   
-  return data;
+  return result;
 }
 
 /**
- * React hook for cached API calls (requires React import in component)
+ * Session storage cache for client-side persistence
  */
-export function useCachedApi<T>(
-  apiCall: () => Promise<T>,
-  url: string,
-  params?: any,
-  options: CacheOptions = {}
-) {
-  // This would need to be implemented in the component that uses it
-  // with proper React imports
-  return {
-    data: null as T | null,
-    loading: true,
-    error: null as string | null,
-    refetch: async () => {
-      try {
-        return await cachedApiCall(apiCall, url, params, options);
-      } catch (error: any) {
-        throw new Error(error.message || 'Failed to fetch data');
+export const sessionCache = {
+  get(key: string): any | null {
+    if (typeof window === 'undefined') return null;
+    
+    try {
+      const item = sessionStorage.getItem(key);
+      if (!item) return null;
+      
+      const parsed = JSON.parse(item);
+      const now = Date.now();
+      
+      // Check if expired
+      if (parsed.expiry && now > parsed.expiry) {
+        sessionStorage.removeItem(key);
+        return null;
+      }
+      
+      return parsed.data;
+    } catch {
+      return null;
+    }
+  },
+
+  set(key: string, data: any, ttl: number = 60 * 60 * 1000): void {
+    if (typeof window === 'undefined') return;
+    
+    try {
+      const item = {
+        data,
+        timestamp: Date.now(),
+        expiry: Date.now() + ttl
+      };
+      sessionStorage.setItem(key, JSON.stringify(item));
+    } catch (error) {
+      console.warn('Failed to cache data in session storage:', error);
+    }
+  },
+
+  delete(key: string): void {
+    if (typeof window === 'undefined') return;
+    sessionStorage.removeItem(key);
+  },
+
+  clear(): void {
+    if (typeof window === 'undefined') return;
+    
+    // Clear only our cache entries (those with our format)
+    const keysToRemove: string[] = [];
+    for (let i = 0; i < sessionStorage.length; i++) {
+      const key = sessionStorage.key(i);
+      if (key && (key.startsWith('api_cache_') || key.endsWith('_cache_time'))) {
+        keysToRemove.push(key);
       }
     }
-  };
-}
+    
+    keysToRemove.forEach(key => sessionStorage.removeItem(key));
+  }
+};
 
 export default apiCache;

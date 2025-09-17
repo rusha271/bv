@@ -203,8 +203,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       
       // Update user if needed - use ref to avoid dependency issues
       if (!userRef.current) {
-        const currentUser = await apiService.auth.me();
-        dispatch({ type: 'SET_USER', payload: currentUser });
+        try {
+          const currentUser = await apiService.auth.me();
+          dispatch({ type: 'SET_USER', payload: currentUser });
+        } catch (error) {
+          console.error('Failed to get user after token refresh:', error);
+          // Don't throw here, just log the error
+        }
       }
     } catch (error) {
       console.error('Token refresh failed:', error);
@@ -260,19 +265,25 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           // Update user with role from JWT
           const userWithRole: User = {
             ...currentUser,
-            role: { name: userRole }
+            role: { id: 1, name: userRole }
           };
           
           dispatch({ type: 'SET_USER', payload: userWithRole });
           
-          // Check if current user is a guest
-          try {
-            const guestCheck = await apiService.auth.isGuest();
-            dispatch({ type: 'SET_GUEST', payload: guestCheck.is_guest });
-          } catch (error) {
-            console.error('Failed to check guest status:', error);
-            // Default to false if check fails
-            dispatch({ type: 'SET_GUEST', payload: false });
+          // Check if current user is a guest - use JWT claim if available to avoid extra API call
+          const isGuestFromJWT = decodedToken?.is_guest;
+          if (isGuestFromJWT !== undefined) {
+            dispatch({ type: 'SET_GUEST', payload: isGuestFromJWT });
+          } else {
+            // Only make API call if JWT doesn't contain guest info
+            try {
+              const guestCheck = await apiService.auth.isGuest();
+              dispatch({ type: 'SET_GUEST', payload: guestCheck.is_guest });
+            } catch (error) {
+              console.error('Failed to check guest status:', error);
+              // Default to false if check fails
+              dispatch({ type: 'SET_GUEST', payload: false });
+            }
           }
         } catch (error) {
           console.error('Failed to get current user:', error);
@@ -309,7 +320,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       
       const userData: User = {
         ...response.user,
-        role: { name: userRole },
+        role: { id: 1, name: userRole },
         created_at: new Date().toISOString(),
         updated_at: new Date().toISOString(),
       };
@@ -367,7 +378,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       // Convert response.user to User type by adding missing fields and converting role
       const userData: User = {
         ...response.user,
-        role: { name: userRole },
+        role: { id: 1, name: userRole },
         created_at: new Date().toISOString(),
         updated_at: new Date().toISOString()
       };
@@ -448,7 +459,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       // Convert response.user to User type by adding missing fields and converting role
       const userData: User = {
         ...response.user,
-        role: { name: userRole },
+        role: { id: 1, name: userRole },
         created_at: new Date().toISOString(),
         updated_at: new Date().toISOString()
       };
@@ -501,7 +512,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       // Convert response.user to User type by adding missing fields and converting role
       const userData: User = {
         ...response.user,
-        role: { name: userRole },
+        role: { id: 1, name: userRole },
         created_at: new Date().toISOString(),
         updated_at: new Date().toISOString()
       };

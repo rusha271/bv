@@ -64,7 +64,7 @@ const loginSchema = Yup.object().shape({
     .min(12, 'Password must be at least 12 characters long')
     .matches(
       /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]/,
-      'Password must contain at least one uppercase letter, one lowercase letter, one number, and one special character'
+      'Password must include uppercase, lowercase, number & special character (@$!%*?&)'
     )
     .required('Password is required'),
 });
@@ -72,23 +72,23 @@ const loginSchema = Yup.object().shape({
 const signupSchema = Yup.object().shape({
   fullName: Yup.string()
     .min(2, 'Full name must be at least 2 characters long')
-    .matches(/^\S+$/, 'Full name cannot contain spaces')
+    .matches(/^\S+$/, 'Please use underscores or camelCase instead of spaces (e.g., John_Doe or JohnDoe)')
     .required('Full name is required'),
   email: Yup.string()
     .email('Please enter a valid email address')
     .required('Email is required'),
   phone: Yup.string()
-    .matches(/^[+]?[\d\s-()]{10,15}$/, 'Please enter a valid phone number (10-15 digits)')
+    .matches(/^[+]?[\d\s-()]{10,15}$/, 'Please enter a valid phone number (e.g., +1234567890 or 123-456-7890)')
     .optional(),
   password: Yup.string()
     .min(12, 'Password must be at least 12 characters long')
     .matches(
       /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]/,
-      'Password must contain at least one uppercase letter, one lowercase letter, one number, and one special character'
+      'Password must include uppercase, lowercase, number & special character (@$!%*?&)'
     )
     .required('Password is required'),
   confirmPassword: Yup.string()
-    .oneOf([Yup.ref('password')], 'Passwords must match')
+    .oneOf([Yup.ref('password')], 'Passwords do not match')
     .required('Please confirm your password'),
 });
 
@@ -254,15 +254,15 @@ const LogSig = memo(function LogSig({
         toast.success('Signup successful!');
         router.push(redirectUrl || '/');
       } else {
-        console.log('Sending login request:', { email: formData.email });
+        // console.log('Sending login request:', { email: formData.email });
         await authLogin(formData.email, formData.password, rememberMe);
-        console.log('Login successful');
+        // console.log('Login successful');
         toast.success('Login successful!');
         router.push(redirectUrl || '/');
       }
       onClose();
     } catch (error: any) {
-      console.error('API Error:', error);
+      // console.error('API Error:', error);
       const errorMessage = error.response?.data?.detail || error.message || 'Failed to authenticate. Please try again.';
       toast.error(errorMessage);
     }
@@ -278,40 +278,85 @@ const LogSig = memo(function LogSig({
         fullScreen={isMobile}
         PaperProps={{
           sx: {
-            borderRadius: isMobile ? 0 : 3,
+            borderRadius: isMobile ? 0 : 4,
             overflow: 'hidden',
             maxHeight: isMobile ? '100vh' : '90vh',
+            boxShadow: isMobile 
+              ? 'none' 
+              : '0 25px 50px -12px rgba(0, 0, 0, 0.25), 0 0 0 1px rgba(255, 255, 255, 0.1)',
+            backdropFilter: 'blur(20px)',
+            background: 'rgba(255, 255, 255, 0.95)',
+            border: '1px solid rgba(255, 255, 255, 0.2)',
           },
         }}
       >
         <DialogTitle sx={{ p: 0 }}>
           <Box
             sx={{
-              background: 'linear-gradient(45deg, #FF6B6B, #4ECDC4)',
+              background: 'linear-gradient(135deg, #667eea 0%, #764ba2 25%, #f093fb 50%, #f5576c 75%, #4facfe 100%)',
               color: 'white',
               textAlign: 'center',
               py: isMobile ? 3 : 4,
               px: 3,
               position: 'relative',
+              '&::before': {
+                content: '""',
+                position: 'absolute',
+                top: 0,
+                left: 0,
+                right: 0,
+                bottom: 0,
+                background: 'linear-gradient(45deg, rgba(255, 255, 255, 0.1) 0%, rgba(255, 255, 255, 0.05) 100%)',
+                backdropFilter: 'blur(10px)',
+              },
             }}
           >
             <IconButton
               onClick={onClose}
               sx={{
                 position: 'absolute',
-                right: 8,
-                top: 8,
+                right: 12,
+                top: 12,
                 color: 'white',
+                background: 'rgba(255, 255, 255, 0.1)',
+                backdropFilter: 'blur(10px)',
+                border: '1px solid rgba(255, 255, 255, 0.2)',
+                '&:hover': {
+                  background: 'rgba(255, 255, 255, 0.2)',
+                  transform: 'scale(1.05)',
+                },
+                transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+                zIndex: 1,
               }}
             >
               <CloseIcon />
             </IconButton>
-            <Typography variant={isMobile ? 'h5' : 'h4'} fontWeight="bold" gutterBottom>
-              🏠 Brahma Vastu
-            </Typography>
-            <Typography variant="body1" sx={{ opacity: 0.9 }}>
-              Transform your space with ancient wisdom
-            </Typography>
+            <Box sx={{ position: 'relative', zIndex: 1 }}>
+              <Typography 
+                variant={isMobile ? 'h5' : 'h4'} 
+                fontWeight="800" 
+                gutterBottom
+                sx={{
+                  background: 'linear-gradient(45deg, #fff 0%, #f0f0f0 100%)',
+                  backgroundClip: 'text',
+                  WebkitBackgroundClip: 'text',
+                  WebkitTextFillColor: 'transparent',
+                  textShadow: '0 2px 4px rgba(0, 0, 0, 0.1)',
+                }}
+              >
+                ✨ Brahma Vastu
+              </Typography>
+              <Typography 
+                variant="body1" 
+                sx={{ 
+                  opacity: 0.95,
+                  fontWeight: 500,
+                  textShadow: '0 1px 2px rgba(0, 0, 0, 0.1)',
+                }}
+              >
+                Welcome to your Vastu journey
+              </Typography>
+            </Box>
           </Box>
         </DialogTitle>
 
@@ -321,10 +366,27 @@ const LogSig = memo(function LogSig({
             onChange={handleTabChange}
             variant="fullWidth"
             sx={{
-              mb: 2,
+              mb: 3,
+              background: 'linear-gradient(135deg, rgba(102, 126, 234, 0.05) 0%, rgba(118, 75, 162, 0.05) 100%)',
+              borderRadius: 3,
+              p: 0.5,
               '& .MuiTab-root': {
-                fontWeight: 600,
+                fontWeight: 700,
                 fontSize: isMobile ? '0.9rem' : '1rem',
+                borderRadius: 2,
+                transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+                '&.Mui-selected': {
+                  background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                  color: 'white',
+                  boxShadow: '0 4px 15px rgba(102, 126, 234, 0.3)',
+                },
+                '&:hover': {
+                  background: 'rgba(102, 126, 234, 0.1)',
+                  transform: 'translateY(-1px)',
+                },
+              },
+              '& .MuiTabs-indicator': {
+                display: 'none',
               },
             }}
           >
@@ -348,13 +410,32 @@ const LogSig = memo(function LogSig({
                   InputProps={{
                     startAdornment: (
                       <InputAdornment position="start">
-                        <Email sx={{ color: 'text.secondary' }} />
+                        <Email sx={{ color: '#667eea' }} />
                       </InputAdornment>
                     ),
                   }}
                   sx={{
                     '& .MuiOutlinedInput-root': {
-                      borderRadius: 2,
+                      borderRadius: 3,
+                      background: 'rgba(255, 255, 255, 0.8)',
+                      backdropFilter: 'blur(10px)',
+                      border: '1px solid rgba(102, 126, 234, 0.1)',
+                      transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+                      '&:hover': {
+                        border: '1px solid rgba(102, 126, 234, 0.3)',
+                        background: 'rgba(255, 255, 255, 0.9)',
+                        transform: 'translateY(-1px)',
+                        boxShadow: '0 4px 15px rgba(102, 126, 234, 0.1)',
+                      },
+                      '&.Mui-focused': {
+                        border: '2px solid #667eea',
+                        background: 'rgba(255, 255, 255, 0.95)',
+                        boxShadow: '0 8px 25px rgba(102, 126, 234, 0.2)',
+                      },
+                    },
+                    '& .MuiInputLabel-root': {
+                      fontWeight: 600,
+                      color: '#667eea',
                     },
                   }}
                 />
@@ -372,7 +453,7 @@ const LogSig = memo(function LogSig({
                   InputProps={{
                     startAdornment: (
                       <InputAdornment position="start">
-                        <Lock sx={{ color: 'text.secondary' }} />
+                        <Lock sx={{ color: '#667eea' }} />
                       </InputAdornment>
                     ),
                     endAdornment: (
@@ -385,7 +466,26 @@ const LogSig = memo(function LogSig({
                   }}
                   sx={{
                     '& .MuiOutlinedInput-root': {
-                      borderRadius: 2,
+                      borderRadius: 3,
+                      background: 'rgba(255, 255, 255, 0.8)',
+                      backdropFilter: 'blur(10px)',
+                      border: '1px solid rgba(102, 126, 234, 0.1)',
+                      transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+                      '&:hover': {
+                        border: '1px solid rgba(102, 126, 234, 0.3)',
+                        background: 'rgba(255, 255, 255, 0.9)',
+                        transform: 'translateY(-1px)',
+                        boxShadow: '0 4px 15px rgba(102, 126, 234, 0.1)',
+                      },
+                      '&.Mui-focused': {
+                        border: '2px solid #667eea',
+                        background: 'rgba(255, 255, 255, 0.95)',
+                        boxShadow: '0 8px 25px rgba(102, 126, 234, 0.2)',
+                      },
+                    },
+                    '& .MuiInputLabel-root': {
+                      fontWeight: 600,
+                      color: '#667eea',
                     },
                   }}
                 />
@@ -395,7 +495,15 @@ const LogSig = memo(function LogSig({
                     <Checkbox
                       checked={rememberMe}
                       onChange={(e) => setRememberMe(e.target.checked)}
-                      color="primary"
+                      sx={{
+                        color: '#667eea',
+                        '&.Mui-checked': {
+                          color: '#667eea',
+                        },
+                        '& .MuiSvgIcon-root': {
+                          borderRadius: 2,
+                        },
+                      }}
                     />
                   }
                   label="Remember me"
@@ -403,12 +511,27 @@ const LogSig = memo(function LogSig({
                     alignSelf: 'flex-start',
                     '& .MuiFormControlLabel-label': {
                       fontSize: isMobile ? '0.875rem' : '1rem',
+                      fontWeight: 600,
+                      color: '#667eea',
                     }
                   }}
                 />
 
                 <Box textAlign="right">
-                  <Link href="#" variant="body2" sx={{ color: 'primary.main', textDecoration: 'none' }}>
+                  <Link 
+                    href="#" 
+                    variant="body2" 
+                    sx={{ 
+                      color: '#667eea', 
+                      textDecoration: 'none',
+                      fontWeight: 600,
+                      transition: 'all 0.3s ease',
+                      '&:hover': {
+                        color: '#5a6fd8',
+                        textDecoration: 'underline',
+                      }
+                    }}
+                  >
                     Forgot Password?
                   </Link>
                 </Box>
@@ -420,11 +543,21 @@ const LogSig = memo(function LogSig({
                   size={isMobile ? 'medium' : 'large'}
                   disabled={false}
                   sx={{
-                    borderRadius: 2,
+                    borderRadius: 3,
                     py: isMobile ? 1.2 : 1.5,
-                    background: 'linear-gradient(45deg, #FF6B6B, #4ECDC4)',
+                    background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                    boxShadow: '0 8px 25px rgba(102, 126, 234, 0.3)',
+                    fontWeight: 700,
+                    fontSize: isMobile ? '0.95rem' : '1.1rem',
+                    textTransform: 'none',
+                    transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
                     '&:hover': {
-                      background: 'linear-gradient(45deg, #FF5252, #26C6DA)',
+                      background: 'linear-gradient(135deg, #5a6fd8 0%, #6a4190 100%)',
+                      transform: 'translateY(-2px)',
+                      boxShadow: '0 12px 35px rgba(102, 126, 234, 0.4)',
+                    },
+                    '&:active': {
+                      transform: 'translateY(0px)',
                     },
                   }}
                 >
@@ -437,23 +570,42 @@ const LogSig = memo(function LogSig({
               <Stack spacing={isMobile ? 2.5 : 3}>
                 <TextField
                   fullWidth
-                  label="Full Name (No Spaces)"
+                  label="Full Name"
                   value={formData.fullName}
                   onChange={handleInputChange('fullName')}
                   onBlur={() => handleFieldValidation('fullName')}
                   error={!!errors.fullName}
-                  helperText={errors.fullName || 'Use underscores or camelCase instead of spaces'}
+                  helperText={errors.fullName || 'Enter your name without spaces (e.g., John_Doe or JohnDoe)'}
                   size={isMobile ? 'small' : 'medium'}
                   InputProps={{
                     startAdornment: (
                       <InputAdornment position="start">
-                        <Person sx={{ color: 'text.secondary' }} />
+                        <Person sx={{ color: '#667eea' }} />
                       </InputAdornment>
                     ),
                   }}
                   sx={{
                     '& .MuiOutlinedInput-root': {
-                      borderRadius: 2,
+                      borderRadius: 3,
+                      background: 'rgba(255, 255, 255, 0.8)',
+                      backdropFilter: 'blur(10px)',
+                      border: '1px solid rgba(102, 126, 234, 0.1)',
+                      transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+                      '&:hover': {
+                        border: '1px solid rgba(102, 126, 234, 0.3)',
+                        background: 'rgba(255, 255, 255, 0.9)',
+                        transform: 'translateY(-1px)',
+                        boxShadow: '0 4px 15px rgba(102, 126, 234, 0.1)',
+                      },
+                      '&.Mui-focused': {
+                        border: '2px solid #667eea',
+                        background: 'rgba(255, 255, 255, 0.95)',
+                        boxShadow: '0 8px 25px rgba(102, 126, 234, 0.2)',
+                      },
+                    },
+                    '& .MuiInputLabel-root': {
+                      fontWeight: 600,
+                      color: '#667eea',
                     },
                   }}
                 />
@@ -471,36 +623,74 @@ const LogSig = memo(function LogSig({
                   InputProps={{
                     startAdornment: (
                       <InputAdornment position="start">
-                        <Email sx={{ color: 'text.secondary' }} />
+                        <Email sx={{ color: '#667eea' }} />
                       </InputAdornment>
                     ),
                   }}
                   sx={{
                     '& .MuiOutlinedInput-root': {
-                      borderRadius: 2,
+                      borderRadius: 3,
+                      background: 'rgba(255, 255, 255, 0.8)',
+                      backdropFilter: 'blur(10px)',
+                      border: '1px solid rgba(102, 126, 234, 0.1)',
+                      transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+                      '&:hover': {
+                        border: '1px solid rgba(102, 126, 234, 0.3)',
+                        background: 'rgba(255, 255, 255, 0.9)',
+                        transform: 'translateY(-1px)',
+                        boxShadow: '0 4px 15px rgba(102, 126, 234, 0.1)',
+                      },
+                      '&.Mui-focused': {
+                        border: '2px solid #667eea',
+                        background: 'rgba(255, 255, 255, 0.95)',
+                        boxShadow: '0 8px 25px rgba(102, 126, 234, 0.2)',
+                      },
+                    },
+                    '& .MuiInputLabel-root': {
+                      fontWeight: 600,
+                      color: '#667eea',
                     },
                   }}
                 />
 
                 <TextField
                   fullWidth
-                  label="Phone Number (Optional)"
+                  label="Phone Number"
                   value={formData.phone}
                   onChange={handleInputChange('phone')}
                   onBlur={() => handleFieldValidation('phone')}
                   error={!!errors.phone}
-                  helperText={errors.phone || '10-15 digits, can include +, spaces, -, ()'}
+                  helperText={errors.phone || 'Enter your phone number (e.g., +1234567890 or 123-456-7890)'}
                   size={isMobile ? 'small' : 'medium'}
                   InputProps={{
                     startAdornment: (
                       <InputAdornment position="start">
-                        <Phone sx={{ color: 'text.secondary' }} />
+                        <Phone sx={{ color: '#667eea' }} />
                       </InputAdornment>
                     ),
                   }}
                   sx={{
                     '& .MuiOutlinedInput-root': {
-                      borderRadius: 2,
+                      borderRadius: 3,
+                      background: 'rgba(255, 255, 255, 0.8)',
+                      backdropFilter: 'blur(10px)',
+                      border: '1px solid rgba(102, 126, 234, 0.1)',
+                      transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+                      '&:hover': {
+                        border: '1px solid rgba(102, 126, 234, 0.3)',
+                        background: 'rgba(255, 255, 255, 0.9)',
+                        transform: 'translateY(-1px)',
+                        boxShadow: '0 4px 15px rgba(102, 126, 234, 0.1)',
+                      },
+                      '&.Mui-focused': {
+                        border: '2px solid #667eea',
+                        background: 'rgba(255, 255, 255, 0.95)',
+                        boxShadow: '0 8px 25px rgba(102, 126, 234, 0.2)',
+                      },
+                    },
+                    '& .MuiInputLabel-root': {
+                      fontWeight: 600,
+                      color: '#667eea',
                     },
                   }}
                 />
@@ -513,12 +703,12 @@ const LogSig = memo(function LogSig({
                   onChange={handleInputChange('password')}
                   onBlur={() => handleFieldValidation('password')}
                   error={!!errors.password}
-                  helperText={errors.password || '12+ chars with uppercase, lowercase, number & symbol'}
+                  helperText={errors.password || 'Must be 12+ characters with uppercase, lowercase, number & special character'}
                   size={isMobile ? 'small' : 'medium'}
                   InputProps={{
                     startAdornment: (
                       <InputAdornment position="start">
-                        <Lock sx={{ color: 'text.secondary' }} />
+                        <Lock sx={{ color: '#667eea' }} />
                       </InputAdornment>
                     ),
                     endAdornment: (
@@ -531,7 +721,26 @@ const LogSig = memo(function LogSig({
                   }}
                   sx={{
                     '& .MuiOutlinedInput-root': {
-                      borderRadius: 2,
+                      borderRadius: 3,
+                      background: 'rgba(255, 255, 255, 0.8)',
+                      backdropFilter: 'blur(10px)',
+                      border: '1px solid rgba(102, 126, 234, 0.1)',
+                      transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+                      '&:hover': {
+                        border: '1px solid rgba(102, 126, 234, 0.3)',
+                        background: 'rgba(255, 255, 255, 0.9)',
+                        transform: 'translateY(-1px)',
+                        boxShadow: '0 4px 15px rgba(102, 126, 234, 0.1)',
+                      },
+                      '&.Mui-focused': {
+                        border: '2px solid #667eea',
+                        background: 'rgba(255, 255, 255, 0.95)',
+                        boxShadow: '0 8px 25px rgba(102, 126, 234, 0.2)',
+                      },
+                    },
+                    '& .MuiInputLabel-root': {
+                      fontWeight: 600,
+                      color: '#667eea',
                     },
                   }}
                 />
@@ -549,7 +758,7 @@ const LogSig = memo(function LogSig({
                   InputProps={{
                     startAdornment: (
                       <InputAdornment position="start">
-                        <Lock sx={{ color: 'text.secondary' }} />
+                        <Lock sx={{ color: '#667eea' }} />
                       </InputAdornment>
                     ),
                     endAdornment: (
@@ -562,7 +771,26 @@ const LogSig = memo(function LogSig({
                   }}
                   sx={{
                     '& .MuiOutlinedInput-root': {
-                      borderRadius: 2,
+                      borderRadius: 3,
+                      background: 'rgba(255, 255, 255, 0.8)',
+                      backdropFilter: 'blur(10px)',
+                      border: '1px solid rgba(102, 126, 234, 0.1)',
+                      transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+                      '&:hover': {
+                        border: '1px solid rgba(102, 126, 234, 0.3)',
+                        background: 'rgba(255, 255, 255, 0.9)',
+                        transform: 'translateY(-1px)',
+                        boxShadow: '0 4px 15px rgba(102, 126, 234, 0.1)',
+                      },
+                      '&.Mui-focused': {
+                        border: '2px solid #667eea',
+                        background: 'rgba(255, 255, 255, 0.95)',
+                        boxShadow: '0 8px 25px rgba(102, 126, 234, 0.2)',
+                      },
+                    },
+                    '& .MuiInputLabel-root': {
+                      fontWeight: 600,
+                      color: '#667eea',
                     },
                   }}
                 />
@@ -574,11 +802,21 @@ const LogSig = memo(function LogSig({
                   size={isMobile ? 'medium' : 'large'}
                   disabled={false}
                   sx={{
-                    borderRadius: 2,
+                    borderRadius: 3,
                     py: isMobile ? 1.2 : 1.5,
-                    background: 'linear-gradient(45deg, #FF6B6B, #4ECDC4)',
+                    background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                    boxShadow: '0 8px 25px rgba(102, 126, 234, 0.3)',
+                    fontWeight: 700,
+                    fontSize: isMobile ? '0.95rem' : '1.1rem',
+                    textTransform: 'none',
+                    transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
                     '&:hover': {
-                      background: 'linear-gradient(45deg, #FF5252, #26C6DA)',
+                      background: 'linear-gradient(135deg, #5a6fd8 0%, #6a4190 100%)',
+                      transform: 'translateY(-2px)',
+                      boxShadow: '0 12px 35px rgba(102, 126, 234, 0.4)',
+                    },
+                    '&:active': {
+                      transform: 'translateY(0px)',
                     },
                   }}
                 >
@@ -599,7 +837,17 @@ const LogSig = memo(function LogSig({
                   e.preventDefault();
                   setShowTerms(true);
                 }}
-                sx={{ color: 'primary.main', textDecoration: 'none', cursor: 'pointer' }}
+                sx={{ 
+                  color: '#667eea', 
+                  textDecoration: 'none', 
+                  cursor: 'pointer',
+                  fontWeight: 600,
+                  transition: 'all 0.3s ease',
+                  '&:hover': {
+                    color: '#5a6fd8',
+                    textDecoration: 'underline',
+                  }
+                }}
               >
                 Terms of Service
               </Link>{' '}
@@ -610,7 +858,17 @@ const LogSig = memo(function LogSig({
                   e.preventDefault();
                   setShowPrivacy(true);
                 }}
-                sx={{ color: 'primary.main', textDecoration: 'none', cursor: 'pointer' }}
+                sx={{ 
+                  color: '#667eea', 
+                  textDecoration: 'none', 
+                  cursor: 'pointer',
+                  fontWeight: 600,
+                  transition: 'all 0.3s ease',
+                  '&:hover': {
+                    color: '#5a6fd8',
+                    textDecoration: 'underline',
+                  }
+                }}
               >
                 Privacy Policy
               </Link>
