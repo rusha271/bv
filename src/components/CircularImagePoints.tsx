@@ -125,7 +125,7 @@ export const CircularImagePoints: React.FC<CircularImagePointsProps> = ({
       {/* Points */}
       {points.map((point) => {
         const position = calculatePointPosition(point);
-        const pointSize = point.size || 10;
+        const pointSize = point.size || 12;
         
         return (
           <div
@@ -134,15 +134,15 @@ export const CircularImagePoints: React.FC<CircularImagePointsProps> = ({
             style={{
               left: `${position.left}%`,
               top: `${position.top}%`,
-              width: `${pointSize - 1}px`, // Larger clickable area
-              height: `${pointSize - 1}px`, // Larger clickable area
+              width: `${pointSize + 4}px`, // Larger clickable area
+              height: `${pointSize + 4}px`, // Larger clickable area
               backgroundColor: point.color || '#ef4444',
               borderRadius: '50%',
               transform: 'translate(-50%, -50%)', // Center the point on the calculated position
               border: '2px solid white',
               boxShadow: '0 2px 4px rgba(0,0,0,0.3)',
               zIndex: 10,
-              opacity: hoveredPoint === point.id ? 1 : 0, // Completely invisible by default, visible on hover
+              opacity: hoveredPoint === point.id ? 1 : 0, // Invisible by default, visible on hover
               pointerEvents: 'auto' // Ensure clicks are captured
             }}
             onClick={(e) => {

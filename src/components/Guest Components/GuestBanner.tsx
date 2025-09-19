@@ -2,22 +2,38 @@
 
 import React, { useState } from 'react';
 import { useAuthUser, useAuthGuest } from '@/contexts/AuthContext';
-// import GuestUpgradeModal from './GuestUpgradeModal';
 import LogSigComponent from '../Auth/LogSig';
 import { useRouter } from 'next/navigation';
+import { 
+  Box, 
+  Typography, 
+  Button, 
+  IconButton, 
+  Stack, 
+  Chip,
+  useTheme,
+  Slide,
+  Fade
+} from '@mui/material';
+import { 
+  Crown, 
+  X, 
+  Star, 
+  Shield, 
+  Zap,
+  ArrowUpRight,
+  Sparkles
+} from 'lucide-react';
+import { useDeviceType } from '@/utils/useDeviceType';
 
 export default function GuestBanner() {
   const isGuest = useAuthGuest();
   const user = useAuthUser();
   const [showBanner, setShowBanner] = useState(true);
   const [showUpgradeModal, setShowUpgradeModal] = useState(false);
-  const [isClient, setIsClient] = useState(false);
   const router = useRouter();
-
-  // Prevent hydration mismatch
-  React.useEffect(() => {
-    setIsClient(true);
-  }, []);
+  const theme = useTheme();
+  const { isMobile } = useDeviceType();
 
   // Debug logging
   React.useEffect(() => {
@@ -92,74 +108,251 @@ export default function GuestBanner() {
   
   // Determine if banner should be visible
   const shouldShowBanner = (isGuest && showBanner) || debugMode;
-  const isVisible = isClient && shouldShowBanner;
 
   return (
     <>
-      <div 
-        className="bg-gradient-to-r from-blue-500 to-purple-600 text-white px-4 py-3 shadow-lg"
-        style={{
-          zIndex: 12,
+      <Slide direction="up" in={shouldShowBanner} timeout={500}>
+        <Box
+          sx={{
           position: 'fixed',
           bottom: 0,
           left: 0,
           right: 0,
-          opacity: isVisible ? 1 : 0,
-          visibility: isVisible ? 'visible' : 'hidden',
-          transition: 'opacity 0.3s ease, visibility 0.3s ease',
-          pointerEvents: isVisible ? 'auto' : 'none',
-        }}
-      >
-        <div className="max-w-7xl mx-auto flex items-center justify-between">
-          <div className="flex items-center space-x-3">
-            <div className="flex-shrink-0">
-              <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
-                <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
-              </svg>
-            </div>
-            <div>
-              <p className="text-sm font-medium">
-                Welcome, {user?.name || 'Guest'}! You're using a temporary guest account.
-              </p>
-              <p className="text-xs opacity-90">
-                Upgrade to save your progress and access all features.
-              </p>
-              {debugMode && (
-                <div className="text-xs opacity-75 mt-1">
-                  <p>DEBUG: isGuest={isGuest ? 'true' : 'false'}, showBanner={showBanner ? 'true' : 'false'}</p>
-                  <button
-                    onClick={handleResetBanner}
-                    className="bg-yellow-500 text-white px-2 py-1 rounded text-xs mt-1"
-                  >
-                    Reset Banner
-                  </button>
-                </div>
-              )}
-            </div>
-          </div>
-          <div className="flex items-center space-x-3">
-            <button
-              onClick={() => setShowUpgradeModal(true)}
-              className="bg-white text-blue-600 px-3 py-1 rounded-lg shadow hover:bg-gray-50 transition"
-            >
-              Upgrade Now
-            </button>
+            zIndex: 1200,
+            background: theme.palette.mode === 'dark'
+              ? 'linear-gradient(135deg, rgba(15, 23, 42, 0.95) 0%, rgba(30, 41, 59, 0.95) 100%)'
+              : 'linear-gradient(135deg, rgba(59, 130, 246, 0.95) 0%, rgba(139, 92, 246, 0.95) 100%)',
+            backdropFilter: 'blur(20px)',
+            WebkitBackdropFilter: 'blur(20px)',
+            border: theme.palette.mode === 'dark'
+              ? '1px solid rgba(148, 163, 184, 0.2)'
+              : '1px solid rgba(255, 255, 255, 0.2)',
+            borderBottom: 'none',
+            boxShadow: theme.palette.mode === 'dark'
+              ? '0 -8px 32px rgba(0, 0, 0, 0.3)'
+              : '0 -8px 32px rgba(0, 0, 0, 0.1)',
+            '&::before': {
+              content: '""',
+              position: 'absolute',
+              top: 0,
+              left: 0,
+              right: 0,
+              bottom: 0,
+              background: theme.palette.mode === 'dark'
+                ? 'linear-gradient(45deg, rgba(59, 130, 246, 0.1) 0%, rgba(139, 92, 246, 0.1) 100%)'
+                : 'linear-gradient(45deg, rgba(255, 255, 255, 0.1) 0%, rgba(255, 255, 255, 0.05) 100%)',
+              pointerEvents: 'none',
+            }
+          }}
+        >
+          <Box sx={{ position: 'relative', zIndex: 1 }}>
+            <Box sx={{ 
+              maxWidth: '1200px', 
+              mx: 'auto', 
+              px: { xs: 2, sm: 3, md: 4 },
+              py: { xs: 1.5, sm: 2, md: 2.5 }
+            }}>
+              <Stack 
+                direction={{ xs: 'column', sm: 'row' }} 
+                spacing={{ xs: 1.5, sm: 2 }}
+                alignItems={{ xs: 'stretch', sm: 'center' }}
+                justifyContent="space-between"
+              >
+                {/* Left side - Message */}
+                <Stack 
+                  direction={{ xs: 'column', sm: 'row' }} 
+                  spacing={1.5} 
+                  alignItems={{ xs: 'flex-start', sm: 'center' }}
+                  sx={{ flex: 1 }}
+                >
+                  <Box sx={{ 
+                    display: 'flex', 
+                    alignItems: 'center', 
+                    gap: 1,
+                    p: 1,
+                    borderRadius: 2,
+                    background: theme.palette.mode === 'dark'
+                      ? 'rgba(255, 255, 255, 0.1)'
+                      : 'rgba(255, 255, 255, 0.2)',
+                    backdropFilter: 'blur(10px)',
+                    border: theme.palette.mode === 'dark'
+                      ? '1px solid rgba(255, 255, 255, 0.1)'
+                      : '1px solid rgba(255, 255, 255, 0.2)',
+                  }}>
+                    <Box sx={{ 
+                      p: 0.3, 
+                      borderRadius: 1, 
+                      background: 'linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%)',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center'
+                    }}>
+                      <Crown size={14} color="white" />
+                    </Box>
+                    <Box>
+                      <Typography 
+                        variant="body2" 
+                        sx={{ 
+                          fontWeight: 600,
+                          color: 'white',
+                          fontSize: { xs: '0.8rem', sm: '0.85rem' },
+                          lineHeight: 1.2
+                        }}
+                      >
+                        👋 Welcome, {user?.name || 'Guest'}!
+                      </Typography>
+                      <Typography 
+                        variant="caption" 
+                        sx={{ 
+                          color: 'rgba(255, 255, 255, 0.8)',
+                          fontSize: { xs: '0.7rem', sm: '0.75rem' },
+                          lineHeight: 1.2
+                        }}
+                      >
+                        You're using a temporary guest account
+                      </Typography>
+                    </Box>
+                  </Box>
 
-            <button
+                  {/* Features preview */}
+                  {!isMobile && (
+                    <Stack direction="row" spacing={1} sx={{ ml: 2 }}>
+                      <Chip
+                        icon={<Shield size={14} />}
+                        label="Save Progress"
+                        size="small"
+                        sx={{
+                          background: 'rgba(255, 255, 255, 0.15)',
+                          color: 'white',
+                          border: '1px solid rgba(255, 255, 255, 0.2)',
+                          '& .MuiChip-icon': { color: 'white' },
+                          fontSize: '0.75rem',
+                          height: '24px'
+                        }}
+                      />
+                      <Chip
+                        icon={<Zap size={14} />}
+                        label="All Features"
+                        size="small"
+                        sx={{
+                          background: 'rgba(255, 255, 255, 0.15)',
+                          color: 'white',
+                          border: '1px solid rgba(255, 255, 255, 0.2)',
+                          '& .MuiChip-icon': { color: 'white' },
+                          fontSize: '0.75rem',
+                          height: '24px'
+                        }}
+                      />
+                      <Chip
+                        icon={<Star size={14} />}
+                        label="Premium"
+                        size="small"
+                        sx={{
+                          background: 'rgba(255, 255, 255, 0.15)',
+                          color: 'white',
+                          border: '1px solid rgba(255, 255, 255, 0.2)',
+                          '& .MuiChip-icon': { color: 'white' },
+                          fontSize: '0.75rem',
+                          height: '24px'
+                        }}
+                      />
+                    </Stack>
+                  )}
+                </Stack>
+
+                {/* Right side - Actions */}
+                <Stack 
+                  direction={{ xs: 'row', sm: 'row' }} 
+                  spacing={1} 
+                  alignItems="center"
+                  sx={{ 
+                    flexShrink: 0,
+                    width: { xs: '100%', sm: 'auto' },
+                    justifyContent: { xs: 'space-between', sm: 'flex-end' }
+                  }}
+                >
+                  <Button
+              onClick={() => setShowUpgradeModal(true)}
+                    variant="contained"
+                    size={isMobile ? 'medium' : 'large'}
+                    startIcon={<Sparkles size={16} />}
+                    endIcon={<ArrowUpRight size={16} />}
+                    sx={{
+                      background: 'linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%)',
+                      color: 'white',
+                      borderRadius: 3,
+                      px: { xs: 1.5, sm: 2.5 },
+                      py: { xs: 0.8, sm: 1 },
+                      fontWeight: 700,
+                      fontSize: { xs: '0.8rem', sm: '0.85rem' },
+                      textTransform: 'none',
+                      boxShadow: '0 4px 15px rgba(251, 191, 36, 0.3)',
+                      border: '1px solid rgba(255, 255, 255, 0.2)',
+                      transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+                      '&:hover': {
+                        background: 'linear-gradient(135deg, #f59e0b 0%, #d97706 100%)',
+                        transform: 'translateY(-2px)',
+                        boxShadow: '0 8px 25px rgba(251, 191, 36, 0.4)',
+                      },
+                      '&:active': {
+                        transform: 'translateY(0px)',
+                      },
+                      flex: { xs: 1, sm: 'none' }
+                    }}
+                  >
+                    {isMobile ? 'Upgrade' : 'Upgrade Now'}
+                  </Button>
+
+                  <IconButton
               onClick={() => {
                 sessionStorage.setItem('guest_banner_dismissed', 'true');
                 setShowBanner(false);
               }}
-              className="text-white opacity-75 hover:opacity-100 transition-opacity"
+                    sx={{
+                      color: 'rgba(255, 255, 255, 0.7)',
+                      background: 'rgba(255, 255, 255, 0.1)',
+                      backdropFilter: 'blur(10px)',
+                      border: '1px solid rgba(255, 255, 255, 0.1)',
+                      '&:hover': {
+                        color: 'white',
+                        background: 'rgba(255, 255, 255, 0.2)',
+                        transform: 'scale(1.05)',
+                      },
+                      transition: 'all 0.3s ease',
+                      width: { xs: '36px', sm: '32px' },
+                      height: { xs: '36px', sm: '32px' }
+                    }}
               aria-label="Close banner"
             >
-              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-              </svg>
-            </button>
-          </div>
-        </div>
-      </div>
+                    <X size={16} />
+                  </IconButton>
+                </Stack>
+              </Stack>
+
+              {/* Debug mode content */}
+              {debugMode && (
+                <Box sx={{ mt: 2, p: 2, background: 'rgba(255, 255, 255, 0.1)', borderRadius: 2 }}>
+                  <Typography variant="caption" sx={{ color: 'rgba(255, 255, 255, 0.8)' }}>
+                    DEBUG: isGuest={isGuest ? 'true' : 'false'}, showBanner={showBanner ? 'true' : 'false'}
+                  </Typography>
+                  <Button
+                    onClick={handleResetBanner}
+                    size="small"
+                    sx={{ 
+                      ml: 2, 
+                      background: 'rgba(255, 255, 255, 0.2)',
+                      color: 'white',
+                      '&:hover': { background: 'rgba(255, 255, 255, 0.3)' }
+                    }}
+                  >
+                    Reset Banner
+                  </Button>
+                </Box>
+              )}
+            </Box>
+          </Box>
+        </Box>
+      </Slide>
 
       {showUpgradeModal && (
         <LogSigComponent open={showUpgradeModal} onClose={() => setShowUpgradeModal(false)} />

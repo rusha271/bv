@@ -17,44 +17,44 @@ export interface ChakraPoint {
 // The original coordinates were correct but the direction labels were swapped
 export const gimpCoordinates: { [key: string]: GimpCoordinate } = {
   // North coordinates (corrected - these were originally labeled as East)
-  'N1': { x: 1767.3, y: 1880.2 },
-  'N2': { x: 1625.7, y: 1972.6 },
-  'N3': { x: 1475.8, y: 2038.3 },
-  'N4': { x: 1313.7, y: 2071.1 },
-  'N5': { x: 1147.4, y: 2067.6 },
-  'N6': { x: 989.4, y: 2036.2 },
-  'N7': { x: 839.5, y: 1976.7 },
-  'N8': { x: 697.9, y: 1882.3 },
+  'E1': { x: 1767.3, y: 1880.2 },
+  'E2': { x: 1625.7, y: 1972.6 },
+  'E3': { x: 1475.8, y: 2038.3 },
+  'E4': { x: 1313.7, y: 2071.1 },
+  'E5': { x: 1147.4, y: 2067.6 },
+  'E6': { x: 989.4, y: 2036.2 },
+  'E7': { x: 839.5, y: 1976.7 },
+  'E8': { x: 697.9, y: 1882.3 },
 
   // East coordinates (corrected - these were originally labeled as North)
-  'E1': { x: 1882.3, y: 702.6 },
-  'E2': { x: 1970.5, y: 835.4 },
-  'E3': { x: 2036.2, y: 993.5 },
-  'E4': { x: 2064.9, y: 1151.5 },
-  'E5': { x: 2067.0, y: 1315.7 },
-  'E6': { x: 2062.2, y: 1475.8 },
-  'E7': { x: 1947.6, y: 1627.7 },
-  'E8': { x: 1882.3, y: 1763.2 },
+  'N1': { x: 1882.3, y: 702.6 },
+  'N2': { x: 1970.5, y: 835.4 },
+  'N3': { x: 2036.2, y: 993.5 },
+  'N4': { x: 2064.9, y: 1151.5 },
+  'N5': { x: 2067.0, y: 1315.7 },
+  'N6': { x: 2062.2, y: 1475.8 },
+  'N7': { x: 1947.6, y: 1627.7 },
+  'N8': { x: 1882.3, y: 1763.2 },
 
   // South coordinates (corrected - these were originally labeled as West)
-  'S1': { x: 702.0, y: 587.1 },
-  'S2': { x: 839.5, y: 496.7 },
-  'S3': { x: 993.5, y: 433.1 },
-  'S4': { x: 1147.4, y: 402.3 },
-  'S5': { x: 1315.7, y: 402.3 },
-  'S6': { x: 1473.8, y: 435.2 },
-  'S7': { x: 1631.8, y: 492.6 },
-  'S8': { x: 1765.3, y: 587.1 },
+  'W1': { x: 702.0, y: 587.1 },
+  'W2': { x: 839.5, y: 496.7 },
+  'W3': { x: 993.5, y: 433.1 },
+  'W4': { x: 1147.4, y: 402.3 },
+  'W5': { x: 1315.7, y: 402.3 },
+  'W6': { x: 1473.8, y: 435.2 },
+  'W7': { x: 1631.8, y: 492.6 },
+  'W8': { x: 1765.3, y: 587.1 },
 
   // West coordinates (corrected - these were originally labeled as South)
-  'W1': { x: 578.8, y: 1759.1 },
-  'W2': { x: 492.6, y: 1627.7 },
-  'W3': { x: 429.6, y: 1477.9 },
-  'W4': { x: 398.2, y: 1313.7 },
-  'W5': { x: 402.3, y: 1149.5 },
-  'W6': { x: 431.1, y: 989.4 },
-  'W7': { x: 490.6, y: 837.5 },
-  'W8': { x: 587.1, y: 702.0 }
+  'S1': { x: 578.8, y: 1759.1 },
+  'S2': { x: 492.6, y: 1627.7 },
+  'S3': { x: 429.6, y: 1477.9 },
+  'S4': { x: 398.2, y: 1313.7 },
+  'S5': { x: 402.3, y: 1149.5 },
+  'S6': { x: 431.1, y: 989.4 },
+  'S7': { x: 490.6, y: 837.5 },
+  'S8': { x: 587.1, y: 702.0 }
 };
 
 
@@ -97,15 +97,15 @@ export const convertGimpToCircular = (): ChakraPoint[] => {
     let color = '#f59e0b'; // Default orange
     
     // You can customize colors based on chakra properties here
-    if (id.includes('N3') || id.includes('N4') || id.includes('N5') || 
-        id.includes('E3') || id.includes('E4') || 
-        id.includes('S3') || id.includes('S4') || 
-        id.includes('W3') || id.includes('W4')) {
+    if (id === 'N3' || id === 'N4' || id === 'N5' || 
+        id === 'E3' || id === 'E4' || 
+        id === 'S3' || id === 'S4' || 
+        id === 'W3' || id === 'W4') {
       color = '#10b981'; // Green for auspicious points
-    } else if (id.includes('E7') || id.includes('E8') || 
-               id.includes('S5') || id.includes('S6') || id.includes('S7') || id.includes('S8') ||
-               id.includes('W1') || id.includes('W8') || 
-               id.includes('N1') || id.includes('N2') || id.includes('N7') || id.includes('N8')) {
+    } else if (id === 'E7' || id === 'E8' || 
+               id === 'S5' || id === 'S6' || id === 'S7' || id === 'S8' ||
+               id === 'W1' || id === 'W8' || 
+               id === 'N1' || id === 'N2' || id === 'N7' || id === 'N8') {
       color = '#ef4444'; // Red for points to avoid
     }
     

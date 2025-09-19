@@ -46,27 +46,18 @@ const baseTheme = {
 
 export const ThemeProvider = ({ children }: { children: React.ReactNode }) => {
   const [mode, setMode] = useState<'light' | 'dark'>('light'); // Default to 'light' for SSR
-  const [isClient, setIsClient] = useState(false);
 
   useEffect(() => {
-    setIsClient(true);
+    // Sync mode with localStorage on client-side only
+    const savedMode = localStorage.getItem('themeMode') as 'light' | 'dark';
+    if (savedMode && savedMode !== mode) {
+      setMode(savedMode);
+    }
   }, []);
 
   useEffect(() => {
-    if (isClient) {
-      // Sync mode with localStorage on client-side only
-      const savedMode = localStorage.getItem('themeMode') as 'light' | 'dark';
-      if (savedMode) {
-        setMode(savedMode);
-      }
-    }
-  }, [isClient]);
-
-  useEffect(() => {
-    if (isClient) {
-      localStorage.setItem('themeMode', mode);
-    }
-  }, [mode, isClient]);
+    localStorage.setItem('themeMode', mode);
+  }, [mode]);
 
   const toggleTheme = () => setMode((prev) => (prev === 'light' ? 'dark' : 'light'));
 

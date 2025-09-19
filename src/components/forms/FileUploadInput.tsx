@@ -69,37 +69,27 @@ export const FileUploadInput = ({ name, control, label = 'Floor Plan', accept = 
               },
             }}
           >
-            {value && value.length > 0 ? (
-              <>
+            <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 1 }}>
+              {value && value.length > 0 ? (
                 <FileImage 
                   size={20} 
                   className={theme.palette.mode === 'dark' ? 'text-green-400' : 'text-green-600'} 
                 />
-                <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start' }}>
-                  <Typography variant="body2" fontWeight={600} sx={{ color: theme.palette.text.primary, fontSize: { xs: "0.85rem", sm: "0.9rem" } }}>
-                    {value[0]?.name}
-                  </Typography>
-                  <Typography variant="caption" sx={{ color: theme.palette.text.secondary, fontSize: { xs: "0.7rem", sm: "0.75rem" } }}>
-                    Click to change file
-                  </Typography>
-                </Box>
-              </>
-            ) : (
-              <>
+              ) : (
                 <Upload 
                   size={20} 
                   className={theme.palette.mode === 'dark' ? 'text-blue-400' : 'text-blue-600'} 
                 />
-                <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-                  <Typography variant="body2" fontWeight={600} sx={{ color: theme.palette.text.primary, fontSize: { xs: "0.85rem", sm: "0.9rem" } }}>
-                    Choose Floor Plan
-                  </Typography>
-                  <Typography variant="caption" sx={{ color: theme.palette.text.secondary, fontSize: { xs: "0.7rem", sm: "0.75rem" } }}>
-                    Drag & drop or click to browse
-                  </Typography>
-                </Box>
-              </>
-            )}
+              )}
+              <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+                <Typography variant="body2" fontWeight={600} sx={{ color: theme.palette.text.primary, fontSize: { xs: "0.85rem", sm: "0.9rem" } }}>
+                  {value && value.length > 0 ? value[0]?.name : 'Choose Floor Plan'}
+                </Typography>
+                <Typography variant="caption" sx={{ color: theme.palette.text.secondary, fontSize: { xs: "0.7rem", sm: "0.75rem" } }}>
+                  {value && value.length > 0 ? 'Click to change file' : 'Drag & drop or click to browse'}
+                </Typography>
+              </Box>
+            </Box>
             <Input
               type="file"
               inputProps={{ accept }}

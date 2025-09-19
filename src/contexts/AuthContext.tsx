@@ -153,10 +153,10 @@ const authReducer = (state: AuthState, action: AuthAction): AuthState => {
   }
 };
 
-// Initial state
+// Initial state - set isLoading to false to prevent hydration mismatch
 const initialState: AuthState = {
   user: null,
-  isLoading: true,
+  isLoading: false,
   isGuest: false,
   refreshTimer: null,
 };
@@ -280,13 +280,15 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
               const guestCheck = await apiService.auth.isGuest();
               dispatch({ type: 'SET_GUEST', payload: guestCheck.is_guest });
             } catch (error) {
-              console.error('Failed to check guest status:', error);
+              // Silently handle guest status check failure
+              // console.error('Failed to check guest status:', error);
               // Default to false if check fails
               dispatch({ type: 'SET_GUEST', payload: false });
             }
           }
         } catch (error) {
-          console.error('Failed to get current user:', error);
+          // Silently handle user fetch failure during initialization
+          // console.error('Failed to get current user:', error);
           // Don't clear tokens here, let the user try to refresh
         }
       }

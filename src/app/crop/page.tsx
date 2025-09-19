@@ -6,8 +6,7 @@ import { useThemeContext } from '@/contexts/ThemeContext';
 import { useDeviceType } from '@/utils/useDeviceType';
 import Navbar from '@/components/ui/Navbar';
 import Footer from '@/components/ui/Footer';
-import ImageCropper from '@/components/Image Crop/ImageCropper';
-import AdvancedImageCropper from '@/components/Image Crop/AdvancedImageCropper';
+// Removed ImageCropper import - using only AdvancedImageCropper
 import { Box, Typography, Container, Skeleton, CircularProgress, Button } from '@mui/material';
 import { useRouter } from 'next/navigation';
 import styles from './cropPage.module.css';
@@ -20,6 +19,7 @@ import { Dialog, DialogContent } from '@mui/material'; // Add Dialog and DialogC
 // Lazy load components
 const Vastu3DAnimation = React.lazy(() => import('@/components/Animations/Vastu3DAnimation'));
 const ZodiacSignsDisplay = React.lazy(() => import('@/contexts/ZodiacSignsDisplay'));
+const AdvancedImageCropper = React.lazy(() => import('@/components/Image Crop/AdvancedImageCropper'));
 
 function FadeInSection({ children }: { children: React.ReactNode }) {
   return <div className={styles.animateFadein}>{children}</div>;
@@ -72,7 +72,6 @@ export default function CropPage() {
   const [processingError, setProcessingError] = useState<string | null>(null);
   const [errorDialogOpen, setErrorDialogOpen] = useState(false);
   const [hasCropped, setHasCropped] = useState(false);
-  const [useAdvancedCropper, setUseAdvancedCropper] = useState(true);
 
   // Lazy loading hooks for different sections
   const vastuSection = useLazyLoad();
@@ -97,9 +96,10 @@ export default function CropPage() {
   const handleCrop = useCallback((cropData: any, userInteracted: boolean, croppedImageUrl?: string) => {
     // console.log('CropPage: handleCrop called with:', { cropData, userInteracted, croppedImageUrl });
     
-    if (cropData && userInteracted && croppedImageUrl) {
+    // Fix: Check for userInteracted and croppedImageUrl, cropData can be null for advanced cropper
+    if (userInteracted && croppedImageUrl) {
       setCroppedUrl(croppedImageUrl);
-      setCropData(cropData); // Store cropData
+      setCropData(cropData || { area: 0, centroid: { x: 0, y: 0 } }); // Store cropData or default
       setHasCropped(true);
       // console.log('CropPage: croppedUrl set to', croppedImageUrl.substring(0, 50) + '...', 'cropData:', cropData);
     } else {
@@ -123,7 +123,7 @@ export default function CropPage() {
       }
       
       // Check if user has cropped the image
-      if (croppedUrl && cropData) {
+      if (croppedUrl) {
         // User has cropped the image, use the cropped version
         // console.log('handleNext: Using cropped image', croppedUrl.substring(0, 50) + '...');
         
@@ -135,8 +135,8 @@ export default function CropPage() {
         
         // console.log('handleNext: Cropped blob created, size:', croppedBlob.size);
         
-        // Store the cropped image in session
-        sessionStorageManager.storeCroppedImage(croppedBlobUrl, cropData);
+        // Store the cropped image in session (cropData can be null for advanced cropper)
+        sessionStorageManager.storeCroppedImage(croppedBlobUrl, cropData || { area: 0, centroid: { x: 0, y: 0 } });
         
         router.push('/chakra-overlay');
         return;
@@ -280,82 +280,54 @@ export default function CropPage() {
           >
             {sessionData?.originalImage ? (
               <Box>
-                {/* Cropper Type Toggle */}
-                <Box sx={{ mb: 2, display: 'flex', justifyContent: 'center', gap: 2 }}>
-                  <Button
-                    variant={useAdvancedCropper ? 'contained' : 'outlined'}
-                    onClick={() => setUseAdvancedCropper(true)}
-                    sx={{ 
-                      minWidth: '140px',
-                      borderRadius: 3,
-                      fontWeight: 600,
-                      textTransform: 'none',
-                      transition: 'all 0.3s ease',
-                      ...(useAdvancedCropper ? {
-                        background: 'linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%)',
-                        boxShadow: '0 4px 15px rgba(59, 130, 246, 0.3)',
-                        '&:hover': {
-                          background: 'linear-gradient(135deg, #2563eb 0%, #7c3aed 100%)',
-                          transform: 'translateY(-2px)',
-                          boxShadow: '0 8px 25px rgba(59, 130, 246, 0.4)',
-                        }
-                      } : {
-                        borderColor: theme.palette.mode === 'dark' ? 'rgba(148, 163, 184, 0.3)' : 'rgba(148, 163, 184, 0.5)',
-                        color: theme.palette.text.primary,
-                        '&:hover': {
-                          borderColor: '#3b82f6',
-                          backgroundColor: theme.palette.mode === 'dark' ? 'rgba(59, 130, 246, 0.1)' : 'rgba(59, 130, 246, 0.05)',
-                          transform: 'translateY(-1px)',
-                        }
-                      })
-                    }}
-                  >
-                    🛠️ Advanced Tools
-                  </Button>
-                  <Button
-                    variant={!useAdvancedCropper ? 'contained' : 'outlined'}
-                    onClick={() => setUseAdvancedCropper(false)}
-                    sx={{ 
-                      minWidth: '140px',
-                      borderRadius: 3,
-                      fontWeight: 600,
-                      textTransform: 'none',
-                      transition: 'all 0.3s ease',
-                      ...(!useAdvancedCropper ? {
-                        background: 'linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%)',
-                        boxShadow: '0 4px 15px rgba(59, 130, 246, 0.3)',
-                        '&:hover': {
-                          background: 'linear-gradient(135deg, #2563eb 0%, #7c3aed 100%)',
-                          transform: 'translateY(-2px)',
-                          boxShadow: '0 8px 25px rgba(59, 130, 246, 0.4)',
-                        }
-                      } : {
-                        borderColor: theme.palette.mode === 'dark' ? 'rgba(148, 163, 184, 0.3)' : 'rgba(148, 163, 184, 0.5)',
-                        color: theme.palette.text.primary,
-                        '&:hover': {
-                          borderColor: '#3b82f6',
-                          backgroundColor: theme.palette.mode === 'dark' ? 'rgba(59, 130, 246, 0.1)' : 'rgba(59, 130, 246, 0.05)',
-                          transform: 'translateY(-1px)',
-                        }
-                      })
-                    }}
-                  >
-                    🔧 Basic Tools
-                  </Button>
-                </Box>
-                
-                {/* Cropper Component */}
-                {useAdvancedCropper ? (
+                {/* Advanced Cropper Component */}
+                <React.Suspense fallback={
+                  <Box sx={{ 
+                    width: '100%', 
+                    height: '300px', 
+                    display: 'flex', 
+                    alignItems: 'center', 
+                    justifyContent: 'center',
+                    background: theme.palette.mode === 'dark'
+                      ? 'rgba(15, 23, 42, 0.8)'
+                      : 'rgba(255, 255, 255, 0.8)',
+                    backdropFilter: 'blur(10px)',
+                    borderRadius: 3,
+                    border: theme.palette.mode === 'dark'
+                      ? '1px solid rgba(148, 163, 184, 0.1)'
+                      : '1px solid rgba(148, 163, 184, 0.2)',
+                    flexDirection: 'column'
+                  }}>
+                    <CircularProgress 
+                      size={48}
+                      sx={{ 
+                        color: '#3b82f6', 
+                        mb: 2,
+                        filter: 'drop-shadow(0 4px 8px rgba(59, 130, 246, 0.3))'
+                      }}
+                    />
+                    <Typography 
+                      variant="body2" 
+                      sx={{
+                        color: theme.palette.text.secondary,
+                        fontWeight: 500,
+                        background: theme.palette.mode === 'dark'
+                          ? 'linear-gradient(135deg, #60a5fa 0%, #a78bfa 100%)'
+                          : 'linear-gradient(135deg, #1e40af 0%, #7c3aed 100%)',
+                        backgroundClip: 'text',
+                        WebkitBackgroundClip: 'text',
+                        WebkitTextFillColor: 'transparent',
+                      }}
+                    >
+                      🎨 Loading advanced cropper...
+                    </Typography>
+                  </Box>
+                }>
                   <AdvancedImageCropper 
                     imageUrl={sessionData.originalImage.blobUrl} 
                     onCropComplete={handleCrop} 
                   />
-                ) : (
-                  <ImageCropper 
-                    imageUrl={sessionData.originalImage.blobUrl} 
-                    onCropComplete={handleCrop} 
-                  />
-                )}
+                </React.Suspense>
               </Box>
             ) : (
               <Typography variant="body1" color="text.secondary" sx={{ textAlign: 'center', mt: 4 }}>

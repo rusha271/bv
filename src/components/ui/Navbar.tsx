@@ -57,13 +57,7 @@ const Navbar = memo(function Navbar() {
   const [loginDialogOpen, setLoginDialogOpen] = useState(false);
   const [userMenuAnchor, setUserMenuAnchor] = useState<null | HTMLElement>(null);
   const [uploadedLogo, setUploadedLogo] = useState<string | null>(null);
-  const [isClient, setIsClient] = useState(false);
   const pathname = usePathname();
-
-  // Prevent hydration mismatch
-  useEffect(() => {
-    setIsClient(true);
-  }, []);
   
   // Use selective hooks to prevent unnecessary re-renders
   const user = useAuthUser();
@@ -122,10 +116,8 @@ const Navbar = memo(function Navbar() {
       }
     };
 
-    if (isClient) {
-      fetchUploadedLogo();
-    }
-  }, [isClient]);
+    fetchUploadedLogo();
+  }, []);
 
   // User menu handlers
   const handleUserMenuOpen = (event: React.MouseEvent<HTMLElement>) => {
@@ -169,9 +161,6 @@ const Navbar = memo(function Navbar() {
     setLoginDialogOpen(false);
   };
 
-  // Always render the same structure to prevent hydration mismatch
-  // Use opacity to hide/show content instead of conditional rendering
-
   return (
     <>
       <HideOnScroll>
@@ -196,25 +185,8 @@ const Navbar = memo(function Navbar() {
         >
           <Toolbar sx={{ justifyContent: 'space-between' }}>
             <Box display="flex" alignItems="center" gap={2}>
-              {/* Loading state - shown when not client-side */}
               <Box
                 sx={{
-                  opacity: isClient ? 0 : 1,
-                  transition: 'opacity 0.3s ease',
-                  position: isClient ? 'absolute' : 'static',
-                  pointerEvents: isClient ? 'none' : 'auto',
-                }}
-              >
-                <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
-                  Loading...
-                </Typography>
-              </Box>
-
-              {/* Main content - shown when client-side */}
-              <Box
-                sx={{
-                  opacity: isClient ? 1 : 0,
-                  transition: 'opacity 0.3s ease',
                   display: 'flex',
                   alignItems: 'center',
                   gap: 2,
@@ -279,10 +251,6 @@ const Navbar = memo(function Navbar() {
               display={{ xs: 'none', md: 'flex' }} 
               gap={2} 
               alignItems="center"
-              sx={{
-                opacity: isClient ? 1 : 0,
-                transition: 'opacity 0.3s ease',
-              }}
             >
               {menuItems.map((item) => {
                 const IconComponent = item.icon;
@@ -416,10 +384,6 @@ const Navbar = memo(function Navbar() {
             </Box>
             <Box 
               display={{ xs: 'flex', md: 'none' }}
-              sx={{
-                opacity: isClient ? 1 : 0,
-                transition: 'opacity 0.3s ease',
-              }}
             >
               <IconButton 
                 onClick={() => setDrawerOpen(true)}

@@ -1,21 +1,13 @@
 'use client';
 
-import React, { useRef, useState, useEffect, Suspense } from 'react';
-import { Box, Typography, Slider, FormControlLabel, Switch, Button, Paper, TextField, Tooltip, CircularProgress } from '@mui/material';
+import React, { useRef, useState, useEffect } from 'react';
+import { Box, Typography, Slider, FormControlLabel, Switch, Button, Paper, TextField } from '@mui/material';
 import DownloadIcon from '@mui/icons-material/Download';
-import BugReportIcon from '@mui/icons-material/BugReport';
 import Image from 'next/image';
-import dynamic from 'next/dynamic';
-
-// Lazy load heavy dependencies
-const ChakraDetailsModal = dynamic(() => import('@/components/Chakra/ChakraDetailsModal'), { ssr: false });
-const CircularImagePoints = dynamic(() => import('@/components/CircularImagePoints'), { ssr: false });
-
-// Lazy load API service and utilities
-const loadApiService = () => import('@/utils/apiService');
-const loadChakraUtils = () => import('@/utils/chakraCoordinateConverter');
-const loadChakraTypes = () => import('@/types/chakra');
-
+import CircularImagePoints from '@/components/CircularImagePoints';
+import ChakraDetailsModal from '@/components/Chakra/ChakraDetailsModal';
+import { getChakraPointsInOrder } from '@/utils/chakraCoordinateConverter';
+import { defaultChakraPoints } from '@/types/chakra';
 
 interface ChakraEditorProps {
   floorPlanImageUrl: string | null;
@@ -26,51 +18,59 @@ export const ChakraEditor: React.FC<ChakraEditorProps> = ({ floorPlanImageUrl })
   const [zoom, setZoom] = useState(1);
   const [chakraOpacity, setChakraOpacity] = useState(1);
   const [showCenterMark, setShowCenterMark] = useState(true);
-  const [showUserForm, setShowUserForm] = useState(false);
+  const [showChakraPoints, setShowChakraPoints] = useState(true);
   const [selectedChakraPoint, setSelectedChakraPoint] = useState<any>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [chakraPoints, setChakraPoints] = useState<any>({});
-  const [chakraPointsList, setChakraPointsList] = useState<any[]>([]);
-  const [showDebugPoints, setShowDebugPoints] = useState(true);
-  const [hoveredPoint, setHoveredPoint] = useState<string | null>(null);
-  
-  // Lazy loading states
-  const [isChakraImageLoaded, setIsChakraImageLoaded] = useState(false);
-  const [isChakraPointsLoaded, setIsChakraPointsLoaded] = useState(false);
-  const [isFloorPlanLoaded, setIsFloorPlanLoaded] = useState(false);
-  const [isDependenciesLoaded, setIsDependenciesLoaded] = useState(false);
 
   const floorPlanRef = useRef<HTMLDivElement>(null);
   const [isDragging, setIsDragging] = useState(false);
   const [position, setPosition] = useState({ x: 0, y: 0 });
   const [startDrag, setStartDrag] = useState({ x: 0, y: 0 });
 
+  // Get chakra points data
+  const chakraPoints = getChakraPointsInOrder();
+
+  // Handle chakra point click
+  const handleChakraPointClick = (point: any) => {
+    const chakraPointData = defaultChakraPoints[point.id];
+    if (chakraPointData) {
+      setSelectedChakraPoint(chakraPointData);
+      setIsModalOpen(true);
+    }
+  };
+
+  // Handle modal close
+  const handleModalClose = () => {
+    setIsModalOpen(false);
+    setSelectedChakraPoint(null);
+  };
+
   useEffect(() => {
     const floorPlanElement = floorPlanRef.current;
     if (!floorPlanElement) return;
-  
+
     const handleMouseDown = (e: MouseEvent) => {
       setIsDragging(true);
       setStartDrag({ x: e.clientX - position.x, y: e.clientY - position.y });
       floorPlanElement.style.cursor = 'grabbing';
     };
-  
+
     const handleMouseMove = (e: MouseEvent) => {
       if (!isDragging) return;
       setPosition({ x: e.clientX - startDrag.x, y: e.clientY - startDrag.y });
     };
-  
+
     const handleMouseUp = () => {
       setIsDragging(false);
       if (floorPlanElement) {
         floorPlanElement.style.cursor = 'grab';
       }
     };
-  
+
     floorPlanElement.addEventListener('mousedown', handleMouseDown);
     window.addEventListener('mousemove', handleMouseMove);
     window.addEventListener('mouseup', handleMouseUp);
-  
+
     return () => {
       if (floorPlanElement) {
         floorPlanElement.removeEventListener('mousedown', handleMouseDown);
@@ -80,170 +80,130 @@ export const ChakraEditor: React.FC<ChakraEditorProps> = ({ floorPlanImageUrl })
     };
   }, [isDragging, position.x, position.y, startDrag.x, startDrag.y]);
 
-  // Lazy load dependencies on component mount
-  useEffect(() => {
-    const loadDependencies = async () => {
-      try {
-        const [apiServiceModule, chakraTypesModule, chakraUtilsModule] = await Promise.all([
-          loadApiService(),
-          loadChakraTypes(),
-          loadChakraUtils()
-        ]);
-        
-        const { apiService } = apiServiceModule;
-        const { defaultChakraPoints } = chakraTypesModule;
-        const { getChakraPointsInOrder, getNumericId } = chakraUtilsModule;
-        
-        setChakraPoints(defaultChakraPoints);
-        setChakraPointsList(getChakraPointsInOrder().map((point: any) => ({
-          ...point,
-          size: 16,
-        })));
-        setIsDependenciesLoaded(true);
-      } catch (error) {
-        console.log('Error loading dependencies:', error);
-        setIsDependenciesLoaded(true);
-      }
-    };
-
-    loadDependencies();
-  }, []);
-
-  // Lazy load chakra points from API when debug points are enabled
-  useEffect(() => {
-    if (showDebugPoints && !isChakraPointsLoaded && isDependenciesLoaded) {
-      const fetchChakraPoints = async () => {
-        try {
-          const apiServiceModule = await loadApiService();
-          const { apiService } = apiServiceModule;
-          
-          const data = await apiService.vastuChakraPoints.getChakraPoints();
-          if (data && typeof data === 'object') {
-            setChakraPoints(data);
-            setIsChakraPointsLoaded(true);
-          }
-        } catch (error) {
-          console.log('Using default chakra points data:', error);
-          setIsChakraPointsLoaded(true);
-          // Keep using default data if API fails
-        }
-      };
-
-      fetchChakraPoints();
-    }
-  }, [showDebugPoints, isChakraPointsLoaded, isDependenciesLoaded]);
-
-  const handleChakraPointClick = (chakraId: string) => {
-    const chakraPoint = chakraPoints[chakraId];
-    if (chakraPoint) {
-      setSelectedChakraPoint(chakraPoint);
-      setIsModalOpen(true);
-    }
-  };
-
-  const closeModal = () => {
-    setIsModalOpen(false);
-    setSelectedChakraPoint(null);
-  };
-
-  // Constants for rotation slider
-  const totalDegrees = 365;
-
-  // Note: Chakra point positioning is now handled by CircularImagePoints component
-
   const handleDownload = async () => {
     const chakraViewerElement = document.getElementById('chakra-viewer-container');
     if (chakraViewerElement) {
-      try {
-        // Lazy load html2canvas and apiService
-        const [html2canvasModule, apiServiceModule] = await Promise.all([
-          import('html2canvas'),
-          loadApiService()
-        ]);
+      // Create a high-resolution canvas for better quality
+      const downloadCanvas = document.createElement('canvas');
+      const ctx = downloadCanvas.getContext('2d');
+      if (!ctx) return;
+
+      // Get the container dimensions
+      const containerRect = chakraViewerElement.getBoundingClientRect();
+      
+      // Use higher resolution (2x for retina displays, 3x for ultra-high quality)
+      const scaleFactor = 3;
+      downloadCanvas.width = containerRect.width * scaleFactor;
+      downloadCanvas.height = containerRect.height * scaleFactor;
+
+      // Enable high-quality rendering
+      ctx.imageSmoothingEnabled = true;
+      ctx.imageSmoothingQuality = 'high';
+      ctx.scale(scaleFactor, scaleFactor);
+
+      // Set white background instead of transparent
+      ctx.fillStyle = '#ffffff';
+      ctx.fillRect(0, 0, containerRect.width, containerRect.height);
+
+      // Find the chakra image and floor plan image
+      const chakraImg = chakraViewerElement.querySelector('img[alt="Vastu Chakra"]') as HTMLImageElement;
+      const floorPlanImg = chakraViewerElement.querySelector('img[alt="Floor Plan"]') as HTMLImageElement;
+      const centerMark = chakraViewerElement.querySelector('[style*="backgroundColor: red"]') as HTMLElement;
+
+      // Get the transform container to understand positioning
+      const transformContainer = chakraViewerElement.querySelector('[style*="transform: translate"]') as HTMLElement;
+      if (!transformContainer) return;
+
+      const containerCenterX = containerRect.width / 2;
+      const containerCenterY = containerRect.height / 2;
+
+      // Calculate the actual position considering the transform
+      const transformX = position.x;
+      const transformY = position.y;
+      const scale = zoom;
+
+      // Draw chakra image if it exists - maintain exact dimensions with high quality
+      if (chakraImg && chakraImg.complete) {
+        // Use the natural dimensions of the chakra image to maintain exact size
+        const chakraNaturalWidth = chakraImg.naturalWidth;
+        const chakraNaturalHeight = chakraImg.naturalHeight;
         
-        const html2canvas = html2canvasModule.default;
-        const { apiService } = apiServiceModule;
+        // Calculate the display size based on the container and natural aspect ratio
+        const maxChakraSize = Math.min(containerRect.width, containerRect.height) * 0.8; // 80% of container
+        const chakraAspectRatio = chakraNaturalWidth / chakraNaturalHeight;
         
-        // Create a temporary container for rendering the image
-        const tempContainer = document.createElement('div');
-        tempContainer.style.position = 'absolute';
-        tempContainer.style.left = '-9999px';
-        tempContainer.style.width = '1000px';
-        tempContainer.style.height = '1000px';
-        tempContainer.style.backgroundColor = '#f0f0f0';
-  
-        const chakraImg = document.createElement('img');
-        chakraImg.src = '/images/Shakti Chakra_Size.png';
-        chakraImg.style.position = 'absolute';
-        chakraImg.style.opacity = chakraOpacity.toString();
-        chakraImg.style.transform = `rotate(-${rotation}deg) scale(${zoom})`;
-        chakraImg.style.transformOrigin = 'center center';
-        chakraImg.style.width = '100%';
-        chakraImg.style.height = '100%';
-  
-        const floorPlanImg = document.createElement('img');
-        floorPlanImg.src = floorPlanImageUrl || '/floorplan.png';
-        floorPlanImg.style.position = 'absolute';
-        floorPlanImg.style.maxWidth = '50%';
-        floorPlanImg.style.maxHeight = '50%';
-        floorPlanImg.style.top = '50%';
-        floorPlanImg.style.left = '50%';
-        floorPlanImg.style.transform = 'translate(-50%, -50%)';
-        floorPlanImg.style.opacity = '0.75';
-        floorPlanImg.style.objectFit = 'contain';
-  
-        if (showCenterMark) {
-          const centerMark = document.createElement('div');
-          centerMark.style.position = 'absolute';
-          centerMark.style.top = '50%';
-          centerMark.style.left = '50%';
-          centerMark.style.width = '15px';
-          centerMark.style.height = '15px';
-          centerMark.style.backgroundColor = 'red';
-          centerMark.style.borderRadius = '50%';
-          centerMark.style.transform = 'translate(-50%, -50%)';
-          tempContainer.appendChild(centerMark);
+        let chakraDisplayWidth, chakraDisplayHeight;
+        if (chakraAspectRatio > 1) {
+          // Wider than tall
+          chakraDisplayWidth = maxChakraSize;
+          chakraDisplayHeight = maxChakraSize / chakraAspectRatio;
+        } else {
+          // Taller than wide or square
+          chakraDisplayHeight = maxChakraSize;
+          chakraDisplayWidth = maxChakraSize * chakraAspectRatio;
         }
-  
-        tempContainer.appendChild(chakraImg);
-        tempContainer.appendChild(floorPlanImg);
-        document.body.appendChild(tempContainer);
-  
-        await Promise.all([
-          new Promise((resolve) => (chakraImg.onload = resolve)),
-          new Promise((resolve) => (floorPlanImg.onload = resolve)),
-        ]);
-  
-        // Generate canvas
-        const canvas = await html2canvas(tempContainer, {
-          backgroundColor: null,
-          logging: true,
-          useCORS: true,
-          allowTaint: true,
-        });
-  
-        // Convert canvas to a File
-        const dataUrl = canvas.toDataURL('image/png');
-        const blob = await (await fetch(dataUrl)).blob();
-        const file = new File([blob], 'floorplan-chakra.png', { type: 'image/png' });
-  
-        // Upload to backend using floorplan.uploadFloorplan
-        const response = await apiService.floorplan.uploadFloorplan(file);
-        console.log('File uploaded successfully:', response);
-  
-        // Trigger download
-        const link = document.createElement('a');
-        link.href = dataUrl;
-        link.download = 'floorplan-chakra.png';
-        link.click();
-  
-        // Clean up
-        document.body.removeChild(tempContainer);
-      } catch (error) {
-        console.error('Error generating or uploading image:', error);
-        // Optionally, show an error message to the user
-        alert('Failed to generate or upload the image. Please try again.');
+        
+        // Apply zoom scaling
+        chakraDisplayWidth *= scale;
+        chakraDisplayHeight *= scale;
+        
+        ctx.save();
+        ctx.translate(containerCenterX + transformX, containerCenterY + transformY);
+        ctx.rotate((-rotation * Math.PI) / 180);
+        ctx.globalAlpha = chakraOpacity;
+        
+        // Use high-quality image rendering
+        ctx.imageSmoothingEnabled = true;
+        ctx.imageSmoothingQuality = 'high';
+        
+        ctx.drawImage(
+          chakraImg,
+          -chakraDisplayWidth / 2,
+          -chakraDisplayHeight / 2,
+          chakraDisplayWidth,
+          chakraDisplayHeight
+        );
+        ctx.restore();
       }
+
+      // Draw floor plan image if it exists with high quality
+      if (floorPlanImg && floorPlanImg.complete) {
+        const floorPlanRect = floorPlanImg.getBoundingClientRect();
+        const floorPlanX = containerCenterX + transformX - (floorPlanRect.width * scale) / 2;
+        const floorPlanY = containerCenterY + transformY - (floorPlanRect.height * scale) / 2;
+        
+        ctx.globalAlpha = 0.75;
+        
+        // Use high-quality image rendering for floor plan
+        ctx.imageSmoothingEnabled = true;
+        ctx.imageSmoothingQuality = 'high';
+        
+        ctx.drawImage(
+          floorPlanImg,
+          floorPlanX,
+          floorPlanY,
+          floorPlanRect.width * scale,
+          floorPlanRect.height * scale
+        );
+        ctx.globalAlpha = 1;
+      }
+
+      // Draw center mark if it exists and is enabled
+      if (showCenterMark && centerMark) {
+        const centerX = containerCenterX + transformX;
+        const centerY = containerCenterY + transformY;
+        
+        ctx.fillStyle = 'red';
+        ctx.beginPath();
+        ctx.arc(centerX, centerY, 7.5, 0, 2 * Math.PI);
+        ctx.fill();
+      }
+
+      // Create download link with high quality
+      const link = document.createElement('a');
+      link.href = downloadCanvas.toDataURL('image/png', 1.0); // Maximum quality
+      link.download = 'floorplan-chakra-hq.png';
+      link.click();
     }
   };
 
@@ -252,10 +212,9 @@ export const ChakraEditor: React.FC<ChakraEditorProps> = ({ floorPlanImageUrl })
       sx={{
         display: 'flex',
         flexDirection: { xs: 'column', md: 'row' },
-        gap: { xs: 1, md: 2 },
-        height: { xs: 'auto', md: '70vh' },
+        gap: 2,
+        height: { md: '70vh' },
         width: '100%',
-        minHeight: { xs: '100vh', md: 'auto' },
       }}
     >
       <Box
@@ -268,15 +227,13 @@ export const ChakraEditor: React.FC<ChakraEditorProps> = ({ floorPlanImageUrl })
           display: 'flex',
           justifyContent: 'center',
           alignItems: 'center',
-          height: { xs: '60vh', sm: '50vh', md: '100%' },
-          minHeight: { xs: '400px', sm: '450px', md: 'auto' },
-          maxHeight: { xs: '500px', sm: '600px', md: 'none' },
+          height: { xs: 400, md: '100%' }, // Further increased height for better visibility
+          minHeight: { xs: 500, md: 'auto' }, // Increased minHeight for smaller screens
           backgroundColor: '#f0f0f0',
-          borderRadius: { xs: '12px', md: '8px' },
+          borderRadius: '8px',
           cursor: isDragging ? 'grabbing' : 'grab',
           touchAction: 'none',
-          mb: { xs: 1, md: 0 },
-          mx: { xs: 1, md: 0 },
+          mb: { xs: 2, md: 0 },
         }}
       >
         <Box
@@ -293,28 +250,17 @@ export const ChakraEditor: React.FC<ChakraEditorProps> = ({ floorPlanImageUrl })
             willChange: 'transform',
           }}
         >
-          {/* Lazy loaded Chakra Image */}
-          <Suspense fallback={
-            <Box
-              sx={{
-                position: 'absolute',
-                top: 0,
-                left: 0,
-                width: '100%',
-                height: '100%',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                backgroundColor: 'rgba(0,0,0,0.05)',
-                borderRadius: '50%',
-              }}
-            >
-              <CircularProgress 
-                size={40}
-                sx={{ color: 'primary.main' }}
-              />
-            </Box>
-          }>
+          {showChakraPoints ? (
+            <CircularImagePoints
+              imageSrc="/images/Shakti Chakra_Size.png"
+              points={chakraPoints}
+              imageAlt="Vastu Chakra"
+              rotation={-rotation}
+              onPointClick={handleChakraPointClick}
+              containerClassName="w-full h-full"
+              imageClassName="opacity-100"
+            />
+          ) : (
             <Image
               src="/images/Shakti Chakra_Size.png"
               alt="Vastu Chakra"
@@ -324,72 +270,42 @@ export const ChakraEditor: React.FC<ChakraEditorProps> = ({ floorPlanImageUrl })
                 top: 0,
                 left: 0,
                 opacity: chakraOpacity,
-                transform: `rotate(-${rotation}deg)`,
+                transform: `rotate(${-rotation}deg)`,
                 transition: 'transform 0.3s ease-out, opacity 0.3s ease-out',
-                transformOrigin: 'center center', // Ensure rotation is from the center
+                transformOrigin: 'center center',
                 pointerEvents: 'none',
                 objectFit: 'contain',
               }}
               draggable="false"
-              onLoad={() => setIsChakraImageLoaded(true)}
-              priority={false} // Enable lazy loading
             />
-          </Suspense>
+          )}
 
           {floorPlanImageUrl ? (
-            <Suspense fallback={
-              <Box
-                sx={{
-                  position: 'absolute',
-                  maxWidth: '50%',
-                  maxHeight: '50%',
-                  width: '200px',
-                  height: '200px',
-                  top: '50%',
-                  left: '50%',
-                  transform: 'translate(-50%, -50%)',
-                  zIndex: 1,
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  backgroundColor: 'rgba(0,0,0,0.05)',
-                  borderRadius: 1,
-                }}
-              >
-                <CircularProgress 
-                  size={30}
-                  sx={{ color: 'primary.main' }}
-                />
-              </Box>
-            }>
-              <img
-                src={floorPlanImageUrl}
-                alt="Floor Plan"
-                style={{
-                  position: 'absolute',
-                  maxWidth: '50%',
-                  maxHeight: '50%',
-                  width: 'auto',
-                  height: 'auto',
-                  objectFit: 'contain',
-                  top: '50%',
-                  left: '50%',
-                  transform: 'translate(-50%, -50%)',
-                  zIndex: 1,
-                  pointerEvents: 'none',
-                  opacity: 0.75,
-                }}
-                draggable="false"
-                onLoad={() => setIsFloorPlanLoaded(true)}
-                loading="lazy"
-              />
-            </Suspense>
+            <img
+              src={floorPlanImageUrl}
+              alt="Floor Plan"
+              style={{
+                position: 'absolute',
+                maxWidth: '50%', // Increased maxWidth for better visibility
+                maxHeight: '50%', // Increased maxHeight for better visibility
+                width: 'auto',
+                height: 'auto',
+                objectFit: 'contain',
+                top: '50%',
+                left: '50%',
+                transform: 'translate(-50%, -50%)',
+                zIndex: 1,
+                pointerEvents: 'none',
+                opacity: 0.75,
+              }}
+              draggable="false"
+            />
           ) : (
             <Box
               sx={{
                 position: 'absolute',
-                width: '60%',
-                height: '60%',
+                width: '60%', // Increased width for better visibility
+                height: '60%', // Increased height for better visibility
                 top: '50%',
                 left: '50%',
                 transform: 'translate(-50%, -50%)',
@@ -417,8 +333,8 @@ export const ChakraEditor: React.FC<ChakraEditorProps> = ({ floorPlanImageUrl })
                 position: 'absolute',
                 top: '50%',
                 left: '50%',
-                width: '15px',
-                height: '15px',
+                width: '15px', // Increased size for better visibility
+                height: '15px', // Increased size for better visibility
                 backgroundColor: 'red',
                 borderRadius: '50%',
                 transform: 'translate(-50%, -50%)',
@@ -427,108 +343,20 @@ export const ChakraEditor: React.FC<ChakraEditorProps> = ({ floorPlanImageUrl })
               }}
             />
           )}
-
-          {/* Lazy loaded Chakra Points Overlay */}
-          {showDebugPoints && (
-            <Suspense fallback={
-              <Box
-                sx={{
-                  position: 'absolute',
-                  top: 0,
-                  left: 0,
-                  width: '100%',
-                  height: '100%',
-                  zIndex: 15,
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  backgroundColor: 'rgba(0,0,0,0.05)',
-                  borderRadius: '50%',
-                }}
-              >
-                <CircularProgress 
-                  size={30}
-                  sx={{ color: 'primary.main' }}
-                />
-              </Box>
-            }>
-              <Box
-                sx={{
-                  position: 'absolute',
-                  top: 0,
-                  left: 0,
-                  width: '100%',
-                  height: '100%',
-                  zIndex: 15,
-                  pointerEvents: 'auto',
-                }}
-              >
-                <Suspense fallback={
-                  <Box sx={{ 
-                    width: '100%', 
-                    height: '100%', 
-                    display: 'flex', 
-                    alignItems: 'center', 
-                    justifyContent: 'center' 
-                  }}>
-                    <CircularProgress size={20} />
-                  </Box>
-                }>
-                  <CircularImagePoints
-                    imageSrc="/images/Shakti Chakra_Size.png"
-                    points={chakraPointsList}
-                    imageAlt="Vastu Chakra"
-                    containerClassName="w-full h-full"
-                    imageClassName="opacity-0" // Hide the duplicate image, we already have one
-                    rotation={rotation} // Pass the rotation value
-                    onPointClick={async (point: any) => {
-                      console.log('Point clicked:', point); // Debug log
-                      
-                      // Load the utility function if not already loaded
-                      const chakraUtilsModule = await loadChakraUtils();
-                      const { getNumericId } = chakraUtilsModule;
-                      
-                      // Try to find the chakra point using the mapped numeric ID
-                      const numericId = getNumericId(point.id);
-                      const chakraPoint = numericId ? chakraPoints[numericId] : chakraPoints[point.id];
-                      
-                      console.log('Chakra point found:', chakraPoint); // Debug log
-                      console.log('Available chakra points:', Object.keys(chakraPoints)); // Debug log
-                      if (chakraPoint) {
-                        console.log('Opening modal for:', chakraPoint.name); // Debug log
-                        setSelectedChakraPoint(chakraPoint);
-                        setIsModalOpen(true);
-                      } else {
-                        console.error('No chakra point found for ID:', point.id, 'mapped to numeric ID:', numericId);
-                        console.error('Available IDs:', Object.keys(chakraPoints));
-                      }
-                    }}
-                    onPointHover={(point: any) => {
-                      setHoveredPoint(point?.id || null);
-                    }}
-                  />
-                </Suspense>
-              </Box>
-            </Suspense>
-          )}
         </Box>
       </Box>
 
       <Paper
         elevation={3}
         sx={{
-          p: { xs: 2, md: 2 },
+          p: 2,
           bgcolor: 'background.paper',
           height: { xs: 'auto', md: '100%' },
           display: 'flex',
           flexDirection: 'column',
-          borderRadius: { xs: '12px', md: '8px' },
+          borderRadius: '8px',
           width: { xs: '100%', md: '300px' },
           flexShrink: 0,
-          mx: { xs: 1, md: 0 },
-          mb: { xs: 2, md: 0 },
-          maxHeight: { xs: '50vh', md: 'none' },
-          overflow: { xs: 'auto', md: 'visible' },
         }}
       >
         <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', pb: 1 }}>
@@ -539,7 +367,7 @@ export const ChakraEditor: React.FC<ChakraEditorProps> = ({ floorPlanImageUrl })
           <Typography variant="body2" gutterBottom>Rotate the Chakra</Typography>
           <TextField
             value={rotation}
-            onChange={(e) => setRotation(Number(e.target.value) % totalDegrees)} // Normalize to 0-364 degrees
+            onChange={(e) => setRotation(Number(e.target.value))}
             type="number"
             size="small"
             InputProps={{ endAdornment: <Typography sx={{ ml: 0.5 }}>°</Typography> }}
@@ -547,10 +375,10 @@ export const ChakraEditor: React.FC<ChakraEditorProps> = ({ floorPlanImageUrl })
           />
           <Slider
             value={rotation}
-            onChange={(_event, newValue) => setRotation((newValue as number) % totalDegrees)} // Normalize to 0-364 degrees
+            onChange={(_event, newValue) => setRotation(newValue as number)}
             aria-labelledby="chakra-rotation-slider"
             min={0}
-            max={totalDegrees}
+            max={360}
             size="small"
             valueLabelDisplay="on"
             valueLabelFormat={(value) => `${value}°`}
@@ -563,7 +391,7 @@ export const ChakraEditor: React.FC<ChakraEditorProps> = ({ floorPlanImageUrl })
           />
         </Box>
 
-        {/* <Box sx={{ mb: 2 }}>
+        <Box sx={{ mb: 2 }}>
           <Typography variant="body2" gutterBottom>- Zoom Floor Plan +</Typography>
           <Slider
             value={zoom}
@@ -582,7 +410,7 @@ export const ChakraEditor: React.FC<ChakraEditorProps> = ({ floorPlanImageUrl })
               '& .MuiSlider-rail': { opacity: 0.5, backgroundColor: '#bdbdbd' },
             }}
           />
-        </Box> */}
+        </Box>
 
         <Box sx={{ mb: 1 }}>
           <FormControlLabel
@@ -628,28 +456,27 @@ export const ChakraEditor: React.FC<ChakraEditorProps> = ({ floorPlanImageUrl })
           />
         </Box>
 
-        
-        {/* <Box sx={{ mb: 2 }}>
-          <Button
-            variant="contained"
-            onClick={() => setShowUserForm(!showUserForm)}
-            fullWidth
-            sx={{
-              backgroundColor: '#FDD835',
-              color: '#000',
-              '&:hover': { backgroundColor: '#FDD835', opacity: 0.9 },
-              boxShadow: 'none',
-              textTransform: 'none',
-              fontWeight: 'bold',
-              fontSize: '1rem',
-              py: 1,
-              borderRadius: '8px',
-            }}
-          >
-            {showUserForm ? 'Hide User Form' : 'Show User Form'}
-          </Button>
+        <Box sx={{ mb: 2 }}>
+          <FormControlLabel
+            control={
+              <Switch
+                checked={showChakraPoints}
+                onChange={(e) => setShowChakraPoints(e.target.checked)}
+                name="show-chakra-points-toggle"
+                size="small"
+                sx={{
+                  '& .MuiSwitch-switchBase.Mui-checked': {
+                    color: '#FDD835',
+                    '&:hover': { backgroundColor: 'rgba(253, 216, 53, 0.08)' },
+                  },
+                  '& .MuiSwitch-switchBase.Mui-checked + .MuiSwitch-track': { backgroundColor: '#FDD835' },
+                }}
+              />
+            }
+            label="Show Chakra Points"
+            sx={{ fontSize: '0.9rem' }}
+          />
         </Box>
-        {showUserForm && <UserDetailsForm />} */}
 
         <Button
           variant="contained"
@@ -660,7 +487,7 @@ export const ChakraEditor: React.FC<ChakraEditorProps> = ({ floorPlanImageUrl })
             mt: 'auto',
             backgroundColor: '#FDD835',
             color: '#000',
-            '&:hover': { backgroundColor: '#FDD835', opacity: 0.9 },
+            '&:hover': { backgroundColor: '#FDD835', opacity: 0.9, },
             boxShadow: 'none',
             textTransform: 'none',
             fontWeight: 'bold',
@@ -673,33 +500,14 @@ export const ChakraEditor: React.FC<ChakraEditorProps> = ({ floorPlanImageUrl })
         </Button>
       </Paper>
 
-      {/* Lazy loaded Chakra Details Modal */}
-      {isModalOpen && (
-        <Suspense fallback={
-          <Box sx={{ 
-            position: 'fixed', 
-            top: 0, 
-            left: 0, 
-            right: 0, 
-            bottom: 0, 
-            display: 'flex', 
-            alignItems: 'center', 
-            justifyContent: 'center',
-            backgroundColor: 'rgba(0,0,0,0.5)',
-            zIndex: 9999
-          }}>
-            <CircularProgress size={48} />
-          </Box>
-        }>
-          <ChakraDetailsModal
-            open={isModalOpen}
-            onClose={closeModal}
-            chakraPoint={selectedChakraPoint}
-          />
-        </Suspense>
-      )}
+      {/* Chakra Details Modal */}
+      <ChakraDetailsModal
+        open={isModalOpen}
+        onClose={handleModalClose}
+        chakraPoint={selectedChakraPoint}
+      />
     </Box>
   );
 };
 
-export default ChakraEditor;
+export default ChakraEditor; 

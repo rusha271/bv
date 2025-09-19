@@ -2,7 +2,7 @@
 import React, { useEffect, useState } from 'react';
 import { TourProvider, useTour, StepType } from '@reactour/tour';
 import { useThemeContext } from '@/contexts/ThemeContext';
-import { IconButton, Box, Typography, Button, useMediaQuery, Chip } from '@mui/material';
+import { IconButton, Box, Typography, Button, Chip } from '@mui/material';
 import ArrowForwardIcon from '@mui/icons-material/ArrowForward';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import CloseIcon from '@mui/icons-material/Close';
@@ -21,11 +21,18 @@ const TourWithSteps = ({ onVideoOpen }: { onVideoOpen?: () => void }) => {
   const { setIsOpen, currentStep, isOpen, setCurrentStep, setSteps } = useTour();
   const { theme } = useThemeContext();
   const [isClient, setIsClient] = useState(false);
-  const isMobile = useMediaQuery('(max-width:600px)');
+  const [isMobile, setIsMobile] = useState(false);
 
   // Prevent hydration mismatch
   useEffect(() => {
     setIsClient(true);
+    // Set mobile state after client mount to prevent hydration mismatch
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth <= 600);
+    };
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    return () => window.removeEventListener('resize', checkMobile);
   }, []);
 
   // Custom close button component
@@ -202,11 +209,18 @@ interface ProductTourProps {
 export default function ProductTour({ onVideoOpen }: ProductTourProps) {
   const { theme } = useThemeContext();
   const [isClient, setIsClient] = useState(false);
-  const isMobile = useMediaQuery('(max-width:600px)');
+  const [isMobile, setIsMobile] = useState(false);
 
   // Prevent hydration mismatch
   useEffect(() => {
     setIsClient(true);
+    // Set mobile state after client mount to prevent hydration mismatch
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth <= 600);
+    };
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    return () => window.removeEventListener('resize', checkMobile);
   }, []);
 
   const tourStyles = {

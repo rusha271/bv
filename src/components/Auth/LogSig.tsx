@@ -176,6 +176,53 @@ const LogSig = memo(function LogSig({
   const [errors, setErrors] = useState<{ [key: string]: string }>({});
   const [rememberMe, setRememberMe] = useState(false);
 
+  // Reusable theme-aware styles
+  const getTextFieldStyles = () => ({
+    '& .MuiOutlinedInput-root': {
+      borderRadius: 3,
+      background: theme.palette.mode === 'dark' 
+        ? 'rgba(15, 23, 42, 0.8)' 
+        : 'rgba(255, 255, 255, 0.8)',
+      backdropFilter: 'blur(10px)',
+      border: theme.palette.mode === 'dark'
+        ? '1px solid rgba(148, 163, 184, 0.2)'
+        : '1px solid rgba(102, 126, 234, 0.1)',
+      color: theme.palette.text.primary,
+      transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+      '&:hover': {
+        border: theme.palette.mode === 'dark'
+          ? '1px solid rgba(148, 163, 184, 0.4)'
+          : '1px solid rgba(102, 126, 234, 0.3)',
+        background: theme.palette.mode === 'dark' 
+          ? 'rgba(15, 23, 42, 0.9)' 
+          : 'rgba(255, 255, 255, 0.9)',
+        transform: 'translateY(-1px)',
+        boxShadow: theme.palette.mode === 'dark'
+          ? '0 4px 15px rgba(0, 0, 0, 0.2)'
+          : '0 4px 15px rgba(102, 126, 234, 0.1)',
+      },
+      '&.Mui-focused': {
+        border: '2px solid #667eea',
+        background: theme.palette.mode === 'dark' 
+          ? 'rgba(15, 23, 42, 0.95)' 
+          : 'rgba(255, 255, 255, 0.95)',
+        boxShadow: '0 8px 25px rgba(102, 126, 234, 0.2)',
+      },
+    },
+    '& .MuiInputLabel-root': {
+      fontWeight: 600,
+      color: '#667eea',
+    },
+    '& .MuiInputBase-input': {
+      color: theme.palette.text.primary,
+    },
+    '& .MuiFormHelperText-root': {
+      color: theme.palette.mode === 'dark' 
+        ? 'rgba(255, 255, 255, 0.7)' 
+        : 'rgba(0, 0, 0, 0.6)',
+    },
+  });
+
   const handleTabChange = (event: React.SyntheticEvent, newValue: number) => {
     setTabValue(newValue);
     setErrors({});
@@ -283,10 +330,16 @@ const LogSig = memo(function LogSig({
             maxHeight: isMobile ? '100vh' : '90vh',
             boxShadow: isMobile 
               ? 'none' 
-              : '0 25px 50px -12px rgba(0, 0, 0, 0.25), 0 0 0 1px rgba(255, 255, 255, 0.1)',
+              : theme.palette.mode === 'dark'
+                ? '0 25px 50px -12px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(255, 255, 255, 0.1)'
+                : '0 25px 50px -12px rgba(0, 0, 0, 0.25), 0 0 0 1px rgba(255, 255, 255, 0.1)',
             backdropFilter: 'blur(20px)',
-            background: 'rgba(255, 255, 255, 0.95)',
-            border: '1px solid rgba(255, 255, 255, 0.2)',
+            background: theme.palette.mode === 'dark' 
+              ? 'rgba(15, 23, 42, 0.95)' 
+              : 'rgba(255, 255, 255, 0.95)',
+            border: theme.palette.mode === 'dark'
+              ? '1px solid rgba(148, 163, 184, 0.2)'
+              : '1px solid rgba(255, 255, 255, 0.2)',
           },
         }}
       >
@@ -367,7 +420,9 @@ const LogSig = memo(function LogSig({
             variant="fullWidth"
             sx={{
               mb: 3,
-              background: 'linear-gradient(135deg, rgba(102, 126, 234, 0.05) 0%, rgba(118, 75, 162, 0.05) 100%)',
+              background: theme.palette.mode === 'dark'
+                ? 'linear-gradient(135deg, rgba(102, 126, 234, 0.1) 0%, rgba(118, 75, 162, 0.1) 100%)'
+                : 'linear-gradient(135deg, rgba(102, 126, 234, 0.05) 0%, rgba(118, 75, 162, 0.05) 100%)',
               borderRadius: 3,
               p: 0.5,
               '& .MuiTab-root': {
@@ -375,14 +430,18 @@ const LogSig = memo(function LogSig({
                 fontSize: isMobile ? '0.9rem' : '1rem',
                 borderRadius: 2,
                 transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+                color: theme.palette.mode === 'dark' ? 'rgba(255, 255, 255, 0.7)' : 'rgba(102, 126, 234, 0.7)',
                 '&.Mui-selected': {
                   background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
                   color: 'white',
                   boxShadow: '0 4px 15px rgba(102, 126, 234, 0.3)',
                 },
                 '&:hover': {
-                  background: 'rgba(102, 126, 234, 0.1)',
+                  background: theme.palette.mode === 'dark' 
+                    ? 'rgba(102, 126, 234, 0.2)' 
+                    : 'rgba(102, 126, 234, 0.1)',
                   transform: 'translateY(-1px)',
+                  color: theme.palette.mode === 'dark' ? 'white' : '#667eea',
                 },
               },
               '& .MuiTabs-indicator': {
@@ -414,30 +473,7 @@ const LogSig = memo(function LogSig({
                       </InputAdornment>
                     ),
                   }}
-                  sx={{
-                    '& .MuiOutlinedInput-root': {
-                      borderRadius: 3,
-                      background: 'rgba(255, 255, 255, 0.8)',
-                      backdropFilter: 'blur(10px)',
-                      border: '1px solid rgba(102, 126, 234, 0.1)',
-                      transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
-                      '&:hover': {
-                        border: '1px solid rgba(102, 126, 234, 0.3)',
-                        background: 'rgba(255, 255, 255, 0.9)',
-                        transform: 'translateY(-1px)',
-                        boxShadow: '0 4px 15px rgba(102, 126, 234, 0.1)',
-                      },
-                      '&.Mui-focused': {
-                        border: '2px solid #667eea',
-                        background: 'rgba(255, 255, 255, 0.95)',
-                        boxShadow: '0 8px 25px rgba(102, 126, 234, 0.2)',
-                      },
-                    },
-                    '& .MuiInputLabel-root': {
-                      fontWeight: 600,
-                      color: '#667eea',
-                    },
-                  }}
+                  sx={getTextFieldStyles()}
                 />
 
                 <TextField
@@ -464,30 +500,7 @@ const LogSig = memo(function LogSig({
                       </InputAdornment>
                     ),
                   }}
-                  sx={{
-                    '& .MuiOutlinedInput-root': {
-                      borderRadius: 3,
-                      background: 'rgba(255, 255, 255, 0.8)',
-                      backdropFilter: 'blur(10px)',
-                      border: '1px solid rgba(102, 126, 234, 0.1)',
-                      transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
-                      '&:hover': {
-                        border: '1px solid rgba(102, 126, 234, 0.3)',
-                        background: 'rgba(255, 255, 255, 0.9)',
-                        transform: 'translateY(-1px)',
-                        boxShadow: '0 4px 15px rgba(102, 126, 234, 0.1)',
-                      },
-                      '&.Mui-focused': {
-                        border: '2px solid #667eea',
-                        background: 'rgba(255, 255, 255, 0.95)',
-                        boxShadow: '0 8px 25px rgba(102, 126, 234, 0.2)',
-                      },
-                    },
-                    '& .MuiInputLabel-root': {
-                      fontWeight: 600,
-                      color: '#667eea',
-                    },
-                  }}
+                  sx={getTextFieldStyles()}
                 />
 
                 <FormControlLabel
@@ -512,7 +525,7 @@ const LogSig = memo(function LogSig({
                     '& .MuiFormControlLabel-label': {
                       fontSize: isMobile ? '0.875rem' : '1rem',
                       fontWeight: 600,
-                      color: '#667eea',
+                      color: theme.palette.mode === 'dark' ? 'rgba(255, 255, 255, 0.8)' : '#667eea',
                     }
                   }}
                 />
@@ -522,12 +535,12 @@ const LogSig = memo(function LogSig({
                     href="#" 
                     variant="body2" 
                     sx={{ 
-                      color: '#667eea', 
+                      color: theme.palette.mode === 'dark' ? 'rgba(255, 255, 255, 0.8)' : '#667eea', 
                       textDecoration: 'none',
                       fontWeight: 600,
                       transition: 'all 0.3s ease',
                       '&:hover': {
-                        color: '#5a6fd8',
+                        color: theme.palette.mode === 'dark' ? 'white' : '#5a6fd8',
                         textDecoration: 'underline',
                       }
                     }}
@@ -584,30 +597,7 @@ const LogSig = memo(function LogSig({
                       </InputAdornment>
                     ),
                   }}
-                  sx={{
-                    '& .MuiOutlinedInput-root': {
-                      borderRadius: 3,
-                      background: 'rgba(255, 255, 255, 0.8)',
-                      backdropFilter: 'blur(10px)',
-                      border: '1px solid rgba(102, 126, 234, 0.1)',
-                      transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
-                      '&:hover': {
-                        border: '1px solid rgba(102, 126, 234, 0.3)',
-                        background: 'rgba(255, 255, 255, 0.9)',
-                        transform: 'translateY(-1px)',
-                        boxShadow: '0 4px 15px rgba(102, 126, 234, 0.1)',
-                      },
-                      '&.Mui-focused': {
-                        border: '2px solid #667eea',
-                        background: 'rgba(255, 255, 255, 0.95)',
-                        boxShadow: '0 8px 25px rgba(102, 126, 234, 0.2)',
-                      },
-                    },
-                    '& .MuiInputLabel-root': {
-                      fontWeight: 600,
-                      color: '#667eea',
-                    },
-                  }}
+                  sx={getTextFieldStyles()}
                 />
 
                 <TextField
@@ -627,30 +617,7 @@ const LogSig = memo(function LogSig({
                       </InputAdornment>
                     ),
                   }}
-                  sx={{
-                    '& .MuiOutlinedInput-root': {
-                      borderRadius: 3,
-                      background: 'rgba(255, 255, 255, 0.8)',
-                      backdropFilter: 'blur(10px)',
-                      border: '1px solid rgba(102, 126, 234, 0.1)',
-                      transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
-                      '&:hover': {
-                        border: '1px solid rgba(102, 126, 234, 0.3)',
-                        background: 'rgba(255, 255, 255, 0.9)',
-                        transform: 'translateY(-1px)',
-                        boxShadow: '0 4px 15px rgba(102, 126, 234, 0.1)',
-                      },
-                      '&.Mui-focused': {
-                        border: '2px solid #667eea',
-                        background: 'rgba(255, 255, 255, 0.95)',
-                        boxShadow: '0 8px 25px rgba(102, 126, 234, 0.2)',
-                      },
-                    },
-                    '& .MuiInputLabel-root': {
-                      fontWeight: 600,
-                      color: '#667eea',
-                    },
-                  }}
+                  sx={getTextFieldStyles()}
                 />
 
                 <TextField
@@ -669,30 +636,7 @@ const LogSig = memo(function LogSig({
                       </InputAdornment>
                     ),
                   }}
-                  sx={{
-                    '& .MuiOutlinedInput-root': {
-                      borderRadius: 3,
-                      background: 'rgba(255, 255, 255, 0.8)',
-                      backdropFilter: 'blur(10px)',
-                      border: '1px solid rgba(102, 126, 234, 0.1)',
-                      transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
-                      '&:hover': {
-                        border: '1px solid rgba(102, 126, 234, 0.3)',
-                        background: 'rgba(255, 255, 255, 0.9)',
-                        transform: 'translateY(-1px)',
-                        boxShadow: '0 4px 15px rgba(102, 126, 234, 0.1)',
-                      },
-                      '&.Mui-focused': {
-                        border: '2px solid #667eea',
-                        background: 'rgba(255, 255, 255, 0.95)',
-                        boxShadow: '0 8px 25px rgba(102, 126, 234, 0.2)',
-                      },
-                    },
-                    '& .MuiInputLabel-root': {
-                      fontWeight: 600,
-                      color: '#667eea',
-                    },
-                  }}
+                  sx={getTextFieldStyles()}
                 />
 
                 <TextField
@@ -719,30 +663,7 @@ const LogSig = memo(function LogSig({
                       </InputAdornment>
                     ),
                   }}
-                  sx={{
-                    '& .MuiOutlinedInput-root': {
-                      borderRadius: 3,
-                      background: 'rgba(255, 255, 255, 0.8)',
-                      backdropFilter: 'blur(10px)',
-                      border: '1px solid rgba(102, 126, 234, 0.1)',
-                      transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
-                      '&:hover': {
-                        border: '1px solid rgba(102, 126, 234, 0.3)',
-                        background: 'rgba(255, 255, 255, 0.9)',
-                        transform: 'translateY(-1px)',
-                        boxShadow: '0 4px 15px rgba(102, 126, 234, 0.1)',
-                      },
-                      '&.Mui-focused': {
-                        border: '2px solid #667eea',
-                        background: 'rgba(255, 255, 255, 0.95)',
-                        boxShadow: '0 8px 25px rgba(102, 126, 234, 0.2)',
-                      },
-                    },
-                    '& .MuiInputLabel-root': {
-                      fontWeight: 600,
-                      color: '#667eea',
-                    },
-                  }}
+                  sx={getTextFieldStyles()}
                 />
 
                 <TextField
@@ -769,30 +690,7 @@ const LogSig = memo(function LogSig({
                       </InputAdornment>
                     ),
                   }}
-                  sx={{
-                    '& .MuiOutlinedInput-root': {
-                      borderRadius: 3,
-                      background: 'rgba(255, 255, 255, 0.8)',
-                      backdropFilter: 'blur(10px)',
-                      border: '1px solid rgba(102, 126, 234, 0.1)',
-                      transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
-                      '&:hover': {
-                        border: '1px solid rgba(102, 126, 234, 0.3)',
-                        background: 'rgba(255, 255, 255, 0.9)',
-                        transform: 'translateY(-1px)',
-                        boxShadow: '0 4px 15px rgba(102, 126, 234, 0.1)',
-                      },
-                      '&.Mui-focused': {
-                        border: '2px solid #667eea',
-                        background: 'rgba(255, 255, 255, 0.95)',
-                        boxShadow: '0 8px 25px rgba(102, 126, 234, 0.2)',
-                      },
-                    },
-                    '& .MuiInputLabel-root': {
-                      fontWeight: 600,
-                      color: '#667eea',
-                    },
-                  }}
+                  sx={getTextFieldStyles()}
                 />
 
                 <Button
@@ -838,13 +736,13 @@ const LogSig = memo(function LogSig({
                   setShowTerms(true);
                 }}
                 sx={{ 
-                  color: '#667eea', 
+                  color: theme.palette.mode === 'dark' ? 'rgba(255, 255, 255, 0.8)' : '#667eea', 
                   textDecoration: 'none', 
                   cursor: 'pointer',
                   fontWeight: 600,
                   transition: 'all 0.3s ease',
                   '&:hover': {
-                    color: '#5a6fd8',
+                    color: theme.palette.mode === 'dark' ? 'white' : '#5a6fd8',
                     textDecoration: 'underline',
                   }
                 }}
@@ -859,13 +757,13 @@ const LogSig = memo(function LogSig({
                   setShowPrivacy(true);
                 }}
                 sx={{ 
-                  color: '#667eea', 
+                  color: theme.palette.mode === 'dark' ? 'rgba(255, 255, 255, 0.8)' : '#667eea', 
                   textDecoration: 'none', 
                   cursor: 'pointer',
                   fontWeight: 600,
                   transition: 'all 0.3s ease',
                   '&:hover': {
-                    color: '#5a6fd8',
+                    color: theme.palette.mode === 'dark' ? 'white' : '#5a6fd8',
                     textDecoration: 'underline',
                   }
                 }}
