@@ -2,58 +2,18 @@
 import { useState, useEffect } from "react";
 import { Form } from "@/components/forms/Form";
 import { FileUploadInput } from "@/components/forms/FileUploadInput";
-// import Navbar from "@/components/ui/Navbar";
-// Make SocialIcons client-only to prevent hydration issues
-const ClientSocialIcons = dynamic(() => import('@/components/Icons/SocialIcons'), { 
-  ssr: false,
-  loading: () => null
-});
+import Navbar from "@/components/ui/Navbar";
+import SocialIcons from "@/components/Icons/SocialIcons";
 import { Box, Typography, Card, Container, Fade, IconButton, Dialog, CircularProgress, DialogContent, Button } from "@mui/material";
-// import { Suspense } from 'react';
 import PlayCircleOutlineIcon from '@mui/icons-material/PlayCircleOutline';
 import CloseIcon from '@mui/icons-material/Close';
 import * as yup from "yup";
-import dynamic from 'next/dynamic';
 import { useThemeContext } from '@/contexts/ThemeContext';
 import { useRouter } from 'next/navigation';
 import { sessionStorageManager } from '@/utils/sessionStorage';
 import { apiService } from '@/utils/apiService';
 import { sessionCache } from '@/utils/apiCache';
-// import { useState, useEffect } from "react";
-
-const ProductTour = dynamic(() => import('@/components/Tour/ProductTour'), { 
-  ssr: false,
-  loading: () => null
-});
-
-const useIsClient = () => {
-  const [isClient, setIsClient] = useState(false);
-  
-  useEffect(() => {
-    setIsClient(true);
-  }, []);
-  
-  return isClient;
-};
-
-// Make Navbar client-only to prevent hydration issues
-const ClientNavbar = dynamic(() => import('@/components/ui/Navbar'), { 
-  ssr: false,
-  loading: () => (
-    <Box sx={{ 
-      position: 'fixed', 
-      top: 0, 
-      left: 0, 
-      right: 0, 
-      zIndex: 1100,
-      height: '64px',
-      background: 'rgba(255, 255, 255, 0.95)',
-      backdropFilter: 'blur(20px)',
-      borderBottom: '1px solid rgba(148, 163, 184, 0.2)',
-    }} />
-  )
-});
-
+import ProductTour from '@/components/Tour/ProductTour';
 
 const validationSchema = yup.object({
   floorPlan: yup
@@ -66,8 +26,7 @@ const validationSchema = yup.object({
     .required("Floor plan is required"),
 });
 
-export default function HomePage() {
-  const isClient = useIsClient();
+export default function HomePageClient() {
   const [submitted, setSubmitted] = useState(false);
   const [videoOpen, setVideoOpen] = useState(false);
   const [mounted, setMounted] = useState(false);
@@ -311,7 +270,7 @@ export default function HomePage() {
   return (
     
     <Box sx={{ minHeight: '100vh', position: 'relative', overflow: 'hidden' }}>
-      <ClientNavbar />
+      <Navbar />
       <ProductTour onVideoOpen={() => setVideoOpen(true)} />
     
       {/* Modern Gradient Background */}
@@ -403,7 +362,7 @@ export default function HomePage() {
           width: '100%',
           maxWidth: { xs: "90vw", sm: 480 },
          }} className="social-icons">
-           <ClientSocialIcons />
+           <SocialIcons />
          </Box>
       </Container>
   
@@ -646,4 +605,3 @@ export default function HomePage() {
     </Box>
   );
 }
-
