@@ -8,6 +8,7 @@ import CircularImagePoints from '@/components/CircularImagePoints';
 import ChakraDetailsModal from '@/components/Chakra/ChakraDetailsModal';
 import { getChakraPointsInOrder } from '@/utils/chakraCoordinateConverter';
 import { defaultChakraPoints } from '@/types/chakra';
+import { apiService } from '@/utils/apiService';
 
 interface ChakraEditorProps {
   floorPlanImageUrl: string | null;
@@ -18,7 +19,6 @@ export const ChakraEditor: React.FC<ChakraEditorProps> = ({ floorPlanImageUrl })
   const [zoom, setZoom] = useState(1);
   const [chakraOpacity, setChakraOpacity] = useState(1);
   const [showCenterMark, setShowCenterMark] = useState(true);
-  const [showChakraPoints, setShowChakraPoints] = useState(true);
   const [selectedChakraPoint, setSelectedChakraPoint] = useState<any>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
 
@@ -81,8 +81,10 @@ export const ChakraEditor: React.FC<ChakraEditorProps> = ({ floorPlanImageUrl })
   }, [isDragging, position.x, position.y, startDrag.x, startDrag.y]);
 
   const handleDownload = async () => {
-    const chakraViewerElement = document.getElementById('chakra-viewer-container');
-    if (chakraViewerElement) {
+    try {
+      const chakraViewerElement = document.getElementById('chakra-viewer-container');
+      if (!chakraViewerElement) return;
+
       // Create a high-resolution canvas for better quality
       const downloadCanvas = document.createElement('canvas');
       const ctx = downloadCanvas.getContext('2d');
@@ -199,11 +201,61 @@ export const ChakraEditor: React.FC<ChakraEditorProps> = ({ floorPlanImageUrl })
         ctx.fill();
       }
 
+      // Get the canvas data as base64
+      const canvasDataURL = downloadCanvas.toDataURL('image/png', 1.0);
+      
+      // Prepare the data to send to backend
+      const chakraOverlayData = {
+        image_data: canvasDataURL,
+        image_format: 'png',
+        original_filename: 'floorplan-chakra-overlay.png',
+        chakra_settings: {
+          rotation: rotation,
+          zoom: zoom,
+          chakra_opacity: chakraOpacity,
+          show_center_mark: showCenterMark,
+          position: position
+        },
+        floor_plan_url: floorPlanImageUrl,
+        timestamp: new Date().toISOString()
+      };
+
+      // Send data to backend using existing API service
+      try {
+        // Convert base64 to blob for file creation
+        const response = await fetch(canvasDataURL);
+        const blob = await response.blob();
+        const file = new File([blob], 'floorplan-chakra-overlay.png', { type: 'image/png' });
+        
+        const uploadResponse = await apiService.floorplan.uploadFloorplan(file);
+        console.log('Floor plan data sent to backend successfully:', uploadResponse);
+        
+        // Also try to send additional chakra data if there's a specific endpoint
+        // You can modify this based on your backend API structure
+        // try {
+        //   await apiService.vastu.analyze({
+        //     property_type: 'residential',
+        //     direction: 'north',
+        //     floor_plan: file
+        //   });
+        //   console.log('Vastu analysis data sent successfully');
+        // } catch (vastuError) {
+        //   console.log('Vastu analysis endpoint not available or failed:', vastuError);
+        // }
+        
+      } catch (apiError) {
+        console.error('Failed to send data to backend:', apiError);
+        // Still allow download even if API fails
+      }
+
       // Create download link with high quality
       const link = document.createElement('a');
-      link.href = downloadCanvas.toDataURL('image/png', 1.0); // Maximum quality
+      link.href = canvasDataURL;
       link.download = 'floorplan-chakra-hq.png';
       link.click();
+      
+    } catch (error) {
+      console.error('Error in download process:', error);
     }
   };
 
@@ -250,35 +302,15 @@ export const ChakraEditor: React.FC<ChakraEditorProps> = ({ floorPlanImageUrl })
             willChange: 'transform',
           }}
         >
-          {showChakraPoints ? (
-            <CircularImagePoints
-              imageSrc="/images/Shakti Chakra_Size.png"
-              points={chakraPoints}
-              imageAlt="Vastu Chakra"
-              rotation={-rotation}
-              onPointClick={handleChakraPointClick}
-              containerClassName="w-full h-full"
-              imageClassName="opacity-100"
-            />
-          ) : (
-            <Image
-              src="/images/Shakti Chakra_Size.png"
-              alt="Vastu Chakra"
-              fill
-              style={{
-                position: 'absolute',
-                top: 0,
-                left: 0,
-                opacity: chakraOpacity,
-                transform: `rotate(${-rotation}deg)`,
-                transition: 'transform 0.3s ease-out, opacity 0.3s ease-out',
-                transformOrigin: 'center center',
-                pointerEvents: 'none',
-                objectFit: 'contain',
-              }}
-              draggable="false"
-            />
-          )}
+          <CircularImagePoints
+            imageSrc="/images/Shakti Chakra_Size.png"
+            points={chakraPoints}
+            imageAlt="Vastu Chakra"
+            rotation={-rotation}
+            onPointClick={handleChakraPointClick}
+            containerClassName="w-full h-full"
+            imageClassName="opacity-100"
+          />
 
           {floorPlanImageUrl ? (
             <img
@@ -456,27 +488,6 @@ export const ChakraEditor: React.FC<ChakraEditorProps> = ({ floorPlanImageUrl })
           />
         </Box>
 
-        <Box sx={{ mb: 2 }}>
-          <FormControlLabel
-            control={
-              <Switch
-                checked={showChakraPoints}
-                onChange={(e) => setShowChakraPoints(e.target.checked)}
-                name="show-chakra-points-toggle"
-                size="small"
-                sx={{
-                  '& .MuiSwitch-switchBase.Mui-checked': {
-                    color: '#FDD835',
-                    '&:hover': { backgroundColor: 'rgba(253, 216, 53, 0.08)' },
-                  },
-                  '& .MuiSwitch-switchBase.Mui-checked + .MuiSwitch-track': { backgroundColor: '#FDD835' },
-                }}
-              />
-            }
-            label="Show Chakra Points"
-            sx={{ fontSize: '0.9rem' }}
-          />
-        </Box>
 
         <Button
           variant="contained"

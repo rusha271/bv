@@ -1,6 +1,9 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
+  // ✅ Disable dev tools UI completely
+  devIndicators: false,
+
   // ✅ Ignore TypeScript errors in production builds (for Vercel)
   typescript: {
     ignoreBuildErrors: true,

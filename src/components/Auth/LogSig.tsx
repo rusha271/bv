@@ -38,6 +38,7 @@ import { toast } from 'react-hot-toast';
 import * as Yup from 'yup';
 import { useAuthActions } from '@/contexts/AuthContext';
 import { useRouter } from 'next/navigation';
+import { isAdminUser } from '@/utils/permissions';
 
 // TypeScript Interfaces
 interface FormData {
@@ -305,7 +306,20 @@ const LogSig = memo(function LogSig({
         await authLogin(formData.email, formData.password, rememberMe);
         // console.log('Login successful');
         toast.success('Login successful!');
-        router.push(redirectUrl || '/');
+        
+        // Check if user is admin and redirect to admin dashboard
+        // We need to get the user data from the auth context after login
+        // Since the login function updates the auth context, we'll use a small delay
+        // to ensure the context is updated before checking the role
+        setTimeout(() => {
+          // Get the current user from the auth context
+          const currentUser = JSON.parse(localStorage.getItem('user') || 'null');
+          if (currentUser && isAdminUser(currentUser)) {
+            router.push('/dashboard');
+          } else {
+            router.push(redirectUrl || '/');
+          }
+        }, 100);
       }
       onClose();
     } catch (error: any) {

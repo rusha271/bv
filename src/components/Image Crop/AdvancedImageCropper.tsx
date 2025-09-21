@@ -601,9 +601,9 @@ const AdvancedImageCropper: React.FC<AdvancedImageCropperProps> = ({
     >
       {/* Tool Selection */}
       {!croppedImage && (
-        <Box sx={{ mb: 2 }}>
-          <Typography variant="h6" sx={{ 
-            mb: 2, 
+        <Box sx={{ mb: 1.5 }}>
+          <Typography variant="subtitle1" sx={{ 
+            mb: 1, 
             textAlign: 'center',
             background: theme.palette.mode === 'dark'
               ? 'linear-gradient(135deg, #60a5fa 0%, #a78bfa 100%)'
@@ -611,21 +611,22 @@ const AdvancedImageCropper: React.FC<AdvancedImageCropperProps> = ({
             backgroundClip: 'text',
             WebkitBackgroundClip: 'text',
             WebkitTextFillColor: 'transparent',
-            fontWeight: 700,
-            fontSize: '1.1rem'
+            fontWeight: 600,
+            fontSize: isMobile ? '0.9rem' : '1rem'
           }}>
             🛠️ Select Tool
           </Typography>
           <Stack 
             direction="row" 
-            spacing={1} 
+            spacing={0.5} 
             justifyContent="center" 
             flexWrap="wrap"
-            sx={{ gap: 1 }}
+            sx={{ gap: 0.5 }}
           >
             <Tooltip title="Pointer Tool - Select areas">
               <IconButton
                 onClick={() => setActiveTool('pointer')}
+                size="small"
                 sx={{
                   backgroundColor: activeTool === 'pointer' 
                     ? 'linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%)'
@@ -638,7 +639,9 @@ const AdvancedImageCropper: React.FC<AdvancedImageCropperProps> = ({
                     : theme.palette.mode === 'dark'
                       ? '1px solid rgba(148, 163, 184, 0.2)'
                       : '1px solid rgba(148, 163, 184, 0.3)',
-                  borderRadius: 3,
+                  borderRadius: 2,
+                  width: isMobile ? 36 : 40,
+                  height: isMobile ? 36 : 40,
                   transition: 'all 0.3s ease',
                   '&:hover': { 
                     backgroundColor: activeTool === 'pointer'
@@ -646,20 +649,21 @@ const AdvancedImageCropper: React.FC<AdvancedImageCropperProps> = ({
                       : theme.palette.mode === 'dark'
                         ? 'rgba(59, 130, 246, 0.1)'
                         : 'rgba(59, 130, 246, 0.05)',
-                    transform: 'translateY(-2px)',
+                    transform: 'translateY(-1px)',
                     boxShadow: activeTool === 'pointer'
-                      ? '0 8px 25px rgba(59, 130, 246, 0.4)'
-                      : '0 4px 15px rgba(59, 130, 246, 0.2)',
+                      ? '0 4px 15px rgba(59, 130, 246, 0.3)'
+                      : '0 2px 8px rgba(59, 130, 246, 0.2)',
                   }
                 }}
               >
-                <MouseIcon />
+                <MouseIcon fontSize="small" />
               </IconButton>
             </Tooltip>
             
             <Tooltip title="Pencil Tool - Draw crop area">
               <IconButton
                 onClick={() => setActiveTool('pencil')}
+                size="small"
                 sx={{
                   backgroundColor: activeTool === 'pencil' 
                     ? 'linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%)'
@@ -672,7 +676,9 @@ const AdvancedImageCropper: React.FC<AdvancedImageCropperProps> = ({
                     : theme.palette.mode === 'dark'
                       ? '1px solid rgba(148, 163, 184, 0.2)'
                       : '1px solid rgba(148, 163, 184, 0.3)',
-                  borderRadius: 3,
+                  borderRadius: 2,
+                  width: isMobile ? 36 : 40,
+                  height: isMobile ? 36 : 40,
                   transition: 'all 0.3s ease',
                   '&:hover': { 
                     backgroundColor: activeTool === 'pencil'
@@ -680,20 +686,21 @@ const AdvancedImageCropper: React.FC<AdvancedImageCropperProps> = ({
                       : theme.palette.mode === 'dark'
                         ? 'rgba(59, 130, 246, 0.1)'
                         : 'rgba(59, 130, 246, 0.05)',
-                    transform: 'translateY(-2px)',
+                    transform: 'translateY(-1px)',
                     boxShadow: activeTool === 'pencil'
-                      ? '0 8px 25px rgba(59, 130, 246, 0.4)'
-                      : '0 4px 15px rgba(59, 130, 246, 0.2)',
+                      ? '0 4px 15px rgba(59, 130, 246, 0.3)'
+                      : '0 2px 8px rgba(59, 130, 246, 0.2)',
                   }
                 }}
               >
-                <BrushIcon />
+                <BrushIcon fontSize="small" />
               </IconButton>
             </Tooltip>
             
             <Tooltip title="Eraser Tool - Remove areas">
               <IconButton
                 onClick={() => setActiveTool('eraser')}
+                size="small"
                 sx={{
                   backgroundColor: activeTool === 'eraser' 
                     ? 'linear-gradient(135deg, #ef4444 0%, #dc2626 100%)'
@@ -706,7 +713,9 @@ const AdvancedImageCropper: React.FC<AdvancedImageCropperProps> = ({
                     : theme.palette.mode === 'dark'
                       ? '1px solid rgba(148, 163, 184, 0.2)'
                       : '1px solid rgba(148, 163, 184, 0.3)',
-                  borderRadius: 3,
+                  borderRadius: 2,
+                  width: isMobile ? 36 : 40,
+                  height: isMobile ? 36 : 40,
                   transition: 'all 0.3s ease',
                   '&:hover': { 
                     backgroundColor: activeTool === 'eraser'
@@ -714,20 +723,21 @@ const AdvancedImageCropper: React.FC<AdvancedImageCropperProps> = ({
                       : theme.palette.mode === 'dark'
                         ? 'rgba(239, 68, 68, 0.1)'
                         : 'rgba(239, 68, 68, 0.05)',
-                    transform: 'translateY(-2px)',
+                    transform: 'translateY(-1px)',
                     boxShadow: activeTool === 'eraser'
-                      ? '0 8px 25px rgba(239, 68, 68, 0.4)'
-                      : '0 4px 15px rgba(239, 68, 68, 0.2)',
+                      ? '0 4px 15px rgba(239, 68, 68, 0.3)'
+                      : '0 2px 8px rgba(239, 68, 68, 0.2)',
                   }
                 }}
               >
-                <DeleteIcon />
+                <DeleteIcon fontSize="small" />
               </IconButton>
             </Tooltip>
             
             <Tooltip title="Rectangle Tool">
               <IconButton
                 onClick={() => setActiveTool('rectangle')}
+                size="small"
                 sx={{
                   backgroundColor: activeTool === 'rectangle' 
                     ? 'linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%)'
@@ -740,7 +750,9 @@ const AdvancedImageCropper: React.FC<AdvancedImageCropperProps> = ({
                     : theme.palette.mode === 'dark'
                       ? '1px solid rgba(148, 163, 184, 0.2)'
                       : '1px solid rgba(148, 163, 184, 0.3)',
-                  borderRadius: 3,
+                  borderRadius: 2,
+                  width: isMobile ? 36 : 40,
+                  height: isMobile ? 36 : 40,
                   transition: 'all 0.3s ease',
                   '&:hover': { 
                     backgroundColor: activeTool === 'rectangle'
@@ -748,20 +760,21 @@ const AdvancedImageCropper: React.FC<AdvancedImageCropperProps> = ({
                       : theme.palette.mode === 'dark'
                         ? 'rgba(59, 130, 246, 0.1)'
                         : 'rgba(59, 130, 246, 0.05)',
-                    transform: 'translateY(-2px)',
+                    transform: 'translateY(-1px)',
                     boxShadow: activeTool === 'rectangle'
-                      ? '0 8px 25px rgba(59, 130, 246, 0.4)'
-                      : '0 4px 15px rgba(59, 130, 246, 0.2)',
+                      ? '0 4px 15px rgba(59, 130, 246, 0.3)'
+                      : '0 2px 8px rgba(59, 130, 246, 0.2)',
                   }
                 }}
               >
-                <CropFreeIcon />
+                <CropFreeIcon fontSize="small" />
               </IconButton>
             </Tooltip>
             
             <Tooltip title="Square Tool">
               <IconButton
                 onClick={() => setActiveTool('square')}
+                size="small"
                 sx={{
                   backgroundColor: activeTool === 'square' 
                     ? 'linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%)'
@@ -774,7 +787,9 @@ const AdvancedImageCropper: React.FC<AdvancedImageCropperProps> = ({
                     : theme.palette.mode === 'dark'
                       ? '1px solid rgba(148, 163, 184, 0.2)'
                       : '1px solid rgba(148, 163, 184, 0.3)',
-                  borderRadius: 3,
+                  borderRadius: 2,
+                  width: isMobile ? 36 : 40,
+                  height: isMobile ? 36 : 40,
                   transition: 'all 0.3s ease',
                   '&:hover': { 
                     backgroundColor: activeTool === 'square'
@@ -782,14 +797,14 @@ const AdvancedImageCropper: React.FC<AdvancedImageCropperProps> = ({
                       : theme.palette.mode === 'dark'
                         ? 'rgba(59, 130, 246, 0.1)'
                         : 'rgba(59, 130, 246, 0.05)',
-                    transform: 'translateY(-2px)',
+                    transform: 'translateY(-1px)',
                     boxShadow: activeTool === 'square'
-                      ? '0 8px 25px rgba(59, 130, 246, 0.4)'
-                      : '0 4px 15px rgba(59, 130, 246, 0.2)',
+                      ? '0 4px 15px rgba(59, 130, 246, 0.3)'
+                      : '0 2px 8px rgba(59, 130, 246, 0.2)',
                   }
                 }}
               >
-                <CropSquareIcon />
+                <CropSquareIcon fontSize="small" />
               </IconButton>
             </Tooltip>
             
@@ -797,6 +812,7 @@ const AdvancedImageCropper: React.FC<AdvancedImageCropperProps> = ({
               <Tooltip title="Polygon Tool">
                 <IconButton
                   onClick={() => setActiveTool('polygon')}
+                  size="small"
                   sx={{
                     backgroundColor: activeTool === 'polygon' 
                       ? 'linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%)'
@@ -809,7 +825,9 @@ const AdvancedImageCropper: React.FC<AdvancedImageCropperProps> = ({
                       : theme.palette.mode === 'dark'
                         ? '1px solid rgba(148, 163, 184, 0.2)'
                         : '1px solid rgba(148, 163, 184, 0.3)',
-                    borderRadius: 3,
+                    borderRadius: 2,
+                    width: isMobile ? 36 : 40,
+                    height: isMobile ? 36 : 40,
                     transition: 'all 0.3s ease',
                     '&:hover': { 
                       backgroundColor: activeTool === 'polygon'
@@ -817,14 +835,14 @@ const AdvancedImageCropper: React.FC<AdvancedImageCropperProps> = ({
                         : theme.palette.mode === 'dark'
                           ? 'rgba(59, 130, 246, 0.1)'
                           : 'rgba(59, 130, 246, 0.05)',
-                      transform: 'translateY(-2px)',
+                      transform: 'translateY(-1px)',
                       boxShadow: activeTool === 'polygon'
-                        ? '0 8px 25px rgba(59, 130, 246, 0.4)'
-                        : '0 4px 15px rgba(59, 130, 246, 0.2)',
+                        ? '0 4px 15px rgba(59, 130, 246, 0.3)'
+                        : '0 2px 8px rgba(59, 130, 246, 0.2)',
                     }
                   }}
                 >
-                  <CropIcon />
+                  <CropIcon fontSize="small" />
                 </IconButton>
               </Tooltip>
             )}
@@ -832,6 +850,7 @@ const AdvancedImageCropper: React.FC<AdvancedImageCropperProps> = ({
             <Tooltip title="Auto Crop - Coming Soon">
               <IconButton
                 disabled={true}
+                size="small"
                 sx={{
                   backgroundColor: theme.palette.mode === 'dark' 
                     ? 'rgba(148, 163, 184, 0.1)' 
@@ -840,7 +859,9 @@ const AdvancedImageCropper: React.FC<AdvancedImageCropperProps> = ({
                   border: theme.palette.mode === 'dark'
                     ? '1px solid rgba(148, 163, 184, 0.2)'
                     : '1px solid rgba(148, 163, 184, 0.3)',
-                  borderRadius: 3,
+                  borderRadius: 2,
+                  width: isMobile ? 36 : 40,
+                  height: isMobile ? 36 : 40,
                   transition: 'all 0.3s ease',
                   position: 'relative',
                   '&:disabled': {
@@ -852,19 +873,19 @@ const AdvancedImageCropper: React.FC<AdvancedImageCropperProps> = ({
                   }
                 }}
               >
-                <AutoFixHighIcon />
+                <AutoFixHighIcon fontSize="small" />
                 <Typography 
                   variant="caption" 
                   sx={{ 
                     position: 'absolute',
-                    top: -8,
-                    right: -8,
+                    top: -6,
+                    right: -6,
                     background: theme.palette.mode === 'dark' ? 'rgba(34, 197, 94, 0.2)' : 'rgba(34, 197, 94, 0.1)',
                     color: theme.palette.mode === 'dark' ? '#22c55e' : '#059669',
-                    px: 0.5,
-                    py: 0.25,
-                    borderRadius: 1,
-                    fontSize: '0.6rem',
+                    px: 0.4,
+                    py: 0.2,
+                    borderRadius: 0.8,
+                    fontSize: '0.55rem',
                     fontWeight: 600,
                     border: theme.palette.mode === 'dark' ? '1px solid rgba(34, 197, 94, 0.3)' : '1px solid rgba(34, 197, 94, 0.2)',
                   }}
@@ -879,12 +900,31 @@ const AdvancedImageCropper: React.FC<AdvancedImageCropperProps> = ({
 
       {/* Tool Options */}
       {!croppedImage && (activeTool === 'pencil' || activeTool === 'eraser') && (
-        <Box sx={{ mb: 2, p: 2, backgroundColor: theme.palette.background.paper, borderRadius: 1 }}>
-          <Typography variant="subtitle2" sx={{ mb: 1 }}>
-            {activeTool === 'pencil' ? 'Pencil Settings' : 'Eraser Settings'}
+        <Box sx={{ 
+          mb: 1, 
+          p: 1.5, 
+          backgroundColor: theme.palette.mode === 'dark' 
+            ? 'rgba(148, 163, 184, 0.05)' 
+            : 'rgba(148, 163, 184, 0.02)', 
+          borderRadius: 2,
+          border: theme.palette.mode === 'dark'
+            ? '1px solid rgba(148, 163, 184, 0.1)'
+            : '1px solid rgba(148, 163, 184, 0.15)'
+        }}>
+          <Typography variant="body2" sx={{ 
+            mb: 1, 
+            fontWeight: 600,
+            fontSize: isMobile ? '0.8rem' : '0.9rem',
+            color: theme.palette.text.primary
+          }}>
+            {activeTool === 'pencil' ? '✏️ Pencil Settings' : '🧽 Eraser Settings'}
           </Typography>
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-            <Typography variant="body2" sx={{ minWidth: '60px' }}>
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
+            <Typography variant="body2" sx={{ 
+              minWidth: isMobile ? '50px' : '60px',
+              fontSize: isMobile ? '0.75rem' : '0.8rem',
+              color: theme.palette.text.secondary
+            }}>
               Size: {activeTool === 'pencil' ? brushSize : eraserSize}px
             </Typography>
             <Slider
@@ -898,26 +938,24 @@ const AdvancedImageCropper: React.FC<AdvancedImageCropperProps> = ({
               }}
               min={5}
               max={50}
-              sx={{ flexGrow: 1 }}
+              sx={{ 
+                flexGrow: 1,
+                '& .MuiSlider-thumb': {
+                  width: isMobile ? 16 : 20,
+                  height: isMobile ? 16 : 20,
+                },
+                '& .MuiSlider-track': {
+                  height: isMobile ? 3 : 4,
+                },
+                '& .MuiSlider-rail': {
+                  height: isMobile ? 3 : 4,
+                }
+              }}
             />
           </Box>
         </Box>
       )}
 
-      {/* Instructions */}
-      {!croppedImage && (
-        <Box sx={{ mb: 1, p: 2, backgroundColor: theme.palette.background.paper, borderRadius: 1 }}>
-          <Typography variant="body2" sx={{ color: theme.palette.text.secondary, fontSize: '0.8rem' }}>
-            {activeTool === 'pointer' && '🖱️ Click and drag to select rectangular areas'}
-            {activeTool === 'pencil' && '✏️ Draw to mark areas to keep (applied immediately)'}
-            {activeTool === 'eraser' && '🧽 Draw to remove areas (applied immediately)'}
-            {activeTool === 'rectangle' && '📐 Click and drag to create rectangle'}
-            {activeTool === 'square' && '⬜ Click and drag to create square'}
-            {activeTool === 'polygon' && '📐 Click to add points, click near start to close'}
-            {activeTool === 'auto' && '🤖 Click to auto-detect and crop content'}
-          </Typography>
-        </Box>
-      )}
 
       {/* Canvas Container */}
       <Box
@@ -926,10 +964,13 @@ const AdvancedImageCropper: React.FC<AdvancedImageCropperProps> = ({
           flexGrow: 1,
           width: '100%',
           height: '100%',
-          minHeight: isMobile ? '300px' : '400px',
+          minHeight: isMobile ? '250px' : '350px',
           background: '#000',
-          borderRadius: 1,
+          borderRadius: 2,
           overflow: 'hidden',
+          boxShadow: theme.palette.mode === 'dark'
+            ? '0 4px 20px rgba(0, 0, 0, 0.3)'
+            : '0 4px 20px rgba(0, 0, 0, 0.1)',
         }}
       >
         {imageUrl ? (
@@ -1020,9 +1061,10 @@ const AdvancedImageCropper: React.FC<AdvancedImageCropperProps> = ({
       {/* Controls */}
       <Stack 
         direction={isMobile ? 'column' : 'row'} 
-        spacing={isMobile ? 1 : 2} 
+        spacing={isMobile ? 0.8 : 1.5} 
         justifyContent="center"
         flexWrap="wrap"
+        sx={{ mt: 1 }}
       >
         <Button
           variant="contained"

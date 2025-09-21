@@ -38,7 +38,7 @@ export const gimpCoordinates: { [key: string]: GimpCoordinate } = {
 
   // South coordinates (corrected - these were originally labeled as West)
   'W1': { x: 702.0, y: 587.1 },
-  'W2': { x: 839.5, y: 496.7 },
+  'W2': { x: 840.5, y: 499.7 },
   'W3': { x: 993.5, y: 433.1 },
   'W4': { x: 1147.4, y: 402.3 },
   'W5': { x: 1315.7, y: 402.3 },

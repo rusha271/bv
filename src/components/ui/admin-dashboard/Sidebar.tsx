@@ -13,7 +13,8 @@ import {
   ChevronLeft,
   ChevronRight,
   Sparkles,
-  Zap
+  Zap,
+  Image
 } from "lucide-react";
 import { useThemeContext } from "@/contexts/ThemeContext";
 
@@ -33,6 +34,7 @@ export default function Sidebar({ onClose, collapsed = false, onToggleCollapse }
     { name: "Consultations", href: "/dashboard/consultations", icon: MessageSquare },
     // { name: "World Map", href: "/dashboard/world-map", icon: Globe },
     { name: "Analytics", href: "/dashboard/analytics", icon: BarChart3 },
+    { name: "Floor Plans", href: "/dashboard/floorplan-analyses", icon: Image },
     { name: "Site Settings", href: "/dashboard/site-settings", icon: Settings },
   ];
 

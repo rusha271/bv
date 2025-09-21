@@ -80,6 +80,12 @@ export interface FloorPlanAnalysis {
   file_id: number;
   image_data?: string;
   original_image_url?: string;
+  cropped_image_url?: string;
+  analysis_result?: string;
+  vastu_score?: number;
+  recommendations?: string;
+  chakra_positions?: string;
+  planet_influences?: string;
   status: 'pending' | 'completed' | 'failed';
   created_at: string;
   updated_at: string;
@@ -503,7 +509,12 @@ class ApiService {
     },
   
     analyze: async (id: string): Promise<VastuAnalysis> => {
-      return api.post<VastuAnalysis>(`/api/floorplan/${id}/analyze`);
+      return api.post<VastuAnalysis>(`/admin/floorplan/${id}/analyze`);
+    },
+
+    // Get all floor plan analyses from admin endp  oint
+    getAnalyses: async (): Promise<FloorPlanAnalysis[]> => {
+      return api.get<FloorPlanAnalysis[]>('/admin/floorplan-analyses');
     }
   };
 

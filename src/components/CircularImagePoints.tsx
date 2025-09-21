@@ -116,7 +116,12 @@ export const CircularImagePoints: React.FC<CircularImagePointsProps> = ({
           alt={imageAlt}
           fill
           className={`object-contain ${imageClassName}`}
-          style={{ position: 'absolute' }}
+          style={{ 
+            position: 'absolute',
+            transform: `rotate(${-rotation}deg)`,
+            transformOrigin: 'center center',
+            transition: 'transform 0.3s ease-out'
+          }}
           loading="lazy"
           priority={false}
         />
