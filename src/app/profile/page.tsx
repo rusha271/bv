@@ -53,7 +53,7 @@ export default function ProfilePage() {
           email: userData.email || ''
         });
       } catch (error: any) {
-        console.error('Error fetching profile:', error);
+        // console.error('Error fetching profile:', error);
         setError('Failed to load profile data');
       } finally {
         setIsLoading(false);
@@ -119,7 +119,7 @@ export default function ProfilePage() {
       setIsEditing(false);
       toast.success('Profile updated successfully!');
     } catch (error: any) {
-      console.error('Error updating profile:', error);
+      // console.error('Error updating profile:', error);
       setError(error.message || 'Failed to update profile');
     } finally {
       setIsSaving(false);

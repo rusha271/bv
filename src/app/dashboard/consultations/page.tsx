@@ -69,7 +69,7 @@ export default function ConsultationsPage() {
           ]);
         }
       } catch (err) {
-        console.error('Error fetching consultations:', err);
+        // console.error('Error fetching consultations:', err);
         setError('Failed to load consultation requests');
         // Keep using dummy data as fallback
       }

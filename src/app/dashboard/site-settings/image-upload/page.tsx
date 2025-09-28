@@ -61,32 +61,20 @@ export default function SiteSettingsPage() {
     try {
       setIsLoading(true);
       
-      // Helper function to safely call API
-      const safeApiCall = async (category: string) => {
-        try {
-          return await apiService.siteSettings.getLatestByCategory(category);
-        } catch (error) {
-          // console.log(`API call failed for ${category}:`, error);
-          return null;
-        }
-      };
-
-      const [logoData, tourVideoData, chakraData] = await Promise.allSettled([
-        safeApiCall('logo'),
-        safeApiCall('tour_video'),
-        safeApiCall('chakra_points')
-      ]);
+      // Optimized API call to get all latest site settings using existing endpoints
+      const response = await apiService.siteSettings.getLatestAllOptimized();
+      const { data, file_urls } = response;
 
       setCurrentFiles({
-        logo: logoData.status === 'fulfilled' && logoData.value ? logoData.value.data : null,
-        tour_video: tourVideoData.status === 'fulfilled' && tourVideoData.value ? tourVideoData.value.data : null,
-        chakra_points: chakraData.status === 'fulfilled' && chakraData.value ? chakraData.value.data : null
+        logo: data.logo,
+        tour_video: data.tour_video,
+        chakra_points: data.chakra_points
       });
       
       setCurrentFileUrls({
-        logo: logoData.status === 'fulfilled' && logoData.value ? logoData.value.file_url : null,
-        tour_video: tourVideoData.status === 'fulfilled' && tourVideoData.value ? tourVideoData.value.file_url : null,
-        chakra_points: chakraData.status === 'fulfilled' && chakraData.value ? chakraData.value.file_url : null
+        logo: file_urls.logo,
+        tour_video: file_urls.tour_video,
+        chakra_points: file_urls.chakra_points
       });
     } catch (error) {
       // console.log('Error fetching current files:', error);
@@ -155,6 +143,9 @@ export default function SiteSettingsPage() {
     try {
       const data = await apiService.siteSettings.upload(selectedCategory, selectedFile);
       
+      // Clear the cache to force fresh data fetch
+      await apiService.siteSettings.clearCache();
+      
       // Update current files
       setCurrentFiles(prev => ({
         ...prev,
@@ -172,7 +163,7 @@ export default function SiteSettingsPage() {
       
       toast.success(`${selectedCategory.replace('_', ' ')} uploaded successfully!`);
     } catch (error: any) {
-      console.error('Upload error:', error);
+      // console.error('Upload error:', error);
       toast.error(error.message || 'An error occurred while uploading the file');
     } finally {
       setIsUploading(false);
@@ -200,7 +191,7 @@ export default function SiteSettingsPage() {
       
       toast.success('File deleted successfully!');
     } catch (error: any) {
-      console.error('Delete error:', error);
+      //  console.error('Delete error:', error);
       toast.error(error.message || 'An error occurred while deleting the file');
     }
   };

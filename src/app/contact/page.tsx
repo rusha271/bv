@@ -6,7 +6,7 @@ import { useDeviceType } from '@/utils/useDeviceType';
 import Navbar from '@/components/ui/Navbar';
 import Footer from '@/components/ui/Footer';
 import Box from '@mui/material/Box';
-import { Phone, Mail, MapPin, Clock, Star, Calendar, Play, X } from 'lucide-react';
+import { Phone, Mail, MapPin, Clock, Star, Calendar, Play, X, Sparkles, Users, Award, Shield, Zap, FileText, Scale, MessageCircle } from 'lucide-react';
 import { toast } from 'react-hot-toast';
 import apiService from '@/utils/apiService';
 
@@ -119,7 +119,7 @@ function TeamMemberBox({ member, imageOnRight = false }: { member: any, imageOnR
           <h3
             className="text-xl font-bold mb-2"
             style={{ 
-              background: theme.palette.mode === 'dark'
+              backgroundImage: theme.palette.mode === 'dark'
                 ? 'linear-gradient(135deg, #60a5fa 0%, #a78bfa 100%)'
                 : 'linear-gradient(135deg, #1e40af 0%, #7c3aed 100%)',
               backgroundClip: 'text',
@@ -132,7 +132,7 @@ function TeamMemberBox({ member, imageOnRight = false }: { member: any, imageOnR
           <p
             className="font-semibold mb-3"
             style={{ 
-              background: theme.palette.mode === 'dark'
+              backgroundImage: theme.palette.mode === 'dark'
                 ? 'linear-gradient(135deg, #34d399 0%, #10b981 100%)'
                 : 'linear-gradient(135deg, #059669 0%, #047857 100%)',
               backgroundClip: 'text',
@@ -299,7 +299,7 @@ function ConsultantBox({ member, imageOnRight = false }: { member: any, imageOnR
           <h3
             className="text-xl font-bold mb-2"
             style={{ 
-              background: theme.palette.mode === 'dark'
+              backgroundImage: theme.palette.mode === 'dark'
                 ? 'linear-gradient(135deg, #60a5fa 0%, #a78bfa 100%)'
                 : 'linear-gradient(135deg, #1e40af 0%, #7c3aed 100%)',
               backgroundClip: 'text',
@@ -312,7 +312,7 @@ function ConsultantBox({ member, imageOnRight = false }: { member: any, imageOnR
           <p
             className="font-semibold mb-3"
             style={{ 
-              background: theme.palette.mode === 'dark'
+              backgroundImage: theme.palette.mode === 'dark'
                 ? 'linear-gradient(135deg, #34d399 0%, #10b981 100%)'
                 : 'linear-gradient(135deg, #059669 0%, #047857 100%)',
               backgroundClip: 'text',
@@ -393,6 +393,8 @@ export default function ModernContactPage() {
   const [today, setToday] = useState('');
   const [minDateTime, setMinDateTime] = useState('');
   
+  // Modal states
+  
   // Calculate default date immediately to avoid controlled/uncontrolled input issues
   const getDefaultDateTime = () => {
     const now = new Date();
@@ -448,7 +450,9 @@ export default function ModernContactPage() {
     try {
       // Send the data to the contact endpoint
       const response = await apiService.contact.sendMessage(contactData);
-      if (response.success) {
+      
+      // Check for success based on the actual API response structure
+      if (response.status === 'received' || response.message === 'Consultation request submitted successfully') {
         toast.success('Consultation request submitted successfully!');
         // Optionally reset the form
         setFormData({
@@ -465,7 +469,7 @@ export default function ModernContactPage() {
         toast.error(response.message || 'Failed to submit the request.');
       }
     } catch (error: any) {
-      console.error('API Error:', error);
+      // console.error('API Error:', error);
       const errorMessage = error.message || 'An error occurred while submitting the request.';
       toast.error(errorMessage);
     }
@@ -543,30 +547,108 @@ export default function ModernContactPage() {
           marginBottom: isMobile ? '1.5rem' : '2.5rem',
         }}
       >
-        <h1
-          className="font-bold mb-8 text-center"
-          style={{ 
-            fontSize: sectionTitleSize,
-            background: theme.palette.mode === 'dark'
-              ? 'linear-gradient(135deg, #60a5fa 0%, #a78bfa 100%)'
-              : 'linear-gradient(135deg, #1e40af 0%, #7c3aed 100%)',
-            backgroundClip: 'text',
-            WebkitBackgroundClip: 'text',
-            WebkitTextFillColor: 'transparent',
-            textShadow: theme.palette.mode === 'dark' 
-              ? '0 2px 4px rgba(0, 0, 0, 0.1)' 
-              : '0 2px 4px rgba(0, 0, 0, 0.1)',
-          }}
-        >
-          Connect with Brahma Vastu Experts
-        </h1>
+        {/* Modern Hero Section */}
+        <div className="text-center mb-12">
+          <div className="inline-flex items-center px-4 py-2 rounded-full mb-6 transition-all duration-300 hover:scale-105"
+            style={{
+              background: theme.palette.mode === 'dark'
+                ? 'rgba(139, 92, 246, 0.1)'
+                : 'rgba(139, 92, 246, 0.05)',
+              border: theme.palette.mode === 'dark'
+                ? '1px solid rgba(139, 92, 246, 0.2)'
+                : '1px solid rgba(139, 92, 246, 0.1)',
+            }}
+          >
+            <Sparkles className="w-4 h-4 mr-2" style={{ color: '#8b5cf6' }} />
+            <span className="text-sm font-medium" style={{ color: '#8b5cf6' }}>
+              Expert Vastu Consultation
+            </span>
+          </div>
+          
+          <h1
+            className="font-bold mb-6"
+            style={{ 
+              fontSize: sectionTitleSize,
+              backgroundImage: theme.palette.mode === 'dark'
+                ? 'linear-gradient(135deg, #60a5fa 0%, #a78bfa 100%)'
+                : 'linear-gradient(135deg, #1e40af 0%, #7c3aed 100%)',
+              backgroundClip: 'text',
+              WebkitBackgroundClip: 'text',
+              WebkitTextFillColor: 'transparent',
+              textShadow: theme.palette.mode === 'dark' 
+                ? '0 2px 4px rgba(0, 0, 0, 0.1)' 
+                : '0 2px 4px rgba(0, 0, 0, 0.1)',
+            }}
+          >
+            Connect with Brahma Vastu Experts
+          </h1>
+          
+          <p className="text-lg max-w-3xl mx-auto leading-relaxed" style={{ color: theme.palette.text.secondary }}>
+            Transform your space with ancient Vedic wisdom. Our certified Vastu experts provide personalized consultations 
+            to harmonize your environment and enhance prosperity.
+          </p>
+          
+          {/* Stats */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-8 max-w-4xl mx-auto">
+            <div className="flex items-center justify-center space-x-3 p-4 rounded-xl transition-all duration-300 hover:scale-105"
+              style={{
+                background: theme.palette.mode === 'dark'
+                  ? 'rgba(34, 197, 94, 0.1)'
+                  : 'rgba(34, 197, 94, 0.05)',
+                border: theme.palette.mode === 'dark'
+                  ? '1px solid rgba(34, 197, 94, 0.2)'
+                  : '1px solid rgba(34, 197, 94, 0.1)',
+              }}
+            >
+              <Users className="w-6 h-6" style={{ color: '#22c55e' }} />
+              <div className="text-left">
+                <div className="text-2xl font-bold" style={{ color: theme.palette.text.primary }}>10,000+</div>
+                <div className="text-sm" style={{ color: theme.palette.text.secondary }}>Happy Clients</div>
+              </div>
+            </div>
+            
+            <div className="flex items-center justify-center space-x-3 p-4 rounded-xl transition-all duration-300 hover:scale-105"
+              style={{
+                background: theme.palette.mode === 'dark'
+                  ? 'rgba(59, 130, 246, 0.1)'
+                  : 'rgba(59, 130, 246, 0.05)',
+                border: theme.palette.mode === 'dark'
+                  ? '1px solid rgba(59, 130, 246, 0.2)'
+                  : '1px solid rgba(59, 130, 246, 0.1)',
+              }}
+            >
+              <Award className="w-6 h-6" style={{ color: '#3b82f6' }} />
+              <div className="text-left">
+                <div className="text-2xl font-bold" style={{ color: theme.palette.text.primary }}>25+</div>
+                <div className="text-sm" style={{ color: theme.palette.text.secondary }}>Years Experience</div>
+              </div>
+            </div>
+            
+            <div className="flex items-center justify-center space-x-3 p-4 rounded-xl transition-all duration-300 hover:scale-105"
+              style={{
+                background: theme.palette.mode === 'dark'
+                  ? 'rgba(139, 92, 246, 0.1)'
+                  : 'rgba(139, 92, 246, 0.05)',
+                border: theme.palette.mode === 'dark'
+                  ? '1px solid rgba(139, 92, 246, 0.2)'
+                  : '1px solid rgba(139, 92, 246, 0.1)',
+              }}
+            >
+              <Zap className="w-6 h-6" style={{ color: '#8b5cf6' }} />
+              <div className="text-left">
+                <div className="text-2xl font-bold" style={{ color: theme.palette.text.primary }}>98%</div>
+                <div className="text-sm" style={{ color: theme.palette.text.secondary }}>Success Rate</div>
+              </div>
+            </div>
+          </div>
+        </div>
 
         {/* Leadership Section */}
         <FadeInSection>
           <h2
             className="text-2xl font-bold mb-6 text-center"
             style={{ 
-              background: theme.palette.mode === 'dark'
+              backgroundImage: theme.palette.mode === 'dark'
                 ? 'linear-gradient(135deg, #60a5fa 0%, #a78bfa 100%)'
                 : 'linear-gradient(135deg, #1e40af 0%, #7c3aed 100%)',
               backgroundClip: 'text',
@@ -587,7 +669,7 @@ export default function ModernContactPage() {
           <h2
             className="text-2xl font-bold mb-6 text-center"
             style={{ 
-              background: theme.palette.mode === 'dark'
+              backgroundImage: theme.palette.mode === 'dark'
                 ? 'linear-gradient(135deg, #60a5fa 0%, #a78bfa 100%)'
                 : 'linear-gradient(135deg, #1e40af 0%, #7c3aed 100%)',
               backgroundClip: 'text',
@@ -613,7 +695,7 @@ export default function ModernContactPage() {
           <h2
             className="text-2xl font-bold mb-6 text-center"
             style={{ 
-              background: theme.palette.mode === 'dark'
+              backgroundImage: theme.palette.mode === 'dark'
                 ? 'linear-gradient(135deg, #60a5fa 0%, #a78bfa 100%)'
                 : 'linear-gradient(135deg, #1e40af 0%, #7c3aed 100%)',
               backgroundClip: 'text',
@@ -642,7 +724,7 @@ export default function ModernContactPage() {
               <h3
                 className="text-2xl font-bold mb-6"
                 style={{ 
-                  background: theme.palette.mode === 'dark'
+                  backgroundImage: theme.palette.mode === 'dark'
                     ? 'linear-gradient(135deg, #60a5fa 0%, #a78bfa 100%)'
                     : 'linear-gradient(135deg, #1e40af 0%, #7c3aed 100%)',
                   backgroundClip: 'text',
@@ -785,7 +867,7 @@ export default function ModernContactPage() {
               <h3
                 className="text-2xl font-bold mb-6"
                 style={{ 
-                  background: theme.palette.mode === 'dark'
+                  backgroundImage: theme.palette.mode === 'dark'
                     ? 'linear-gradient(135deg, #60a5fa 0%, #a78bfa 100%)'
                     : 'linear-gradient(135deg, #1e40af 0%, #7c3aed 100%)',
                   backgroundClip: 'text',
@@ -838,129 +920,113 @@ export default function ModernContactPage() {
         {/* Request Consultation Form */}
         <FadeInSection>
         <div
-          className="max-w-2xl mx-auto p-8 rounded-2xl transition-all duration-300 hover:shadow-2xl"
+          className="max-w-4xl mx-auto p-8 rounded-3xl transition-all duration-500 hover:shadow-2xl relative overflow-hidden"
           style={{
             background: theme.palette.mode === 'dark'
-              ? 'rgba(15, 23, 42, 0.8)'
-              : 'rgba(255, 255, 255, 0.8)',
+              ? 'rgba(15, 23, 42, 0.9)'
+              : 'rgba(255, 255, 255, 0.9)',
             backdropFilter: 'blur(20px)',
             border: theme.palette.mode === 'dark'
               ? '1px solid rgba(148, 163, 184, 0.1)'
               : '1px solid rgba(148, 163, 184, 0.2)',
             boxShadow: theme.palette.mode === 'dark'
-              ? '0 8px 32px rgba(0, 0, 0, 0.3)'
-              : '0 8px 32px rgba(0, 0, 0, 0.1)',
+              ? '0 25px 50px -12px rgba(0, 0, 0, 0.5)'
+              : '0 25px 50px -12px rgba(0, 0, 0, 0.25)',
           }}
         >
-          <h3
-            className="text-2xl font-bold mb-6 text-center"
-            style={{ 
-              background: theme.palette.mode === 'dark'
-                ? 'linear-gradient(135deg, #60a5fa 0%, #a78bfa 100%)'
-                : 'linear-gradient(135deg, #1e40af 0%, #7c3aed 100%)',
-              backgroundClip: 'text',
-              WebkitBackgroundClip: 'text',
-              WebkitTextFillColor: 'transparent',
+          {/* Animated Background Pattern */}
+          <div 
+            className="absolute inset-0 opacity-[0.02]"
+            style={{
+              background: `radial-gradient(circle at 20% 80%, #8b5cf6 0%, transparent 50%),
+                          radial-gradient(circle at 80% 20%, #3b82f6 0%, transparent 50%),
+                          radial-gradient(circle at 40% 40%, #22c55e 0%, transparent 50%)`
             }}
-          >
-            Request Consultation
-          </h3>
-          <div className="space-y-4">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <input
-                type="text"
-                name="name"
-                placeholder="👤 Enter your full name"
-                value={formData.name}
-                onChange={handleInputChange}
-                className="w-full p-4 rounded-xl border-2 transition-all duration-300 focus:outline-none focus:scale-105"
+          />
+          
+          <div className="relative z-10">
+            <div className="text-center mb-8">
+              <div className="inline-flex items-center px-4 py-2 rounded-full mb-4 transition-all duration-300 hover:scale-105"
                 style={{
-                  borderColor: theme.palette.mode === 'dark' 
-                    ? 'rgba(148, 163, 184, 0.2)' 
-                    : 'rgba(148, 163, 184, 0.3)',
                   background: theme.palette.mode === 'dark'
-                    ? 'rgba(15, 23, 42, 0.5)'
-                    : 'rgba(255, 255, 255, 0.7)',
-                  backdropFilter: 'blur(10px)',
-                  color: theme.palette.text.primary,
+                    ? 'rgba(59, 130, 246, 0.1)'
+                    : 'rgba(59, 130, 246, 0.05)',
+                  border: theme.palette.mode === 'dark'
+                    ? '1px solid rgba(59, 130, 246, 0.2)'
+                    : '1px solid rgba(59, 130, 246, 0.1)',
                 }}
-                onFocus={(e) => {
-                  e.target.style.borderColor = '#3b82f6';
-                  e.target.style.boxShadow = '0 0 0 3px rgba(59, 130, 246, 0.1)';
+              >
+                <Calendar className="w-4 h-4 mr-2" style={{ color: '#3b82f6' }} />
+                <span className="text-sm font-medium" style={{ color: '#3b82f6' }}>
+                  Book Your Consultation
+                </span>
+              </div>
+              
+              <h3
+                className="text-3xl font-bold mb-4"
+                style={{ 
+                  backgroundImage: theme.palette.mode === 'dark'
+                    ? 'linear-gradient(135deg, #60a5fa 0%, #a78bfa 100%)'
+                    : 'linear-gradient(135deg, #1e40af 0%, #7c3aed 100%)',
+                  backgroundClip: 'text',
+                  WebkitBackgroundClip: 'text',
+                  WebkitTextFillColor: 'transparent',
                 }}
-                onBlur={(e) => {
-                  e.target.style.borderColor = theme.palette.mode === 'dark' 
-                    ? 'rgba(148, 163, 184, 0.2)' 
-                    : 'rgba(148, 163, 184, 0.3)';
-                  e.target.style.boxShadow = 'none';
-                }}
-              />
-              <input
-                type="email"
-                name="email"
-                placeholder="📧 Enter your email address"
-                value={formData.email}
-                onChange={handleInputChange}
-                className="w-full p-4 rounded-xl border-2 transition-all duration-300 focus:outline-none focus:scale-105"
-                style={{
-                  borderColor: theme.palette.mode === 'dark' 
-                    ? 'rgba(148, 163, 184, 0.2)' 
-                    : 'rgba(148, 163, 184, 0.3)',
-                  background: theme.palette.mode === 'dark'
-                    ? 'rgba(15, 23, 42, 0.5)'
-                    : 'rgba(255, 255, 255, 0.7)',
-                  backdropFilter: 'blur(10px)',
-                  color: theme.palette.text.primary,
-                }}
-                onFocus={(e) => {
-                  e.target.style.borderColor = '#3b82f6';
-                  e.target.style.boxShadow = '0 0 0 3px rgba(59, 130, 246, 0.1)';
-                }}
-                onBlur={(e) => {
-                  e.target.style.borderColor = theme.palette.mode === 'dark' 
-                    ? 'rgba(148, 163, 184, 0.2)' 
-                    : 'rgba(148, 163, 184, 0.3)';
-                  e.target.style.boxShadow = 'none';
-                }}
-              />
+              >
+                Request Consultation
+              </h3>
+              
+              <p className="text-lg" style={{ color: theme.palette.text.secondary }}>
+                Get personalized Vastu guidance from our certified experts
+              </p>
             </div>
-            <div className="space-y-4">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {mounted ? (
-                <input
-                  type="datetime-local"
-                  name="preferred_date"
-                  value={formData.preferred_date}
-                  onChange={handleInputChange}
-                  min={minDateTime}
-                  className="w-full p-3 rounded-lg border-2 transition-all duration-200 focus:border-blue-500 focus:outline-none"
-                  style={{
-                    borderColor: theme.palette.divider,
-                    background: theme.palette.background.default,
-                    color: theme.palette.text.primary,
-                    colorScheme: theme.palette.mode === 'dark' ? 'dark' : 'light',
-                  }}
-                />
-              ) : (
+          <div className="space-y-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className="space-y-2">
+                <label className="text-sm font-medium flex items-center" style={{ color: theme.palette.text.primary }}>
+                  <Users className="w-4 h-4 mr-2" />
+                  Full Name
+                </label>
                 <input
                   type="text"
-                  placeholder="Loading date picker..."
-                  value={formData.preferred_date}
-                  disabled
-                  className="w-full p-3 rounded-lg border-2 transition-all duration-200 focus:border-blue-500 focus:outline-none"
+                  name="name"
+                  placeholder="Enter your full name"
+                  value={formData.name}
+                  onChange={handleInputChange}
+                  className="w-full p-4 rounded-xl border-2 transition-all duration-300 focus:outline-none focus:scale-105"
                   style={{
-                    borderColor: theme.palette.divider,
-                    background: theme.palette.background.default,
+                    borderColor: theme.palette.mode === 'dark' 
+                      ? 'rgba(148, 163, 184, 0.2)' 
+                      : 'rgba(148, 163, 184, 0.3)',
+                    background: theme.palette.mode === 'dark'
+                      ? 'rgba(15, 23, 42, 0.5)'
+                      : 'rgba(255, 255, 255, 0.7)',
+                    backdropFilter: 'blur(10px)',
                     color: theme.palette.text.primary,
-                    opacity: 0.6,
+                  }}
+                  onFocus={(e) => {
+                    e.target.style.borderColor = '#3b82f6';
+                    e.target.style.boxShadow = '0 0 0 3px rgba(59, 130, 246, 0.1)';
+                  }}
+                  onBlur={(e) => {
+                    e.target.style.borderColor = theme.palette.mode === 'dark' 
+                      ? 'rgba(148, 163, 184, 0.2)' 
+                      : 'rgba(148, 163, 184, 0.3)';
+                    e.target.style.boxShadow = 'none';
                   }}
                 />
-              )}
+              </div>
+              
+              <div className="space-y-2">
+                <label className="text-sm font-medium flex items-center" style={{ color: theme.palette.text.primary }}>
+                  <Mail className="w-4 h-4 mr-2" />
+                  Email Address
+                </label>
                 <input
-                  type="tel"
-                  name="phone"
-                  placeholder="📱 Enter your phone number"
-                  value={formData.phone}
+                  type="email"
+                  name="email"
+                  placeholder="Enter your email address"
+                  value={formData.email}
                   onChange={handleInputChange}
                   className="w-full p-4 rounded-xl border-2 transition-all duration-300 focus:outline-none focus:scale-105"
                   style={{
@@ -986,109 +1052,217 @@ export default function ModernContactPage() {
                 />
               </div>
             </div>
-            <select
-              name="consultationType"
-              value={formData.consultationType}
-              onChange={handleInputChange}
-              className="w-full p-4 rounded-xl border-2 transition-all duration-300 focus:outline-none focus:scale-105 appearance-none cursor-pointer"
-              style={{
-                borderColor: theme.palette.mode === 'dark' 
-                  ? 'rgba(148, 163, 184, 0.2)' 
-                  : 'rgba(148, 163, 184, 0.3)',
-                background: theme.palette.mode === 'dark'
-                  ? 'rgba(15, 23, 42, 0.5)'
-                  : 'rgba(255, 255, 255, 0.7)',
-                backdropFilter: 'blur(10px)',
-                color: theme.palette.text.primary,
-                backgroundImage: `url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='m6 8 4 4 4-4'/%3e%3c/svg%3e")`,
-                backgroundPosition: 'right 12px center',
-                backgroundRepeat: 'no-repeat',
-                backgroundSize: '16px',
-                paddingRight: '40px',
-              }}
-              onFocus={(e) => {
-                e.target.style.borderColor = '#3b82f6';
-                e.target.style.boxShadow = '0 0 0 3px rgba(59, 130, 246, 0.1)';
-                e.target.style.backgroundImage = `url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%233b82f6' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='m6 8 4 4 4-4'/%3e%3c/svg%3e")`;
-              }}
-              onBlur={(e) => {
-                e.target.style.borderColor = theme.palette.mode === 'dark' 
-                  ? 'rgba(148, 163, 184, 0.2)' 
-                  : 'rgba(148, 163, 184, 0.3)';
-                e.target.style.boxShadow = 'none';
-                e.target.style.backgroundImage = `url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='m6 8 4 4 4-4'/%3e%3c/svg%3e")`;
-              }}
-            >
-              <option value="" style={{ 
-                background: theme.palette.mode === 'dark' ? '#1e293b' : '#f8fafc',
-                color: theme.palette.text.secondary 
-              }}>
-                🏠 Select Consultation Type
-              </option>
-              <option value="Residential Vastu" style={{ 
-                background: theme.palette.mode === 'dark' ? '#1e293b' : '#f8fafc',
-                color: theme.palette.text.primary 
-              }}>
-                🏡 Residential Vastu
-              </option>
-              <option value="Commercial Vastu" style={{ 
-                background: theme.palette.mode === 'dark' ? '#1e293b' : '#f8fafc',
-                color: theme.palette.text.primary 
-              }}>
-                🏢 Commercial Vastu
-              </option>
-              <option value="Plot Selection" style={{ 
-                background: theme.palette.mode === 'dark' ? '#1e293b' : '#f8fafc',
-                color: theme.palette.text.primary 
-              }}>
-                📍 Plot Selection
-              </option>
-              <option value="Remedial Solutions" style={{ 
-                background: theme.palette.mode === 'dark' ? '#1e293b' : '#f8fafc',
-                color: theme.palette.text.primary 
-              }}>
-                🔧 Remedial Solutions
-              </option>
-              <option value="Online Consultation" style={{ 
-                background: theme.palette.mode === 'dark' ? '#1e293b' : '#f8fafc',
-                color: theme.palette.text.primary 
-              }}>
-                💻 Online Consultation
-              </option>
-            </select>
-            <textarea
-              name="message"
-              placeholder="💬 Tell us about your requirements and what you hope to achieve..."
-              value={formData.message}
-              onChange={handleInputChange}
-              rows={4}
-              className="w-full p-4 rounded-xl border-2 transition-all duration-300 focus:outline-none focus:scale-105 resize-none"
-              style={{
-                borderColor: theme.palette.mode === 'dark' 
-                  ? 'rgba(148, 163, 184, 0.2)' 
-                  : 'rgba(148, 163, 184, 0.3)',
-                background: theme.palette.mode === 'dark'
-                  ? 'rgba(15, 23, 42, 0.5)'
-                  : 'rgba(255, 255, 255, 0.7)',
-                backdropFilter: 'blur(10px)',
-                color: theme.palette.text.primary,
-                fontFamily: 'inherit',
-                lineHeight: '1.6',
-              }}
-              onFocus={(e) => {
-                e.target.style.borderColor = '#3b82f6';
-                e.target.style.boxShadow = '0 0 0 3px rgba(59, 130, 246, 0.1)';
-              }}
-              onBlur={(e) => {
-                e.target.style.borderColor = theme.palette.mode === 'dark' 
-                  ? 'rgba(148, 163, 184, 0.2)' 
-                  : 'rgba(148, 163, 184, 0.3)';
-                e.target.style.boxShadow = 'none';
-              }}
-            />
+            <div className="space-y-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <label className="text-sm font-medium flex items-center" style={{ color: theme.palette.text.primary }}>
+                    <Calendar className="w-4 h-4 mr-2" />
+                    Preferred Date & Time
+                  </label>
+                  {mounted ? (
+                    <input
+                      type="datetime-local"
+                      name="preferred_date"
+                      value={formData.preferred_date}
+                      onChange={handleInputChange}
+                      min={minDateTime}
+                      className="w-full p-4 rounded-xl border-2 transition-all duration-300 focus:outline-none focus:scale-105"
+                      style={{
+                        borderColor: theme.palette.mode === 'dark' 
+                          ? 'rgba(148, 163, 184, 0.2)' 
+                          : 'rgba(148, 163, 184, 0.3)',
+                        background: theme.palette.mode === 'dark'
+                          ? 'rgba(15, 23, 42, 0.5)'
+                          : 'rgba(255, 255, 255, 0.7)',
+                        backdropFilter: 'blur(10px)',
+                        color: theme.palette.text.primary,
+                        colorScheme: theme.palette.mode === 'dark' ? 'dark' : 'light',
+                      }}
+                      onFocus={(e) => {
+                        e.target.style.borderColor = '#3b82f6';
+                        e.target.style.boxShadow = '0 0 0 3px rgba(59, 130, 246, 0.1)';
+                      }}
+                      onBlur={(e) => {
+                        e.target.style.borderColor = theme.palette.mode === 'dark' 
+                          ? 'rgba(148, 163, 184, 0.2)' 
+                          : 'rgba(148, 163, 184, 0.3)';
+                        e.target.style.boxShadow = 'none';
+                      }}
+                    />
+                  ) : (
+                    <input
+                      type="text"
+                      placeholder="Loading date picker..."
+                      value={formData.preferred_date}
+                      disabled
+                      className="w-full p-4 rounded-xl border-2 transition-all duration-300 focus:outline-none focus:scale-105"
+                      style={{
+                        borderColor: theme.palette.mode === 'dark' 
+                          ? 'rgba(148, 163, 184, 0.2)' 
+                          : 'rgba(148, 163, 184, 0.3)',
+                        background: theme.palette.mode === 'dark'
+                          ? 'rgba(15, 23, 42, 0.5)'
+                          : 'rgba(255, 255, 255, 0.7)',
+                        backdropFilter: 'blur(10px)',
+                        color: theme.palette.text.primary,
+                        opacity: 0.6,
+                      }}
+                    />
+                  )}
+                </div>
+                <div className="space-y-2">
+                  <label className="text-sm font-medium flex items-center" style={{ color: theme.palette.text.primary }}>
+                    <Phone className="w-4 h-4 mr-2" />
+                    Phone Number
+                  </label>
+                  <input
+                    type="tel"
+                    name="phone"
+                    placeholder="Enter your phone number"
+                    value={formData.phone}
+                    onChange={handleInputChange}
+                    className="w-full p-4 rounded-xl border-2 transition-all duration-300 focus:outline-none focus:scale-105"
+                    style={{
+                      borderColor: theme.palette.mode === 'dark' 
+                        ? 'rgba(148, 163, 184, 0.2)' 
+                        : 'rgba(148, 163, 184, 0.3)',
+                      background: theme.palette.mode === 'dark'
+                        ? 'rgba(15, 23, 42, 0.5)'
+                        : 'rgba(255, 255, 255, 0.7)',
+                      backdropFilter: 'blur(10px)',
+                      color: theme.palette.text.primary,
+                    }}
+                    onFocus={(e) => {
+                      e.target.style.borderColor = '#3b82f6';
+                      e.target.style.boxShadow = '0 0 0 3px rgba(59, 130, 246, 0.1)';
+                    }}
+                    onBlur={(e) => {
+                      e.target.style.borderColor = theme.palette.mode === 'dark' 
+                        ? 'rgba(148, 163, 184, 0.2)' 
+                        : 'rgba(148, 163, 184, 0.3)';
+                      e.target.style.boxShadow = 'none';
+                    }}
+                  />
+                </div>
+              </div>
+            </div>
+            
+            <div className="space-y-2">
+              <label className="text-sm font-medium flex items-center" style={{ color: theme.palette.text.primary }}>
+                <Award className="w-4 h-4 mr-2" />
+                Consultation Type
+              </label>
+              <select
+                name="consultationType"
+                value={formData.consultationType}
+                onChange={handleInputChange}
+                className="w-full p-4 rounded-xl border-2 transition-all duration-300 focus:outline-none focus:scale-105 appearance-none cursor-pointer"
+                style={{
+                  borderColor: theme.palette.mode === 'dark' 
+                    ? 'rgba(148, 163, 184, 0.2)' 
+                    : 'rgba(148, 163, 184, 0.3)',
+                  backgroundColor: theme.palette.mode === 'dark'
+                    ? 'rgba(15, 23, 42, 0.5)'
+                    : 'rgba(255, 255, 255, 0.7)',
+                  backdropFilter: 'blur(10px)',
+                  color: theme.palette.text.primary,
+                  backgroundImage: `url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='m6 8 4 4 4-4'/%3e%3c/svg%3e")`,
+                  backgroundPosition: 'right 12px center',
+                  backgroundRepeat: 'no-repeat',
+                  backgroundSize: '16px',
+                  paddingRight: '40px',
+                }}
+                onFocus={(e) => {
+                  e.target.style.borderColor = '#3b82f6';
+                  e.target.style.boxShadow = '0 0 0 3px rgba(59, 130, 246, 0.1)';
+                  e.target.style.backgroundImage = `url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%233b82f6' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='m6 8 4 4 4-4'/%3e%3c/svg%3e")`;
+                }}
+                onBlur={(e) => {
+                  e.target.style.borderColor = theme.palette.mode === 'dark' 
+                    ? 'rgba(148, 163, 184, 0.2)' 
+                    : 'rgba(148, 163, 184, 0.3)';
+                  e.target.style.boxShadow = 'none';
+                  e.target.style.backgroundImage = `url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='m6 8 4 4 4-4'/%3e%3c/svg%3e")`;
+                }}
+              >
+                <option value="" style={{ 
+                  background: theme.palette.mode === 'dark' ? '#1e293b' : '#f8fafc',
+                  color: theme.palette.text.secondary 
+                }}>
+                  Select Consultation Type
+                </option>
+                <option value="Residential Vastu" style={{ 
+                  background: theme.palette.mode === 'dark' ? '#1e293b' : '#f8fafc',
+                  color: theme.palette.text.primary 
+                }}>
+                  🏡 Residential Vastu
+                </option>
+                <option value="Commercial Vastu" style={{ 
+                  background: theme.palette.mode === 'dark' ? '#1e293b' : '#f8fafc',
+                  color: theme.palette.text.primary 
+                }}>
+                  🏢 Commercial Vastu
+                </option>
+                <option value="Plot Selection" style={{ 
+                  background: theme.palette.mode === 'dark' ? '#1e293b' : '#f8fafc',
+                  color: theme.palette.text.primary 
+                }}>
+                  📍 Plot Selection
+                </option>
+                <option value="Remedial Solutions" style={{ 
+                  background: theme.palette.mode === 'dark' ? '#1e293b' : '#f8fafc',
+                  color: theme.palette.text.primary 
+                }}>
+                  🔧 Remedial Solutions
+                </option>
+                <option value="Online Consultation" style={{ 
+                  background: theme.palette.mode === 'dark' ? '#1e293b' : '#f8fafc',
+                  color: theme.palette.text.primary 
+                }}>
+                  💻 Online Consultation
+                </option>
+              </select>
+            </div>
+            <div className="space-y-2">
+              <label className="text-sm font-medium flex items-center" style={{ color: theme.palette.text.primary }}>
+                <Star className="w-4 h-4 mr-2" />
+                Additional Requirements
+              </label>
+              <textarea
+                name="message"
+                placeholder="Tell us about your requirements and what you hope to achieve..."
+                value={formData.message}
+                onChange={handleInputChange}
+                rows={4}
+                className="w-full p-4 rounded-xl border-2 transition-all duration-300 focus:outline-none focus:scale-105 resize-none"
+                style={{
+                  borderColor: theme.palette.mode === 'dark' 
+                    ? 'rgba(148, 163, 184, 0.2)' 
+                    : 'rgba(148, 163, 184, 0.3)',
+                  background: theme.palette.mode === 'dark'
+                    ? 'rgba(15, 23, 42, 0.5)'
+                    : 'rgba(255, 255, 255, 0.7)',
+                  backdropFilter: 'blur(10px)',
+                  color: theme.palette.text.primary,
+                  fontFamily: 'inherit',
+                  lineHeight: '1.6',
+                }}
+                onFocus={(e) => {
+                  e.target.style.borderColor = '#3b82f6';
+                  e.target.style.boxShadow = '0 0 0 3px rgba(59, 130, 246, 0.1)';
+                }}
+                onBlur={(e) => {
+                  e.target.style.borderColor = theme.palette.mode === 'dark' 
+                    ? 'rgba(148, 163, 184, 0.2)' 
+                    : 'rgba(148, 163, 184, 0.3)';
+                  e.target.style.boxShadow = 'none';
+                }}
+              />
+            </div>
+            
             <button
               onClick={handleSubmit}
-              className="w-full py-4 px-6 rounded-xl font-bold text-lg transition-all duration-300 transform hover:scale-105 hover:shadow-2xl"
+              className="w-full py-5 px-8 rounded-2xl font-bold text-lg transition-all duration-500 transform hover:scale-105 hover:shadow-2xl relative overflow-hidden group"
               style={{
                 background: 'linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%)',
                 color: 'white',
@@ -1104,32 +1278,80 @@ export default function ModernContactPage() {
                 e.currentTarget.style.boxShadow = '0 8px 25px rgba(59, 130, 246, 0.3)';
               }}
             >
-              <Calendar className="w-5 h-5 inline-block mr-2" />
-              🚀 Book Your Consultation
+              <div className="flex items-center justify-center">
+                <Calendar className="w-5 h-5 mr-3 group-hover:rotate-12 transition-transform duration-300" />
+                <span>Book Your Consultation</span>
+                <Sparkles className="w-5 h-5 ml-3 group-hover:scale-110 transition-transform duration-300" />
+              </div>
             </button>
             
-            {/* Helper Text */}
+            {/* Modern Helper Text */}
+            <div className="mt-6 grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div className="flex items-center justify-center space-x-2 p-3 rounded-xl transition-all duration-300 hover:scale-105"
+                style={{
+                  background: theme.palette.mode === 'dark'
+                    ? 'rgba(34, 197, 94, 0.1)'
+                    : 'rgba(34, 197, 94, 0.05)',
+                  border: theme.palette.mode === 'dark'
+                    ? '1px solid rgba(34, 197, 94, 0.2)'
+                    : '1px solid rgba(34, 197, 94, 0.1)',
+                }}
+              >
+                <Zap className="w-4 h-4" style={{ color: '#22c55e' }} />
+                <span className="text-sm font-medium" style={{ color: theme.palette.text.primary }}>
+                  Quick Response
+                </span>
+              </div>
+              
+              <div className="flex items-center justify-center space-x-2 p-3 rounded-xl transition-all duration-300 hover:scale-105"
+                style={{
+                  background: theme.palette.mode === 'dark'
+                    ? 'rgba(59, 130, 246, 0.1)'
+                    : 'rgba(59, 130, 246, 0.05)',
+                  border: theme.palette.mode === 'dark'
+                    ? '1px solid rgba(59, 130, 246, 0.2)'
+                    : '1px solid rgba(59, 130, 246, 0.1)',
+                }}
+              >
+                <Shield className="w-4 h-4" style={{ color: '#3b82f6' }} />
+                <span className="text-sm font-medium" style={{ color: theme.palette.text.primary }}>
+                  Secure & Private
+                </span>
+              </div>
+              
+              <div className="flex items-center justify-center space-x-2 p-3 rounded-xl transition-all duration-300 hover:scale-105"
+                style={{
+                  background: theme.palette.mode === 'dark'
+                    ? 'rgba(139, 92, 246, 0.1)'
+                    : 'rgba(139, 92, 246, 0.05)',
+                  border: theme.palette.mode === 'dark'
+                    ? '1px solid rgba(139, 92, 246, 0.2)'
+                    : '1px solid rgba(139, 92, 246, 0.1)',
+                }}
+              >
+                <Award className="w-4 h-4" style={{ color: '#8b5cf6' }} />
+                <span className="text-sm font-medium" style={{ color: theme.palette.text.primary }}>
+                  Expert Guidance
+                </span>
+              </div>
+            </div>
+            
             <div className="mt-4 text-center">
               <p className="text-sm" style={{ 
                 color: theme.palette.text.secondary,
                 opacity: 0.8 
               }}>
-                💡 <strong>Quick Response:</strong> We'll get back to you within 24 hours
-              </p>
-              <p className="text-xs mt-1" style={{ 
-                color: theme.palette.text.secondary,
-                opacity: 0.6 
-              }}>
-                🔒 Your information is secure and will never be shared
+                We'll get back to you within 24 hours • Your information is secure and will never be shared
               </p>
             </div>
           </div>
-        </div>
-      </FadeInSection>
-      </main>
+         </div>
+         </div>
+       </FadeInSection>
+       </main>
       <Footer />
-    </div>
-  );
-}
+     </div>
+   );
+ }
 
 

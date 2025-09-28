@@ -7,16 +7,34 @@ import { toast } from "react-hot-toast";
 import { apiService } from "@/utils/apiService";
 import { useThemeContext } from "@/contexts/ThemeContext";
 import ChakraForm from "@/components/Admin/ChakraForm";
-import { ChakraPoint, defaultChakraPoints } from "@/types/chakra";
+import { ChakraPoint, ChakraPointForm, convertBackendToFrontend, convertFrontendToBackend } from "@/types/chakra";
 
 export default function ChakraPointsPage() {
-  const [chakraPoints, setChakraPoints] = useState<{ [key: string]: ChakraPoint }>(defaultChakraPoints);
+  const [chakraPoints, setChakraPoints] = useState<{ [key: string]: ChakraPoint }>({});
   const [isLoading, setIsLoading] = useState(true);
   const [showForm, setShowForm] = useState(false);
   const [editingChakra, setEditingChakra] = useState<ChakraPoint | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
   const [filteredPoints, setFilteredPoints] = useState<ChakraPoint[]>([]);
   const { mode } = useThemeContext();
+
+  // Clear any duplicate data from local storage on component mount
+  useEffect(() => {
+    try {
+      const localData = localStorage.getItem('chakra_points');
+      if (localData) {
+        const parsedData = JSON.parse(localData);
+        const deduplicatedData = deduplicateChakraPoints(parsedData);
+        // Only update if there were duplicates
+        if (Object.keys(parsedData).length !== Object.keys(deduplicatedData).length) {
+          localStorage.setItem('chakra_points', JSON.stringify(deduplicatedData));
+          // console.log('Cleaned up duplicate chakra points in local storage');
+        }
+      }
+    } catch (error) {
+      // console.error('Error cleaning up local storage:', error);
+    }
+  }, []);
 
   // Fetch chakra points on component mount
   useEffect(() => {
@@ -38,16 +56,50 @@ export default function ChakraPointsPage() {
     }
   }, [chakraPoints, searchTerm]);
 
+  // Helper function to deduplicate chakra points
+  const deduplicateChakraPoints = (points: { [key: string]: any }) => {
+    const uniquePoints: { [key: string]: any } = {};
+    const seenIds = new Set<string>();
+    
+    Object.values(points).forEach((point: any) => {
+      if (point && point.id && !seenIds.has(point.id)) {
+        seenIds.add(point.id);
+        uniquePoints[point.id] = point;
+      }
+    });
+    
+    return uniquePoints;
+  };
+
   const fetchChakraPoints = async () => {
     try {
       setIsLoading(true);
       const data = await apiService.vastuChakraPoints.getChakraPoints();
       if (data && typeof data === 'object') {
-        setChakraPoints(data);
+        const deduplicatedData = deduplicateChakraPoints(data);
+        // console.log('Loaded chakra points from API:', Object.keys(deduplicatedData).length, 'points');
+        setChakraPoints(deduplicatedData);
       }
     } catch (error) {
-      // console.log('Using default chakra points data:', error);
-      // Keep using default data if API fails
+      // console.log('API failed, checking local storage fallback:', error);
+      
+      // Fallback: Try to load from local storage
+      try {
+        const localData = localStorage.getItem('chakra_points');
+        if (localData) {
+          const parsedData = JSON.parse(localData);
+          const deduplicatedData = deduplicateChakraPoints(parsedData);
+          // console.log('Loaded chakra points from local storage:', Object.keys(deduplicatedData).length, 'points');
+          setChakraPoints(deduplicatedData);
+        } else {
+          // No data available - show empty state
+          // console.log('No chakra points data available');
+          setChakraPoints({});
+        }
+      } catch (localError) {
+        // console.error('Local storage fallback failed:', localError);
+        setChakraPoints({});
+      }
     } finally {
       setIsLoading(false);
     }
@@ -72,17 +124,51 @@ export default function ChakraPointsPage() {
         setChakraPoints(updatedPoints);
         toast.success('Chakra point deleted successfully!');
       } catch (error: any) {
-        console.error('Error deleting chakra point:', error);
-        toast.error(error.message || 'Failed to delete chakra point');
+        // console.error('Error deleting chakra point:', error);
+        
+        // Check if this is a network/API error and use local storage fallback
+        const isNetworkError = error?.status === 0 || 
+                             error?.message?.includes('Network error') ||
+                             error?.message?.includes('fetch') ||
+                             error?.code === 'ECONNABORTED' ||
+                             !error?.response;
+        
+        if (isNetworkError) {
+          //  console.log('API unavailable, deleting from local storage');
+          try {
+            const localData = localStorage.getItem('chakra_points');
+            if (localData) {
+              const localPoints = JSON.parse(localData);
+              delete localPoints[chakraId];
+              localStorage.setItem('chakra_points', JSON.stringify(localPoints));
+            }
+            
+            const updatedPoints = { ...chakraPoints };
+            delete updatedPoints[chakraId];
+            setChakraPoints(updatedPoints);
+            toast.success('Chakra point deleted from local storage!');
+          } catch (localError) {
+            // console.error('Local storage delete failed:', localError);
+            toast.error('Failed to delete chakra point');
+          }
+        } else {
+          toast.error(error.message || 'Failed to delete chakra point');
+        }
       }
     }
   };
 
   const handleFormSave = (chakraPoint: ChakraPoint) => {
-    setChakraPoints(prev => ({
-      ...prev,
-      [chakraPoint.id]: chakraPoint
-    }));
+    setChakraPoints(prev => {
+      const updated = {
+        ...prev,
+        [chakraPoint.id]: chakraPoint
+      };
+      // Ensure no duplicates by deduplicating
+      const deduplicated = deduplicateChakraPoints(updated);
+      // console.log('Saved chakra point:', chakraPoint.id, 'Total points:', Object.keys(deduplicated).length);
+      return deduplicated;
+    });
     setShowForm(false);
     setEditingChakra(null);
     toast.success(editingChakra ? 'Chakra point updated successfully!' : 'Chakra point created successfully!');
@@ -94,14 +180,14 @@ export default function ChakraPointsPage() {
   };
 
   const getStatusColor = (point: ChakraPoint) => {
-    if (point.shouldAvoid) return 'bg-red-100 text-red-800 border-red-200';
-    if (point.isAuspicious) return 'bg-green-100 text-green-800 border-green-200';
+    if (point.should_avoid) return 'bg-red-100 text-red-800 border-red-200';
+    if (point.is_auspicious) return 'bg-green-100 text-green-800 border-green-200';
     return 'bg-yellow-100 text-yellow-800 border-yellow-200';
   };
 
   const getStatusText = (point: ChakraPoint) => {
-    if (point.shouldAvoid) return 'Avoid';
-    if (point.isAuspicious) return 'Auspicious';
+    if (point.should_avoid) return 'Avoid';
+    if (point.is_auspicious) return 'Auspicious';
     return 'Neutral';
   };
 
@@ -190,9 +276,9 @@ export default function ChakraPointsPage() {
           </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-            {filteredPoints.map((point) => (
+            {filteredPoints.map((point, index) => (
               <div
-                key={point.id}
+                key={`${point.id}-${index}`}
                 className={`rounded-xl shadow-lg p-6 border transition-all duration-200 hover:shadow-xl ${
                   mode === 'dark' 
                     ? 'bg-gray-800 border-gray-700 hover:border-gray-600' 
@@ -254,10 +340,10 @@ export default function ChakraPointsPage() {
                 </p>
 
                 {/* Image Display */}
-                {point.imageUrl && (
+                {point.image_url && (
                   <div className="mb-3">
                     <img
-                      src={point.imageUrl}
+                      src={point.image_url}
                       alt={`${point.name} chakra point`}
                       className="w-full h-24 object-cover rounded-md"
                       style={{ maxHeight: '96px' }}

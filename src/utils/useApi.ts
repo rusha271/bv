@@ -399,7 +399,7 @@ export const useAnalytics = () => {
     try {
       await apiService.analytics.trackEvent(event, properties);
     } catch (err: any) {
-      console.error('Failed to track event:', err);
+      // console.error('Failed to track event:', err);
     }
   }, []);
 

@@ -1,18 +1,26 @@
 "use client";
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Navbar from '@/components/ui/Navbar';
 import Footer from '@/components/ui/Footer';
 import dynamic from 'next/dynamic';
-import PostUploadSection from '@/components/forms/PostUploadSection';
 import { useThemeContext } from '@/contexts/ThemeContext';
-import { useDeviceType } from '@/utils/useDeviceType';
-import { useAuthUser } from '@/contexts/AuthContext';
 import Tabs from '@mui/material/Tabs';
 import Tab from '@mui/material/Tab';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
-import { BookOpen, Video, Headphones, Lightbulb, FileText, Sparkles } from 'lucide-react';
+import { BookOpen, Video, Headphones, Lightbulb, Sparkles } from 'lucide-react';
+
+// Hook to prevent hydration issues
+const useIsClient = () => {
+  const [isClient, setIsClient] = useState(false);
+  
+  useEffect(() => {
+    setIsClient(true);
+  }, []);
+  
+  return isClient;
+};
 
 const BlogCardsList = dynamic(() => import('@/components/Card/BlogCardsList'), {
   ssr: true,
@@ -90,20 +98,18 @@ function FadeInSection({ children }: { children: React.ReactNode }) {
 
 function BlogTabs() {
   const { theme } = useThemeContext();
-  const { isMobile, isTablet, isDesktop } = useDeviceType();
-  const user = useAuthUser();
-  const isAdmin = user?.role?.name === 'admin';
   const [tab, setTab] = useState(0);
+  const isClient = useIsClient();
 
-  const tabFontSize = isMobile ? '0.9rem' : isTablet ? '1rem' : '1.1rem';
-  const tabPaddingX = isMobile ? 1.5 : isTablet ? 2 : 2.5;
+  // Use static responsive values to prevent hydration issues
+  const tabFontSize = '1rem';
+  const tabPaddingX = 2;
 
   const tabs = [
     { label: "Videos", icon: Video, index: 0 },
     { label: "Books", icon: BookOpen, index: 1 },
     { label: "Podcasts", icon: Headphones, index: 2 },
-    { label: "Tips", icon: Lightbulb, index: 3 },
-    ...(isAdmin ? [{ label: "Posts", icon: FileText, index: 4 }] : [])
+    { label: "Tips", icon: Lightbulb, index: 3 }
   ];
 
   return (
@@ -111,7 +117,7 @@ function BlogTabs() {
       <Tabs
         value={tab}
         onChange={(_, newValue) => setTab(newValue)}
-        variant={isMobile ? 'scrollable' : 'fullWidth'}
+        variant="scrollable"
         scrollButtons="auto"
         allowScrollButtonsMobile
         aria-label="Blog content tabs"
@@ -128,7 +134,7 @@ function BlogTabs() {
             ? '1px solid rgba(148, 163, 184, 0.1)'
             : '1px solid rgba(148, 163, 184, 0.2)',
           mb: 1,
-          minHeight: isMobile ? 40 : 48,
+          minHeight: { xs: 40, sm: 48 },
           '.MuiTabs-flexContainer': {
             justifyContent: { xs: 'flex-start', sm: 'center' },
             gap: 0.25,
@@ -160,10 +166,10 @@ function BlogTabs() {
             }
             sx={{ 
               fontWeight: 600, 
-              fontSize: tabFontSize, 
+              fontSize: { xs: '0.9rem', sm: '1rem', md: '1.1rem' }, 
               color: theme.palette.text.primary, 
-              minHeight: isMobile ? 44 : 52, 
-              px: tabPaddingX,
+              minHeight: { xs: 44, sm: 52 }, 
+              px: { xs: 1.5, sm: 2, md: 2.5 },
               textTransform: 'none',
               transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
               '&:hover': {
@@ -178,7 +184,16 @@ function BlogTabs() {
           />
         ))}
       </Tabs>
-      <Box sx={{ mt: 0.5, minHeight: 'auto', px: { xs: 0.5, sm: 1, md: 2 }, overflowX: 'hidden', overflowY: 'auto' }}>
+      <Box sx={{ 
+        mt: 0.5, 
+        minHeight: 'auto', 
+        px: { xs: 0.5, sm: 1, md: 2 }, 
+        overflowX: 'hidden', 
+        overflowY: 'auto',
+        width: '100%',
+        maxWidth: '100%',
+        boxSizing: 'border-box'
+      }}>
         {tab === 0 && (
           <FadeInSection>
             <VideoCardsList />
@@ -199,11 +214,6 @@ function BlogTabs() {
             <BlogCardsList />
           </FadeInSection>
         )}
-        {isAdmin && tab === 4 && (
-          <FadeInSection>
-            <PostUploadSection />
-          </FadeInSection>
-        )}
     </Box>
     </Box>
   );
@@ -211,18 +221,38 @@ function BlogTabs() {
 
 export default function BlogPage() {
   const { theme } = useThemeContext();
-  const { isMobile, isTablet, isDesktop } = useDeviceType();
+  const isClient = useIsClient();
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  // Safe theme fallback for SSR
+  const safeTheme = theme || {
+    palette: {
+      mode: 'light' as const,
+      primary: { main: '#1976d2', light: '#42a5f5', dark: '#1565c0', contrastText: '#ffffff' },
+      secondary: { main: '#9c27b0', light: '#ba68c8', dark: '#7b1fa2', contrastText: '#ffffff' },
+      background: { default: '#ffffff', paper: '#ffffff' },
+      text: { primary: '#000000', secondary: '#666666' },
+      divider: '#e0e0e0'
+    }
+  };
 
   return (
     <Box
       sx={{
         minHeight: '100vh',
         width: '100%',
-        background: theme.palette.mode === 'dark'
+        maxWidth: '100vw',
+        background: safeTheme.palette.mode === 'dark'
           ? 'linear-gradient(135deg, #0f172a 0%, #1e293b 25%, #334155 50%, #1e293b 75%, #0f172a 100%)'
           : 'linear-gradient(135deg, #f8fafc 0%, #e2e8f0 25%, #cbd5e1 50%, #e2e8f0 75%, #f8fafc 100%)',
         display: 'flex',
         flexDirection: 'column',
+        overflowX: 'hidden',
+        boxSizing: 'border-box'
       }}
     >
       {/* Animated gradient overlay */}
@@ -233,7 +263,7 @@ export default function BlogPage() {
           left: 0,
           right: 0,
           bottom: 0,
-          background: theme.palette.mode === 'dark'
+          background: safeTheme.palette.mode === 'dark'
             ? 'linear-gradient(45deg, rgba(59, 130, 246, 0.1) 0%, rgba(147, 51, 234, 0.1) 50%, rgba(59, 130, 246, 0.1) 100%)'
             : 'linear-gradient(45deg, rgba(59, 130, 246, 0.05) 0%, rgba(147, 51, 234, 0.05) 50%, rgba(59, 130, 246, 0.05) 100%)',
           animation: 'gradientShift 8s ease-in-out infinite',
@@ -258,12 +288,14 @@ export default function BlogPage() {
         sx={{
           flex: 1,
           width: '100%',
+          maxWidth: '100vw',
           px: { xs: 1, sm: 2, md: 3 },
           py: { xs: 1, sm: 2, md: 3 },
           pt: { xs: '7rem', sm: '8rem', md: '4.9rem' },
           position: 'relative',
           zIndex: 1,
-          
+          overflowX: 'hidden',
+          boxSizing: 'border-box'
         }}
       >
         <Box
@@ -281,7 +313,10 @@ export default function BlogPage() {
               : '1px solid rgba(148, 163, 184, 0.2)',
             p: { xs: 1.5, sm: 2, md: 3 },
             width: '100%',
+            maxWidth: '100%',
             minHeight: 'calc(100vh - 12rem)',
+            overflowX: 'hidden',
+            boxSizing: 'border-box'
           }}
         >
           {/* Header Section */}
@@ -301,7 +336,7 @@ export default function BlogPage() {
               >
                 <Sparkles 
                   size={35} 
-                  className={theme.palette.mode === 'dark' ? 'text-blue-400' : 'text-blue-600'} 
+                  className={safeTheme.palette.mode === 'dark' ? 'text-blue-400' : 'text-blue-600'} 
                 />
               </Box>
             </Box>
@@ -309,7 +344,7 @@ export default function BlogPage() {
               variant="h6"
               fontWeight={800}
               sx={{
-                background: theme.palette.mode === 'dark'
+                background: safeTheme.palette.mode === 'dark'
                   ? 'linear-gradient(135deg, #60a5fa 0%, #a78bfa 100%)'
                   : 'linear-gradient(135deg, #1e40af 0%, #7c3aed 100%)',
                 backgroundClip: 'text',

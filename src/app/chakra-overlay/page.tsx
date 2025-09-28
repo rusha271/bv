@@ -7,7 +7,7 @@ import { Box, Container, Typography, CircularProgress, Skeleton } from '@mui/mat
 import { sessionStorageManager } from '@/utils/sessionStorage';
 import dynamic from 'next/dynamic';
 
-// Lazy load the ChakraEditor component with more aggressive loading
+// Lazy load the ChakraEditor component
 const ChakraEditor = dynamic(() => import('@/components/Image Crop/ChakraEditor'), { 
   ssr: false,
   loading: () => (

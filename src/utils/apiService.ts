@@ -336,6 +336,9 @@ export interface Tip {
 
 // API Service Class
 class ApiService {
+  private static readonly CACHE_DURATION = 5 * 60 * 1000; // 5 minutes
+  private static readonly CACHE_KEY = 'site_settings_all_data';
+  private static loadingPromise: Promise<any> | null = null;
   // Authentication Endpoints (/api/auth)
   auth = {
     login: async (data: LoginRequest): Promise<AuthResponse> => {
@@ -790,6 +793,115 @@ class ApiService {
       return api.get<SiteSettingResponse>(`/api/site-settings/category/${category}/latest`);
     },
 
+    // Optimized method to get all latest site settings using existing endpoints with shared cache
+    getLatestAllOptimized: async (): Promise<{
+      data: {
+        logo: SiteSetting | null;
+        tour_video: SiteSetting | null;
+        chakra_points: SiteSetting | null;
+      };
+      file_urls: {
+        logo: string | null;
+        tour_video: string | null;
+        chakra_points: string | null;
+      };
+    }> => {
+      // Import sessionCache dynamically to avoid circular imports
+      const { sessionCache } = await import('./apiCache');
+      
+      // Check if we have valid cached data
+      const cachedData = sessionCache.get(ApiService.CACHE_KEY);
+      if (cachedData && cachedData.timestamp && 
+          (Date.now() - cachedData.timestamp) < ApiService.CACHE_DURATION) {
+        // console.log('🚀 Using cached site settings data');
+        return {
+          data: cachedData.data,
+          file_urls: cachedData.file_urls
+        };
+      }
+
+      // If there's already a loading promise, wait for it instead of making a new request
+      if (ApiService.loadingPromise) {
+        //  console.log('⏳ Waiting for existing API call to complete');
+        return await ApiService.loadingPromise;
+      }
+
+      // console.log('📡 Fetching fresh site settings data from API - this should only happen once per 5 minutes');
+      const categories = ['logo', 'tour_video', 'chakra_points'] as const;
+      
+      // Create a loading promise to prevent multiple simultaneous calls
+      ApiService.loadingPromise = (async () => {
+        try {
+          // Use Promise.allSettled to handle individual failures gracefully
+          const results = await Promise.allSettled(
+            categories.map(category => 
+              apiService.siteSettings.getLatestByCategory(category)
+            )
+          );
+
+          const data: { logo: SiteSetting | null; tour_video: SiteSetting | null; chakra_points: SiteSetting | null } = {
+            logo: null,
+            tour_video: null,
+            chakra_points: null
+          };
+
+          const file_urls: { logo: string | null; tour_video: string | null; chakra_points: string | null } = {
+            logo: null,
+            tour_video: null,
+            chakra_points: null
+          };
+
+          // Process results
+          results.forEach((result, index) => {
+            const category = categories[index];
+            if (result.status === 'fulfilled' && result.value) {
+              data[category] = result.value.data;
+              file_urls[category] = result.value.file_url;
+            }
+          });
+
+          // Cache the results using sessionCache
+          const cacheData = {
+            data,
+            file_urls,
+            timestamp: Date.now()
+          };
+          
+          sessionCache.set(ApiService.CACHE_KEY, cacheData, ApiService.CACHE_DURATION);
+          // console.log('💾 Cached site settings data');
+
+          return { data, file_urls };
+        } finally {
+          // Clear the loading promise when done
+          ApiService.loadingPromise = null;
+        }
+      })();
+
+      return await ApiService.loadingPromise;
+    },
+
+    // Method to get individual category with shared cache
+    getLatestByCategoryCached: async (category: 'logo' | 'tour_video' | 'chakra_points'): Promise<{
+      data: SiteSetting | null;
+      file_url: string | null;
+    }> => {
+      // First try to get from shared cache
+      const cached = await apiService.siteSettings.getLatestAllOptimized();
+      
+      return {
+        data: cached.data[category],
+        file_url: cached.file_urls[category]
+      };
+    },
+
+    // Method to clear the shared cache (useful for testing or when data changes)
+    clearCache: async () => {
+      const { sessionCache } = await import('./apiCache');
+      sessionCache.delete(ApiService.CACHE_KEY);
+      ApiService.loadingPromise = null; // Clear any pending loading promise
+      console.log('🗑️ Cleared site settings cache');
+    },
+
     update: async (id: number, data: SiteSettingUpdate): Promise<SiteSetting> => {
       return api.put<SiteSetting>(`/api/site-settings/${id}`, data);
     },
@@ -820,26 +932,26 @@ class ApiService {
     }
   };
 
-  // Vastu Chakra Points Endpoints (/api/vastu/chakra-points) - Public endpoints
+  // Vastu Chakra Points Endpoints (/admin/chakra-points) - Admin endpoints
   vastuChakraPoints = {
     getChakraPoints: async (): Promise<{ [key: string]: any }> => {
-      return api.get<{ [key: string]: any }>('/api/vastu/chakra-points');
+      return api.get<{ [key: string]: any }>('/admin/chakra-points');
     },
 
     getChakraPoint: async (chakraId: string): Promise<any> => {
-      return api.get<any>(`/api/vastu/chakra-points/${chakraId}`);
+      return api.get<any>(`/admin/chakra-points/${chakraId}`);
     },
 
     updateChakraPoint: async (chakraId: string, chakraData: any): Promise<any> => {
-      return api.put<any>(`/api/vastu/chakra-points/${chakraId}`, chakraData);
+      return api.put<any>(`/admin/chakra-points/${chakraId}`, chakraData);
     },
 
     createChakraPoint: async (chakraData: any): Promise<any> => {
-      return api.post<any>('/api/vastu/chakra-points', chakraData);
+      return api.post<any>('/admin/chakra-points', chakraData);
     },
 
     deleteChakraPoint: async (chakraId: string): Promise<void> => {
-      return api.delete<void>(`/api/vastu/chakra-points/${chakraId}`);
+      return api.delete<void>(`/admin/chakra-points/${chakraId}`);
     }
   };
 

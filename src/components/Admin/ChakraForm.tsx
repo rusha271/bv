@@ -17,7 +17,7 @@ import {
   IconButton
 } from '@mui/material';
 import { Save, Close, Add, Upload, Delete, Image as ImageIcon } from '@mui/icons-material';
-import { ChakraPoint } from '@/types/chakra';
+import { ChakraPoint, ChakraPointForm, convertBackendToFrontend, convertFrontendToBackend } from '@/types/chakra';
 import { useThemeContext } from '@/contexts/ThemeContext';
 import { apiService } from '@/utils/apiService';
 
@@ -34,7 +34,7 @@ export const ChakraForm: React.FC<ChakraFormProps> = ({
   onCancel, 
   isEditing = false 
 }) => {
-  const [formData, setFormData] = useState<ChakraPoint>({
+  const [formData, setFormData] = useState<ChakraPointForm>({
     id: '',
     name: '',
     direction: '',
@@ -53,7 +53,8 @@ export const ChakraForm: React.FC<ChakraFormProps> = ({
   // Initialize form data when chakraPoint prop changes
   useEffect(() => {
     if (chakraPoint) {
-      setFormData(chakraPoint);
+      // Convert backend format to frontend format
+      setFormData(convertBackendToFrontend(chakraPoint));
     } else {
       setFormData({
         id: '',
@@ -68,7 +69,7 @@ export const ChakraForm: React.FC<ChakraFormProps> = ({
     setMessage(null);
   }, [chakraPoint]);
 
-  const handleInputChange = (field: keyof ChakraPoint, value: any) => {
+  const handleInputChange = (field: keyof ChakraPointForm, value: any) => {
     setFormData(prev => ({
       ...prev,
       [field]: value
@@ -192,25 +193,96 @@ export const ChakraForm: React.FC<ChakraFormProps> = ({
     setMessage(null);
 
     try {
+      console.log('Attempting to save chakra point:', formData);
+      console.log('Is editing:', isEditing);
+      console.log('Chakra point:', chakraPoint);
+      
+      // Convert frontend format to backend format
+      const backendData = convertFrontendToBackend(formData);
+      console.log('Converted to backend format:', backendData);
+      
       if (isEditing && chakraPoint) {
         // Update existing chakra point
-        await apiService.vastuChakraPoints.updateChakraPoint(formData.id, formData);
+        console.log('Updating chakra point with ID:', formData.id);
+        const result = await apiService.vastuChakraPoints.updateChakraPoint(formData.id, backendData);
+        console.log('Update result:', result);
         setMessage({ type: 'success', text: 'Chakra point updated successfully!' });
       } else {
         // Create new chakra point
-        await apiService.vastuChakraPoints.createChakraPoint(formData);
+        console.log('Creating new chakra point');
+        const result = await apiService.vastuChakraPoints.createChakraPoint(backendData);
+        console.log('Create result:', result);
         setMessage({ type: 'success', text: 'Chakra point created successfully!' });
       }
       
       if (onSave) {
-        onSave(formData);
+        // Convert back to backend format for the callback
+        const backendFormData = convertFrontendToBackend(formData);
+        onSave(backendFormData as ChakraPoint);
       }
     } catch (error: any) {
-      console.error('Error saving chakra point:', error);
-      setMessage({ 
-        type: 'error', 
-        text: error.message || 'Failed to save chakra point. Please try again.' 
-      });
+      console.error('Error saving chakra point - Full error object:', error);
+      console.error('Error type:', typeof error);
+      console.error('Error constructor:', error?.constructor?.name);
+      console.error('Error message:', error?.message);
+      console.error('Error status:', error?.status);
+      console.error('Error response:', error?.response);
+      console.error('Error data:', error?.data);
+      
+      // Check if this is a network/API unavailable error
+      const isNetworkError = error?.status === 0 || 
+                           error?.message?.includes('Network error') ||
+                           error?.message?.includes('fetch') ||
+                           error?.code === 'ECONNABORTED' ||
+                           !error?.response;
+      
+      if (isNetworkError) {
+        //  console.log('Network/API error detected, using fallback local storage');
+        
+        // Fallback: Save to local storage
+        try {
+          const existingData = localStorage.getItem('chakra_points');
+          const chakraPoints = existingData ? JSON.parse(existingData) : {};
+          
+          chakraPoints[formData.id] = formData;
+          localStorage.setItem('chakra_points', JSON.stringify(chakraPoints));
+          
+          setMessage({ 
+            type: 'success', 
+            text: 'Chakra point saved locally (API unavailable). Data will sync when backend is available.' 
+          });
+          
+          if (onSave) {
+            // Convert frontend format to backend format for the callback
+            const backendFormData = convertFrontendToBackend(formData);
+            onSave(backendFormData as ChakraPoint);
+          }
+        } catch (localError) {
+          console.error('Local storage fallback failed:', localError);
+          setMessage({ 
+            type: 'error', 
+            text: 'Failed to save chakra point. Please check your connection and try again.' 
+          });
+        }
+      } else {
+        // Create a more detailed error message for other errors
+        let errorMessage = 'Failed to save chakra point. Please try again.';
+        
+        if (error?.message) {
+          errorMessage = error.message;
+        } else if (error?.status) {
+          errorMessage = `Server error (${error.status}). Please try again.`;
+        } else if (error?.response?.data?.message) {
+          errorMessage = error.response.data.message;
+        } else if (typeof error === 'string') {
+          errorMessage = error;
+        }
+        
+        setMessage({ 
+          type: 'error', 
+          text: errorMessage
+        });
+      }
     } finally {
       setIsSaving(false);
     }

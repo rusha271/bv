@@ -307,21 +307,18 @@ const LogSig = memo(function LogSig({
         // console.log('Login successful');
         toast.success('Login successful!');
         
-        // Check if user is admin and redirect to admin dashboard
-        // We need to get the user data from the auth context after login
-        // Since the login function updates the auth context, we'll use a small delay
-        // to ensure the context is updated before checking the role
-        setTimeout(() => {
-          // Get the current user from the auth context
-          const currentUser = JSON.parse(localStorage.getItem('user') || 'null');
-          if (currentUser && isAdminUser(currentUser)) {
-            router.push('/dashboard');
-          } else {
-            router.push(redirectUrl || '/');
-          }
-        }, 100);
+        // Close the login modal without redirecting
+        // The user will stay on the current page
+        onClose();
+        
+        // Optional: Only redirect if a specific redirectUrl is provided
+        // This allows for intentional redirects (like from protected routes)
+        if (redirectUrl && redirectUrl !== '/') {
+          setTimeout(() => {
+            router.push(redirectUrl);
+          }, 100);
+        }
       }
-      onClose();
     } catch (error: any) {
       // console.error('API Error:', error);
       const errorMessage = error.response?.data?.detail || error.message || 'Failed to authenticate. Please try again.';

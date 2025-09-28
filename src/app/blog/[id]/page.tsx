@@ -81,7 +81,7 @@ export async function generateMetadata({ params }: BlogPostPageProps): Promise<M
       },
     };
   } catch (error) {
-    console.error('Error generating metadata for blog post:', error);
+    // console.error('Error generating metadata for blog post:', error);
     return {
       title: 'Blog Post | Brahma Vastu',
       description: 'Read Vastu blog posts and articles.',
@@ -114,7 +114,7 @@ export default async function BlogPostPageRoute({ params }: BlogPostPageProps) {
       </>
     );
   } catch (error) {
-    console.error('Error loading blog post:', error);
+    // console.error('Error loading blog post:', error);
     notFound();
   }
 }
@@ -128,7 +128,7 @@ export async function generateStaticParams() {
       id: blog.id,
     }));
   } catch (error) {
-    console.error('Error generating static params:', error);
+    // console.error('Error generating static params:', error);
     return [];
   }
 }

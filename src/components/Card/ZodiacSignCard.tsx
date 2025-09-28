@@ -138,7 +138,7 @@ const ZodiacSignCard: React.FC<ZodiacSignCardProps> = ({
           padding: '12px',
           marginBottom: '8px'
         }}>
-          <p
+          <div
             style={{
               fontSize: detailFontSize,
               marginBottom: "0.5rem",
@@ -152,7 +152,7 @@ const ZodiacSignCard: React.FC<ZodiacSignCardProps> = ({
             <div>
               <strong style={{ color: theme.palette.text.primary }}>Mantra:</strong> {mantra}
             </div>
-          </p>
+          </div>
         </div>
         
         <div style={{
@@ -165,7 +165,7 @@ const ZodiacSignCard: React.FC<ZodiacSignCardProps> = ({
           borderRadius: '12px',
           padding: '12px'
         }}>
-          <p
+          <div
             style={{
               fontSize: detailFontSize,
               color: theme.palette.text.secondary,
@@ -178,7 +178,7 @@ const ZodiacSignCard: React.FC<ZodiacSignCardProps> = ({
             <div>
               <strong style={{ color: theme.palette.text.primary }}>Remedy:</strong> {remedy}
             </div>
-          </p>
+          </div>
         </div>
       </div>
     </div>

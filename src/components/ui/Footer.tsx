@@ -3,11 +3,18 @@
 import React, { useState, useEffect } from 'react';
 import { Box, Typography, useMediaQuery, useTheme } from '@mui/material';
 import { useThemeContext } from '@/contexts/ThemeContext';
-import Link from 'next/link';
+import { useModalContext } from '@/contexts/ModalContext';
 import { Heart, Shield, FileText, Mail } from 'lucide-react';
 
-export default function Footer() {
+interface FooterProps {
+  onPrivacyClick?: () => void;
+  onTermsClick?: () => void;
+  onContactClick?: () => void;
+}
+
+export default function Footer({ onPrivacyClick, onTermsClick, onContactClick }: FooterProps) {
   const { theme } = useThemeContext();
+  const { openPrivacyModal, openTermsModal, openContactModal } = useModalContext();
   const muiTheme = useTheme();
   const [isClient, setIsClient] = useState(false);
   
@@ -26,9 +33,9 @@ export default function Footer() {
   const gap = isClient && isMobile ? 1 : isClient && isTablet ? 1.5 : 2;
 
   const footerLinks = [
-    { label: 'Privacy Policy', href: '#', icon: Shield },
-    { label: 'Terms of Service', href: '#', icon: FileText },
-    { label: 'Contact Us', href: '#', icon: Mail },
+    { label: 'Privacy Policy', icon: Shield, onClick: onPrivacyClick || openPrivacyModal },
+    { label: 'Terms of Service', icon: FileText, onClick: onTermsClick || openTermsModal },
+    { label: 'Contact Us', icon: Mail, onClick: onContactClick || openContactModal },
   ];
 
   return (
@@ -52,45 +59,48 @@ export default function Footer() {
       }}
     >
       <Box sx={{ display: 'flex', justifyContent: 'center', gap: gap, mb: 3, flexWrap: 'wrap' }}>
-        {footerLinks.map(({ label, href, icon: IconComponent }) => (
-          <Link key={label} href={href} passHref>
-            <Box
+        {footerLinks.map(({ label, icon: IconComponent, onClick }) => (
+          <Box
+            key={label}
+            component="button"
+            onClick={onClick}
+            sx={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: 1,
+              px: 2,
+              py: 1,
+              borderRadius: 2,
+              border: 'none',
+              background: 'transparent',
+              transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+              cursor: 'pointer',
+              '&:hover': {
+                background: theme.palette.mode === 'dark'
+                  ? 'rgba(59, 130, 246, 0.1)'
+                  : 'rgba(59, 130, 246, 0.05)',
+                transform: 'translateY(-2px)',
+              },
+            }}
+          >
+            <IconComponent 
+              size={16} 
+              className={theme.palette.mode === 'dark' ? 'text-blue-400' : 'text-blue-600'} 
+            />
+            <Typography
+              variant="body2"
               sx={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: 1,
-                px: 2,
-                py: 1,
-                borderRadius: 2,
-                transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
-                cursor: 'pointer',
-                '&:hover': {
-                  background: theme.palette.mode === 'dark'
-                    ? 'rgba(59, 130, 246, 0.1)'
-                    : 'rgba(59, 130, 246, 0.05)',
-                  transform: 'translateY(-2px)',
+                fontSize: linkFontSize,
+                color: theme.palette.text.secondary,
+                fontWeight: 500,
+                '&:hover': { 
+                  color: theme.palette.mode === 'dark' ? '#60a5fa' : '#1e40af',
                 },
               }}
             >
-              <IconComponent 
-                size={16} 
-                className={theme.palette.mode === 'dark' ? 'text-blue-400' : 'text-blue-600'} 
-              />
-              <Typography
-                variant="body2"
-                sx={{
-                  fontSize: linkFontSize,
-                  color: theme.palette.text.secondary,
-                  fontWeight: 500,
-                  '&:hover': { 
-                    color: theme.palette.mode === 'dark' ? '#60a5fa' : '#1e40af',
-                  },
-                }}
-              >
-                {label}
-              </Typography>
-            </Box>
-          </Link>
+              {label}
+            </Typography>
+          </Box>
         ))}
       </Box>
       
@@ -118,7 +128,7 @@ export default function Footer() {
               fontWeight: 500,
             }}
           >
-            Made with love by Brahma Vastu
+            Made with love by Brahma Vastu Team
           </Typography>
         </Box>
       </Box>

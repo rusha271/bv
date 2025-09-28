@@ -60,17 +60,17 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       const blogs = await apiService.blog?.getAll?.() || [];
       blogPages = blogs.map((blog) => ({
         url: `${baseUrl}/blog/${blog.id}`,
-        lastModified: new Date(blog.updated_date || blog.published_date || new Date()),
+        lastModified: new Date(blog.published_at || new Date()),
         changeFrequency: 'monthly',
         priority: 0.6,
       }));
     } catch (error) {
-      console.warn('Blog API not available for sitemap generation:', error);
+      // console.warn('Blog API not available for sitemap generation:', error);
     }
 
     return [...staticPages, ...videoPages, ...blogPages];
   } catch (error) {
-    console.error('Error generating sitemap:', error);
+    // console.error('Error generating sitemap:', error);
     return staticPages;
   }
 }

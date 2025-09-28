@@ -86,19 +86,11 @@ const Navbar = memo(function Navbar() {
     // Fetch uploaded logo from site settings with caching
     const fetchUploadedLogo = async () => {
       try {
-        // Check cache first
-        const cachedLogo = sessionCache.get('logo_url');
-        if (cachedLogo) {
-          setUploadedLogo(cachedLogo);
-          return;
-        }
-
-        const response = await apiService.siteSettings.getLatestByCategory('logo');
-        const logoUrl = response.file_url || response.data?.public_url || response.data?.file_path;
+        // Use the shared cached method to avoid duplicate API calls
+        const response = await apiService.siteSettings.getLatestByCategoryCached('logo');
+        const logoUrl = response.file_url;
         if (logoUrl) {
           setUploadedLogo(logoUrl);
-          // Cache the logo URL for 1 hour
-          sessionCache.set('logo_url', logoUrl, 60 * 60 * 1000);
         }
       } catch (error) {
         console.error('Error fetching uploaded logo:', error);
@@ -107,8 +99,6 @@ const Navbar = memo(function Navbar() {
           const fallbackData = await apiService.admin.getLogo();
           if (fallbackData?.image_url) {
             setUploadedLogo(fallbackData.image_url);
-            // Cache fallback logo too
-            sessionCache.set('logo_url', fallbackData.image_url, 60 * 60 * 1000);
           }
         } catch (fallbackError) {
           console.error('Fallback logo fetch also failed:', fallbackError);
@@ -132,7 +122,7 @@ const Navbar = memo(function Navbar() {
     try {
       await logout();
       handleUserMenuClose();
-      router.push('/');
+      // Don't redirect - let user stay on current page
     } catch (error) {
       //  console.error('Logout error:', error);
     }
@@ -159,6 +149,11 @@ const Navbar = memo(function Navbar() {
 
   const handleLoginClose = () => {
     setLoginDialogOpen(false);
+  };
+
+  // Toggle mobile drawer
+  const toggleDrawer = () => {
+    setDrawerOpen(!drawerOpen);
   };
 
   return (
@@ -386,7 +381,7 @@ const Navbar = memo(function Navbar() {
               display={{ xs: 'flex', md: 'none' }}
             >
               <IconButton 
-                onClick={() => setDrawerOpen(true)}
+                onClick={toggleDrawer}
                 sx={{
                   p: 1.5,
                   borderRadius: 2,
@@ -411,7 +406,7 @@ const Navbar = memo(function Navbar() {
               <Drawer 
                 anchor="right" 
                 open={drawerOpen} 
-                onClose={() => setDrawerOpen(false)}
+                onClose={toggleDrawer}
                 PaperProps={{
                   sx: {
                     width: 280,

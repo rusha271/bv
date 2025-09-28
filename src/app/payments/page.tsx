@@ -119,7 +119,7 @@ export default function PaymentsPage() {
           }
         ]);
       } catch (error: any) {
-        console.error('Error fetching data:', error);
+        // console.error('Error fetching data:', error);
         setError('Failed to load payment and document data');
       } finally {
         setIsLoading(false);
@@ -200,7 +200,7 @@ export default function PaymentsPage() {
       // 2. Create a temporary link and trigger download
       // 3. Track download analytics
       
-      console.log('Downloading PDF:', pdf);
+      // console.log('Downloading PDF:', pdf);
     } catch (error) {
       toast.error('Failed to download file');
     }
@@ -211,7 +211,7 @@ export default function PaymentsPage() {
     toast(`Viewing payment details for ${payment.transaction_id}`, {
       icon: 'ℹ️',
     });
-    console.log('Payment details:', payment);
+    // console.log('Payment details:', payment);
   };
 
   if (isLoading) {

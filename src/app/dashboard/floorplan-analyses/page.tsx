@@ -79,7 +79,7 @@ export default function FloorPlanAnalysesPage() {
       setAnalyses(data);
       setError(null);
     } catch (err) {
-      console.error('Error fetching floor plan analyses:', err);
+      // console.error('Error fetching floor plan analyses:', err);
       setError('Failed to fetch floor plan analyses');
     } finally {
       setLoading(false);

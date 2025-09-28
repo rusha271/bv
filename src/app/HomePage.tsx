@@ -101,21 +101,13 @@ export default function HomePage() {
     
     const fetchTourVideo = async () => {
       try {
-        // Check cache first
-        const cachedVideoUrl = sessionCache.get('tour_video_url');
-        if (cachedVideoUrl) {
-          setTourVideoUrl(cachedVideoUrl);
-          return;
-        }
-
-        const response = await apiService.siteSettings.getLatestByCategory('tour_video');
-        const relativeUrl = response.file_url || response.data?.public_url || response.data?.file_path;
-        if (relativeUrl) {
+        // Use the shared cached method to avoid duplicate API calls
+        const response = await apiService.siteSettings.getLatestByCategoryCached('tour_video');
+        const tourVideoUrl = response.file_url;
+        if (tourVideoUrl) {
           const baseUrl = apiService.getBaseURL();
-          const fullVideoUrl = `${baseUrl}${relativeUrl}`;
+          const fullVideoUrl = tourVideoUrl.startsWith('http') ? tourVideoUrl : `${baseUrl}${tourVideoUrl}`;
           setTourVideoUrl(fullVideoUrl);
-          // Cache the URL for 1 hour
-          sessionCache.set('tour_video_url', fullVideoUrl, 60 * 60 * 1000);
         }
       } catch (error) {
         // console.log('No tour video found, using default:', error);
@@ -476,7 +468,7 @@ export default function HomePage() {
           maxWidth: '45%',
         }}
       >
-        Made with ❤️ by Brahma Vastu
+        Made with ❤️ by Brahma Vastu Team
       </Box>
       <Box
         component="footer"

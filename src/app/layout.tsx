@@ -7,6 +7,8 @@ import { AuthProvider } from '../contexts/AuthContext';
 import { LoadingProvider } from '../contexts/LoadingContext';
 import { PlanetaryDataProvider } from '@/contexts/PlanetaryDataContext';
 import { LegalProvider } from '@/contexts/LegalContent';
+import { ModalProvider } from '@/contexts/ModalContext';
+import GlobalModalWrapper from '@/components/Modals/GlobalModalWrapper';
 import Chatbot from '@/components/Bot/Chatbot';
 import ClientOnly from '@/components/Auth/ClientOnly';
 import ReduxProvider from '@/components/providers/ReduxProvider';
@@ -236,12 +238,15 @@ export default function RootLayout({
                 <GuestAccountManager>
                   <PlanetaryDataProvider>
                     <LegalProvider>
-                      <ClientOnly>
-                        <SmartPageLoader />
-                        <GuestBanner />
-                        {/* <ConditionalChatbot /> */}
-                      </ClientOnly>
-                      {children}
+                      <ModalProvider>
+                        <ClientOnly>
+                          <SmartPageLoader />
+                          <GuestBanner />
+                          {/* <ConditionalChatbot /> */}
+                        </ClientOnly>
+                        {children}
+                        <GlobalModalWrapper />
+                      </ModalProvider>
                     </LegalProvider>
                   </PlanetaryDataProvider>
                 </GuestAccountManager>
