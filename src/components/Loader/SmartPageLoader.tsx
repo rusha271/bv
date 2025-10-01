@@ -26,77 +26,95 @@ const SmartPageLoader: React.FC<SmartPageLoaderProps> = ({
   const [recentlyLoggedOut, setRecentlyLoggedOut] = useState(false);
   const [manualControl, setManualControl] = useState<{ show: boolean; hide: boolean }>({ show: false, hide: false });
 
-  // Listen for login/signup modal state changes
+  // Listen for login/signup modal state changes - optimized with debouncing
   useEffect(() => {
+    let timeoutId: NodeJS.Timeout;
+    
     const handleModalStateChange = (event: Event) => {
-      const customEvent = event as CustomEvent;
-      const { type, isOpen } = customEvent.detail;
-      if (type === 'login') {
-        setIsLoginModalOpen(isOpen);
-      } else if (type === 'signup') {
-        setIsSignupModalOpen(isOpen);
-      }
+      // Clear previous timeout to debounce rapid events
+      clearTimeout(timeoutId);
+      
+      timeoutId = setTimeout(() => {
+        const customEvent = event as CustomEvent;
+        const { type, isOpen } = customEvent.detail;
+        if (type === 'login') {
+          setIsLoginModalOpen(isOpen);
+        } else if (type === 'signup') {
+          setIsSignupModalOpen(isOpen);
+        }
+      }, 16); // ~60fps debouncing
     };
 
     // Listen for custom events from LogSig component
-    window.addEventListener('loginModalStateChange', handleModalStateChange);
-    window.addEventListener('signupModalStateChange', handleModalStateChange);
+    window.addEventListener('loginModalStateChange', handleModalStateChange, { passive: true });
+    window.addEventListener('signupModalStateChange', handleModalStateChange, { passive: true });
 
     return () => {
+      clearTimeout(timeoutId);
       window.removeEventListener('loginModalStateChange', handleModalStateChange);
       window.removeEventListener('signupModalStateChange', handleModalStateChange);
     };
   }, []);
 
-  // Listen for authentication success events
+  // Listen for authentication success events - optimized with requestAnimationFrame
   useEffect(() => {
+    let authSuccessTimer: NodeJS.Timeout;
+    let authLogoutTimer: NodeJS.Timeout;
+    
     const handleAuthSuccess = (event: Event) => {
-      setRecentlyAuthenticated(true);
-      setRecentlyLoggedOut(false);
-      
-      // Reset the flag after a short delay
-      const timer = setTimeout(() => {
-        setRecentlyAuthenticated(false);
-      }, 1000);
-      
-      return () => clearTimeout(timer);
+      // Use requestAnimationFrame to batch DOM updates
+      requestAnimationFrame(() => {
+        setRecentlyAuthenticated(true);
+        setRecentlyLoggedOut(false);
+        
+        // Reset the flag after a short delay
+        authSuccessTimer = setTimeout(() => {
+          setRecentlyAuthenticated(false);
+        }, 1000);
+      });
     };
 
     const handleAuthLogout = (event: Event) => {
-      setRecentlyLoggedOut(true);
-      setRecentlyAuthenticated(false);
-      
-      // Reset the flag after a short delay
-      const timer = setTimeout(() => {
-        setRecentlyLoggedOut(false);
-      }, 1000);
-      
-      return () => clearTimeout(timer);
+      // Use requestAnimationFrame to batch DOM updates
+      requestAnimationFrame(() => {
+        setRecentlyLoggedOut(true);
+        setRecentlyAuthenticated(false);
+        
+        // Reset the flag after a short delay
+        authLogoutTimer = setTimeout(() => {
+          setRecentlyLoggedOut(false);
+        }, 1000);
+      });
     };
 
-    window.addEventListener('authSuccess', handleAuthSuccess);
-    window.addEventListener('authLogout', handleAuthLogout);
+    window.addEventListener('authSuccess', handleAuthSuccess, { passive: true });
+    window.addEventListener('authLogout', handleAuthLogout, { passive: true });
 
     return () => {
+      clearTimeout(authSuccessTimer);
+      clearTimeout(authLogoutTimer);
       window.removeEventListener('authSuccess', handleAuthSuccess);
       window.removeEventListener('authLogout', handleAuthLogout);
     };
   }, []);
 
-  // Listen for manual loader control
+  // Listen for manual loader control - optimized with requestAnimationFrame
   useEffect(() => {
     const handleManualControl = (event: Event) => {
-      const customEvent = event as CustomEvent;
-      const { action } = customEvent.detail;
-      
-      if (action === 'show') {
-        setManualControl({ show: true, hide: false });
-      } else if (action === 'hide') {
-        setManualControl({ show: false, hide: true });
-      }
+      // Use requestAnimationFrame to batch DOM updates and prevent forced reflow
+      requestAnimationFrame(() => {
+        const customEvent = event as CustomEvent;
+        const { action } = customEvent.detail;
+        
+        if (action === 'show') {
+          setManualControl({ show: true, hide: false });
+        } else if (action === 'hide') {
+          setManualControl({ show: false, hide: true });
+        }
+      });
     };
 
-    window.addEventListener('manualLoaderControl', handleManualControl);
+    window.addEventListener('manualLoaderControl', handleManualControl, { passive: true });
 
     return () => {
       window.removeEventListener('manualLoaderControl', handleManualControl);

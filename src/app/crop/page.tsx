@@ -2,7 +2,7 @@
 'use client';
 
 import React, { useState, useCallback, useEffect, useRef } from 'react';
-import { useThemeContext } from '@/contexts/ThemeContext';
+import { useGlobalTheme } from '@/contexts/GlobalThemeContext';
 import { useDeviceType } from '@/utils/useDeviceType';
 import Navbar from '@/components/ui/Navbar';
 import Footer from '@/components/ui/Footer';
@@ -16,10 +16,22 @@ import { Dialog, DialogContent } from '@mui/material'; // Add Dialog and DialogC
 
 // const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
 
-// Lazy load components
-const Vastu3DAnimation = React.lazy(() => import('@/components/Animations/Vastu3DAnimation'));
-const ZodiacSignsDisplay = React.lazy(() => import('@/contexts/ZodiacSignsDisplay'));
-const AdvancedImageCropper = React.lazy(() => import('@/components/Image Crop/AdvancedImageCropper'));
+// Lazy load components with better error handling
+const Vastu3DAnimation = React.lazy(() => 
+  import('@/components/Animations/Vastu3DAnimation').catch(() => ({
+    default: () => <div>Animation failed to load</div>
+  }))
+);
+const ZodiacSignsDisplay = React.lazy(() => 
+  import('@/contexts/ZodiacSignsDisplay').catch(() => ({
+    default: () => <div>Zodiac signs failed to load</div>
+  }))
+);
+const AdvancedImageCropper = React.lazy(() => 
+  import('@/components/Image Crop/AdvancedImageCropper').catch(() => ({
+    default: () => <div>Cropper failed to load</div>
+  }))
+);
 
 function FadeInSection({ children }: { children: React.ReactNode }) {
   return <div className={styles.animateFadein}>{children}</div>;
@@ -60,9 +72,14 @@ function useLazyLoad() {
 }
 
 export default function CropPage() {
-  const { theme } = useThemeContext();
+  const { theme, isDarkMode, isLightMode } = useGlobalTheme();
   const { isMobile, isTablet } = useDeviceType();
   const router = useRouter();
+  
+  // Debug theme detection for mobile
+  useEffect(() => {
+    // console.log('CropPage theme mode:', theme.palette.mode, 'isDarkMode:', isDarkMode, 'isMobile:', isMobile);
+  }, [theme.palette.mode, isDarkMode, isMobile]);
 
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [croppedUrl, setCroppedUrl] = useState<string | null>(null);
@@ -201,20 +218,20 @@ export default function CropPage() {
                   color: theme.palette.primary.contrastText,
                   padding: buttonPadding,
                   fontSize: buttonFontSize,
-                  boxShadow: theme.palette.mode === 'dark' ? '0 8px 32px rgba(59, 130, 246, 0.3)' : '0 8px 32px rgba(59, 130, 246, 0.2)',
+                  boxShadow: isDarkMode ? '0 8px 32px rgba(59, 130, 246, 0.3)' : '0 8px 32px rgba(59, 130, 246, 0.2)',
                   cursor: sessionData ? 'pointer' : 'not-allowed',
                   opacity: sessionData ? 1 : 0.6,
                 }}
                 onMouseEnter={(e) => {
                   if (sessionData) {
                     e.currentTarget.style.transform = 'translateY(-2px)';
-                    e.currentTarget.style.boxShadow = theme.palette.mode === 'dark' ? '0 12px 40px rgba(59, 130, 246, 0.4)' : '0 12px 40px rgba(59, 130, 246, 0.3)';
+                    e.currentTarget.style.boxShadow = isDarkMode ? '0 12px 40px rgba(59, 130, 246, 0.4)' : '0 12px 40px rgba(59, 130, 246, 0.3)';
                   }
                 }}
                 onMouseLeave={(e) => {
                   if (sessionData) {
                     e.currentTarget.style.transform = 'translateY(0)';
-                    e.currentTarget.style.boxShadow = theme.palette.mode === 'dark' ? '0 8px 32px rgba(59, 130, 246, 0.3)' : '0 8px 32px rgba(59, 130, 246, 0.2)';
+                    e.currentTarget.style.boxShadow = isDarkMode ? '0 8px 32px rgba(59, 130, 246, 0.3)' : '0 8px 32px rgba(59, 130, 246, 0.2)';
                   }
                 }}
               >
@@ -236,13 +253,13 @@ export default function CropPage() {
               fontWeight: 700,
               mb: 2,
               fontSize: sectionTitleSize,
-              background: theme.palette.mode === 'dark'
+              backgroundImage: isDarkMode
                 ? 'linear-gradient(135deg, #60a5fa 0%, #a78bfa 100%)'
                 : 'linear-gradient(135deg, #1e40af 0%, #7c3aed 100%)',
               backgroundClip: 'text',
               WebkitBackgroundClip: 'text',
               WebkitTextFillColor: 'transparent',
-              textShadow: theme.palette.mode === 'dark' 
+              textShadow: isDarkMode 
                 ? '0 2px 4px rgba(0, 0, 0, 0.1)' 
                 : '0 2px 4px rgba(0, 0, 0, 0.1)',
             }}
@@ -255,21 +272,21 @@ export default function CropPage() {
             sx={{
               width: '100%',
               height: '100%',
-              mb: 4,
-              background: theme.palette.mode === 'dark'
+              mb: 2,
+              background: isDarkMode
                 ? 'rgba(15, 23, 42, 0.8)'
                 : 'rgba(255, 255, 255, 0.8)',
               backdropFilter: 'blur(20px)',
-              border: theme.palette.mode === 'dark'
+              border: isDarkMode
                 ? '1px solid rgba(148, 163, 184, 0.1)'
                 : '1px solid rgba(148, 163, 184, 0.2)',
-              boxShadow: theme.palette.mode === 'dark'
+              boxShadow: isDarkMode
                 ? '0 8px 32px rgba(0, 0, 0, 0.3)'
                 : '0 8px 32px rgba(0, 0, 0, 0.1)',
               transition: 'all 0.3s ease',
               '&:hover': {
                 transform: 'translateY(-2px)',
-                boxShadow: theme.palette.mode === 'dark'
+                boxShadow: isDarkMode
                   ? '0 12px 40px rgba(0, 0, 0, 0.4)'
                   : '0 12px 40px rgba(0, 0, 0, 0.15)',
               },
@@ -288,12 +305,12 @@ export default function CropPage() {
                     display: 'flex', 
                     alignItems: 'center', 
                     justifyContent: 'center',
-                    background: theme.palette.mode === 'dark'
+                    background: isDarkMode
                       ? 'rgba(15, 23, 42, 0.8)'
                       : 'rgba(255, 255, 255, 0.8)',
                     backdropFilter: 'blur(10px)',
                     borderRadius: 3,
-                    border: theme.palette.mode === 'dark'
+                    border: isDarkMode
                       ? '1px solid rgba(148, 163, 184, 0.1)'
                       : '1px solid rgba(148, 163, 184, 0.2)',
                     flexDirection: 'column'
@@ -311,7 +328,7 @@ export default function CropPage() {
                       sx={{
                         color: theme.palette.text.secondary,
                         fontWeight: 500,
-                        background: theme.palette.mode === 'dark'
+                        backgroundImage: isDarkMode
                           ? 'linear-gradient(135deg, #60a5fa 0%, #a78bfa 100%)'
                           : 'linear-gradient(135deg, #1e40af 0%, #7c3aed 100%)',
                         backgroundClip: 'text',
@@ -342,10 +359,10 @@ export default function CropPage() {
               mb: 2, 
               p: 3, 
               borderRadius: 3, 
-              background: theme.palette.mode === 'dark'
+              background: isDarkMode
                 ? 'rgba(34, 197, 94, 0.1)'
                 : 'rgba(34, 197, 94, 0.05)',
-              border: theme.palette.mode === 'dark'
+              border: isDarkMode
                 ? '1px solid rgba(34, 197, 94, 0.3)'
                 : '1px solid rgba(34, 197, 94, 0.2)',
               display: 'flex',
@@ -354,7 +371,7 @@ export default function CropPage() {
               transition: 'all 0.3s ease',
               '&:hover': {
                 transform: 'translateY(-1px)',
-                boxShadow: theme.palette.mode === 'dark'
+                boxShadow: isDarkMode
                   ? '0 8px 25px rgba(34, 197, 94, 0.2)'
                   : '0 8px 25px rgba(34, 197, 94, 0.1)',
               }
@@ -362,14 +379,14 @@ export default function CropPage() {
               <Box sx={{
                 p: 1,
                 borderRadius: 2,
-                background: theme.palette.mode === 'dark'
+                background: isDarkMode
                   ? 'rgba(34, 197, 94, 0.2)'
                   : 'rgba(34, 197, 94, 0.1)',
               }}>
                 <Typography variant="h6" sx={{ color: '#22c55e' }}>✅</Typography>
               </Box>
               <Typography variant="body2" sx={{ 
-                color: theme.palette.mode === 'dark' ? '#22c55e' : '#059669', 
+                color: isDarkMode ? '#22c55e' : '#059669', 
                 fontWeight: 600,
                 fontSize: '1rem'
               }}>
@@ -387,15 +404,15 @@ export default function CropPage() {
                 color: theme.palette.primary.contrastText,
                 padding: buttonPadding,
                 fontSize: buttonFontSize,
-                boxShadow: theme.palette.mode === 'dark' ? '0 8px 32px rgba(59, 130, 246, 0.3)' : '0 8px 32px rgba(59, 130, 246, 0.2)',
+                boxShadow: isDarkMode ? '0 8px 32px rgba(59, 130, 246, 0.3)' : '0 8px 32px rgba(59, 130, 246, 0.2)',
               }}
               onMouseEnter={(e) => {
                 e.currentTarget.style.transform = 'translateY(-2px)';
-                e.currentTarget.style.boxShadow = theme.palette.mode === 'dark' ? '0 12px 40px rgba(59, 130, 246, 0.4)' : '0 12px 40px rgba(59, 130, 246, 0.3)';
+                e.currentTarget.style.boxShadow = isDarkMode ? '0 12px 40px rgba(59, 130, 246, 0.4)' : '0 12px 40px rgba(59, 130, 246, 0.3)';
               }}
               onMouseLeave={(e) => {
                 e.currentTarget.style.transform = 'translateY(0)';
-                e.currentTarget.style.boxShadow = theme.palette.mode === 'dark' ? '0 8px 32px rgba(59, 130, 246, 0.3)' : '0 8px 32px rgba(59, 130, 246, 0.2)';
+                e.currentTarget.style.boxShadow = isDarkMode ? '0 8px 32px rgba(59, 130, 246, 0.3)' : '0 8px 32px rgba(59, 130, 246, 0.2)';
               }}
             >
               <span className={styles.buttonContent}>
@@ -415,7 +432,7 @@ export default function CropPage() {
         className={`${styles.backgroundGradient} ${styles.animateGradient}`}
         style={{
           background: 'linear-gradient(45deg, #E3F2FD, #FFF9C4, #FCE4EC)',
-          ...(theme.palette.mode === 'dark' && { background: 'linear-gradient(45deg, #18181B, #27272A, #18181B)' }),
+          ...(isDarkMode && { background: 'linear-gradient(45deg, #18181B, #27272A, #18181B)' }),
         }}
       />
       <Navbar />
@@ -427,14 +444,14 @@ export default function CropPage() {
         <Box
           className={styles.contentCard}
           sx={{
-            background: theme.palette.mode === 'dark' 
+            background: isDarkMode 
               ? 'rgba(15, 23, 42, 0.95)' 
               : 'rgba(255, 255, 255, 0.95)',
             backdropFilter: 'blur(20px)',
-            border: theme.palette.mode === 'dark'
+            border: isDarkMode
               ? '1px solid rgba(148, 163, 184, 0.1)'
               : '1px solid rgba(148, 163, 184, 0.2)',
-            boxShadow: theme.palette.mode === 'dark'
+            boxShadow: isDarkMode
               ? '0 25px 50px -12px rgba(0, 0, 0, 0.5)'
               : '0 25px 50px -12px rgba(0, 0, 0, 0.25)',
             p: { xs: 4, md: 6 },
@@ -456,15 +473,15 @@ export default function CropPage() {
                   display: 'flex', 
                   alignItems: 'center', 
                   justifyContent: 'center',
-                  background: theme.palette.mode === 'dark'
+                  background: isDarkMode
                     ? 'rgba(15, 23, 42, 0.8)'
                     : 'rgba(255, 255, 255, 0.8)',
                   backdropFilter: 'blur(20px)',
                   borderRadius: 3,
-                  border: theme.palette.mode === 'dark'
+                  border: isDarkMode
                     ? '1px solid rgba(148, 163, 184, 0.1)'
                     : '1px solid rgba(148, 163, 184, 0.2)',
-                  boxShadow: theme.palette.mode === 'dark'
+                  boxShadow: isDarkMode
                     ? '0 8px 32px rgba(0, 0, 0, 0.3)'
                     : '0 8px 32px rgba(0, 0, 0, 0.1)',
                 }}>
@@ -475,7 +492,7 @@ export default function CropPage() {
                     animation="wave"
                     sx={{ 
                       borderRadius: 3,
-                      background: theme.palette.mode === 'dark'
+                      background: isDarkMode
                         ? 'rgba(148, 163, 184, 0.1)'
                         : 'rgba(148, 163, 184, 0.05)',
                     }}
@@ -488,20 +505,20 @@ export default function CropPage() {
                 sx={{ 
                   p: 4, 
                   borderRadius: 3, 
-                  background: theme.palette.mode === 'dark'
+                  background: isDarkMode
                     ? 'rgba(15, 23, 42, 0.8)'
                     : 'rgba(255, 255, 255, 0.8)',
                   backdropFilter: 'blur(20px)',
-                  border: theme.palette.mode === 'dark'
+                  border: isDarkMode
                     ? '1px solid rgba(148, 163, 184, 0.1)'
                     : '1px solid rgba(148, 163, 184, 0.2)',
-                  boxShadow: theme.palette.mode === 'dark'
+                  boxShadow: isDarkMode
                     ? '0 8px 32px rgba(0, 0, 0, 0.3)'
                     : '0 8px 32px rgba(0, 0, 0, 0.1)',
                   transition: 'all 0.3s ease',
                   '&:hover': {
                     transform: 'translateY(-2px)',
-                    boxShadow: theme.palette.mode === 'dark'
+                    boxShadow: isDarkMode
                       ? '0 12px 40px rgba(0, 0, 0, 0.4)'
                       : '0 12px 40px rgba(0, 0, 0, 0.15)',
                   }
@@ -509,7 +526,7 @@ export default function CropPage() {
               >
                 <Typography variant="h6" sx={{ 
                   mb: 3, 
-                  background: theme.palette.mode === 'dark'
+                  background: isDarkMode
                     ? 'linear-gradient(135deg, #60a5fa 0%, #a78bfa 100%)'
                     : 'linear-gradient(135deg, #1e40af 0%, #7c3aed 100%)',
                   backgroundClip: 'text',
@@ -541,10 +558,10 @@ export default function CropPage() {
                     mb: 2, 
                     p: 2, 
                     borderRadius: 2,
-                    background: theme.palette.mode === 'dark'
+                    background: isDarkMode
                       ? 'rgba(59, 130, 246, 0.1)'
                       : 'rgba(59, 130, 246, 0.05)',
-                    border: theme.palette.mode === 'dark'
+                    border: isDarkMode
                       ? '1px solid rgba(59, 130, 246, 0.2)'
                       : '1px solid rgba(59, 130, 246, 0.1)',
                     display: 'flex',
@@ -560,10 +577,10 @@ export default function CropPage() {
                     mb: 2, 
                     p: 2, 
                     borderRadius: 2,
-                    background: theme.palette.mode === 'dark'
+                    background: isDarkMode
                       ? 'rgba(59, 130, 246, 0.1)'
                       : 'rgba(59, 130, 246, 0.05)',
-                    border: theme.palette.mode === 'dark'
+                    border: isDarkMode
                       ? '1px solid rgba(59, 130, 246, 0.2)'
                       : '1px solid rgba(59, 130, 246, 0.1)',
                     display: 'flex',
@@ -578,10 +595,10 @@ export default function CropPage() {
                   <Box sx={{ 
                     p: 2, 
                     borderRadius: 2,
-                    background: theme.palette.mode === 'dark'
+                    background: isDarkMode
                       ? 'rgba(34, 197, 94, 0.1)'
                       : 'rgba(34, 197, 94, 0.05)',
-                    border: theme.palette.mode === 'dark'
+                    border: isDarkMode
                       ? '1px solid rgba(34, 197, 94, 0.2)'
                       : '1px solid rgba(34, 197, 94, 0.1)',
                     display: 'flex',
@@ -599,25 +616,73 @@ export default function CropPage() {
             </Box>
           </Box>
           
-          {/* Lazy loaded Vastu3DAnimation */}
-          <Box ref={vastuSection.ref} sx={{ width: '100%', mt: 4 }}>
-            {vastuSection.isVisible ? (
-              <React.Suspense fallback={
+          {/* Lazy loaded Vastu3DAnimation - Now visible on mobile too */}
+          {(
+            <Box ref={vastuSection.ref} sx={{ width: '100%', mt: 4 }}>
+              {vastuSection.isVisible ? (
+                <React.Suspense fallback={
+                  <Box sx={{ 
+                    width: '100%', 
+                    height: '300px', 
+                    display: 'flex', 
+                    alignItems: 'center', 
+                    justifyContent: 'center',
+                    background: isDarkMode
+                      ? 'rgba(15, 23, 42, 0.8)'
+                      : 'rgba(255, 255, 255, 0.8)',
+                    backdropFilter: 'blur(20px)',
+                    borderRadius: 3,
+                    border: isDarkMode
+                      ? '1px solid rgba(148, 163, 184, 0.1)'
+                      : '1px solid rgba(148, 163, 184, 0.2)',
+                    boxShadow: isDarkMode
+                      ? '0 8px 32px rgba(0, 0, 0, 0.3)'
+                      : '0 8px 32px rgba(0, 0, 0, 0.1)',
+                    flexDirection: 'column'
+                  }}>
+                    <CircularProgress 
+                      size={48}
+                      sx={{ 
+                        color: '#3b82f6', 
+                        mb: 2,
+                        filter: 'drop-shadow(0 4px 8px rgba(59, 130, 246, 0.3))'
+                      }}
+                    />
+                    <Typography 
+                      variant="body2" 
+                      sx={{
+                        color: theme.palette.text.secondary,
+                        fontWeight: 500,
+                        background: isDarkMode
+                          ? 'linear-gradient(135deg, #60a5fa 0%, #a78bfa 100%)'
+                          : 'linear-gradient(135deg, #1e40af 0%, #7c3aed 100%)',
+                        backgroundClip: 'text',
+                        WebkitBackgroundClip: 'text',
+                        WebkitTextFillColor: 'transparent',
+                      }}
+                    >
+                      🎬 Loading Vastu animation...
+                    </Typography>
+                  </Box>
+                }>
+                  <Vastu3DAnimation />
+                </React.Suspense>
+              ) : (
                 <Box sx={{ 
                   width: '100%', 
                   height: '300px', 
                   display: 'flex', 
                   alignItems: 'center', 
                   justifyContent: 'center',
-                  background: theme.palette.mode === 'dark'
+                  background: isDarkMode
                     ? 'rgba(15, 23, 42, 0.8)'
                     : 'rgba(255, 255, 255, 0.8)',
                   backdropFilter: 'blur(20px)',
                   borderRadius: 3,
-                  border: theme.palette.mode === 'dark'
+                  border: isDarkMode
                     ? '1px solid rgba(148, 163, 184, 0.1)'
                     : '1px solid rgba(148, 163, 184, 0.2)',
-                  boxShadow: theme.palette.mode === 'dark'
+                  boxShadow: isDarkMode
                     ? '0 8px 32px rgba(0, 0, 0, 0.3)'
                     : '0 8px 32px rgba(0, 0, 0, 0.1)',
                   flexDirection: 'column'
@@ -635,7 +700,7 @@ export default function CropPage() {
                     sx={{
                       color: theme.palette.text.secondary,
                       fontWeight: 500,
-                      background: theme.palette.mode === 'dark'
+                      background: isDarkMode
                         ? 'linear-gradient(135deg, #60a5fa 0%, #a78bfa 100%)'
                         : 'linear-gradient(135deg, #1e40af 0%, #7c3aed 100%)',
                       backgroundClip: 'text',
@@ -646,58 +711,13 @@ export default function CropPage() {
                     🎬 Loading Vastu animation...
                   </Typography>
                 </Box>
-              }>
-                <Vastu3DAnimation />
-              </React.Suspense>
-            ) : (
-              <Box sx={{ 
-                width: '100%', 
-                height: '300px', 
-                display: 'flex', 
-                alignItems: 'center', 
-                justifyContent: 'center',
-                background: theme.palette.mode === 'dark'
-                  ? 'rgba(15, 23, 42, 0.8)'
-                  : 'rgba(255, 255, 255, 0.8)',
-                backdropFilter: 'blur(20px)',
-                borderRadius: 3,
-                border: theme.palette.mode === 'dark'
-                  ? '1px solid rgba(148, 163, 184, 0.1)'
-                  : '1px solid rgba(148, 163, 184, 0.2)',
-                boxShadow: theme.palette.mode === 'dark'
-                  ? '0 8px 32px rgba(0, 0, 0, 0.3)'
-                  : '0 8px 32px rgba(0, 0, 0, 0.1)',
-                flexDirection: 'column'
-              }}>
-                <CircularProgress 
-                  size={48}
-                  sx={{ 
-                    color: '#3b82f6', 
-                    mb: 2,
-                    filter: 'drop-shadow(0 4px 8px rgba(59, 130, 246, 0.3))'
-                  }}
-                />
-                <Typography 
-                  variant="body2" 
-                  sx={{
-                    color: theme.palette.text.secondary,
-                    fontWeight: 500,
-                    background: theme.palette.mode === 'dark'
-                      ? 'linear-gradient(135deg, #60a5fa 0%, #a78bfa 100%)'
-                      : 'linear-gradient(135deg, #1e40af 0%, #7c3aed 100%)',
-                    backgroundClip: 'text',
-                    WebkitBackgroundClip: 'text',
-                    WebkitTextFillColor: 'transparent',
-                  }}
-                >
-                  🎬 Loading Vastu animation...
-                </Typography>
-              </Box>
-            )}
-          </Box>
+              )}
+            </Box>
+          )}
           
-          {/* Lazy loaded ZodiacSignsDisplay */}
-          <Box ref={zodiacSection.ref} sx={{ width: '100%', mt: 4 }}>
+          {/* Lazy loaded ZodiacSignsDisplay - Now visible on mobile too */}
+          {(
+            <Box ref={zodiacSection.ref} sx={{ width: '100%', mt: 4 }}>
             {zodiacSection.isVisible ? (
               <React.Suspense fallback={
                 <Box sx={{ 
@@ -706,15 +726,15 @@ export default function CropPage() {
                   display: 'flex', 
                   alignItems: 'center', 
                   justifyContent: 'center',
-                  background: theme.palette.mode === 'dark'
+                  background: isDarkMode
                     ? 'rgba(15, 23, 42, 0.8)'
                     : 'rgba(255, 255, 255, 0.8)',
                   backdropFilter: 'blur(20px)',
                   borderRadius: 3,
-                  border: theme.palette.mode === 'dark'
+                  border: isDarkMode
                     ? '1px solid rgba(148, 163, 184, 0.1)'
                     : '1px solid rgba(148, 163, 184, 0.2)',
-                  boxShadow: theme.palette.mode === 'dark'
+                  boxShadow: isDarkMode
                     ? '0 8px 32px rgba(0, 0, 0, 0.3)'
                     : '0 8px 32px rgba(0, 0, 0, 0.1)',
                   flexDirection: 'column'
@@ -732,7 +752,7 @@ export default function CropPage() {
                     sx={{
                       color: theme.palette.text.secondary,
                       fontWeight: 500,
-                      background: theme.palette.mode === 'dark'
+                      background: isDarkMode
                         ? 'linear-gradient(135deg, #a78bfa 0%, #ec4899 100%)'
                         : 'linear-gradient(135deg, #7c3aed 0%, #db2777 100%)',
                       backgroundClip: 'text',
@@ -753,15 +773,15 @@ export default function CropPage() {
                 display: 'flex', 
                 alignItems: 'center', 
                 justifyContent: 'center',
-                background: theme.palette.mode === 'dark'
+                background: isDarkMode
                   ? 'rgba(15, 23, 42, 0.8)'
                   : 'rgba(255, 255, 255, 0.8)',
                 backdropFilter: 'blur(20px)',
                 borderRadius: 3,
-                border: theme.palette.mode === 'dark'
+                border: isDarkMode
                   ? '1px solid rgba(148, 163, 184, 0.1)'
                   : '1px solid rgba(148, 163, 184, 0.2)',
-                boxShadow: theme.palette.mode === 'dark'
+                boxShadow: isDarkMode
                   ? '0 8px 32px rgba(0, 0, 0, 0.3)'
                   : '0 8px 32px rgba(0, 0, 0, 0.1)',
                 flexDirection: 'column'
@@ -779,7 +799,7 @@ export default function CropPage() {
                   sx={{
                     color: theme.palette.text.secondary,
                     fontWeight: 500,
-                    background: theme.palette.mode === 'dark'
+                    background: isDarkMode
                       ? 'linear-gradient(135deg, #a78bfa 0%, #ec4899 100%)'
                       : 'linear-gradient(135deg, #7c3aed 0%, #db2777 100%)',
                     backgroundClip: 'text',
@@ -792,6 +812,7 @@ export default function CropPage() {
               </Box>
             )}
           </Box>
+          )}
         </Box>
       </Container>
       <Footer />
@@ -803,14 +824,14 @@ export default function CropPage() {
         PaperProps={{
           sx: { 
             borderRadius: 4, 
-            boxShadow: theme.palette.mode === 'dark'
+            boxShadow: isDarkMode
               ? '0 25px 50px -12px rgba(0, 0, 0, 0.5)'
               : '0 25px 50px -12px rgba(0, 0, 0, 0.25)',
-            background: theme.palette.mode === 'dark'
+            background: isDarkMode
               ? 'rgba(15, 23, 42, 0.95)'
               : 'rgba(255, 255, 255, 0.95)',
             backdropFilter: 'blur(20px)',
-            border: theme.palette.mode === 'dark'
+            border: isDarkMode
               ? '1px solid rgba(148, 163, 184, 0.1)'
               : '1px solid rgba(148, 163, 184, 0.2)',
           },
@@ -819,7 +840,7 @@ export default function CropPage() {
         <DialogContent sx={{ p: 4, textAlign: 'center' }}>
           <Typography variant="h5" fontWeight={700} mb={2}
             sx={{
-              background: theme.palette.mode === 'dark'
+              background: isDarkMode
                 ? 'linear-gradient(135deg, #ef4444 0%, #dc2626 100%)'
                 : 'linear-gradient(135deg, #dc2626 0%, #b91c1c 100%)',
               backgroundClip: 'text',
@@ -845,20 +866,20 @@ export default function CropPage() {
               color: theme.palette.primary.contrastText,
               padding: buttonPadding,
               fontSize: buttonFontSize,
-              boxShadow: theme.palette.mode === 'dark' ? '0 8px 32px rgba(59, 130, 246, 0.3)' : '0 8px 32px rgba(59, 130, 246, 0.2)',
+              boxShadow: isDarkMode ? '0 8px 32px rgba(59, 130, 246, 0.3)' : '0 8px 32px rgba(59, 130, 246, 0.2)',
               opacity: isProcessing ? 0.6 : 1,
               cursor: isProcessing ? 'not-allowed' : 'pointer',
             }}
             onMouseEnter={(e) => {
               if (!isProcessing) {
                 e.currentTarget.style.transform = 'translateY(-2px)';
-                e.currentTarget.style.boxShadow = theme.palette.mode === 'dark' ? '0 12px 40px rgba(59, 130, 246, 0.4)' : '0 12px 40px rgba(59, 130, 246, 0.3)';
+                e.currentTarget.style.boxShadow = isDarkMode ? '0 12px 40px rgba(59, 130, 246, 0.4)' : '0 12px 40px rgba(59, 130, 246, 0.3)';
               }
             }}
             onMouseLeave={(e) => {
               if (!isProcessing) {
                 e.currentTarget.style.transform = 'translateY(0)';
-                e.currentTarget.style.boxShadow = theme.palette.mode === 'dark' ? '0 8px 32px rgba(59, 130, 246, 0.3)' : '0 8px 32px rgba(59, 130, 246, 0.2)';
+                e.currentTarget.style.boxShadow = isDarkMode ? '0 8px 32px rgba(59, 130, 246, 0.3)' : '0 8px 32px rgba(59, 130, 246, 0.2)';
               }
             }}
           >

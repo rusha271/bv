@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { Box, Typography, useMediaQuery, useTheme } from '@mui/material';
-import { useThemeContext } from '@/contexts/ThemeContext';
+import { useGlobalTheme } from '@/contexts/GlobalThemeContext';
 import { useModalContext } from '@/contexts/ModalContext';
 import { Heart, Shield, FileText, Mail } from 'lucide-react';
 
@@ -13,7 +13,7 @@ interface FooterProps {
 }
 
 export default function Footer({ onPrivacyClick, onTermsClick, onContactClick }: FooterProps) {
-  const { theme } = useThemeContext();
+  const { theme, isDarkMode, isLightMode } = useGlobalTheme();
   const { openPrivacyModal, openTermsModal, openContactModal } = useModalContext();
   const muiTheme = useTheme();
   const [isClient, setIsClient] = useState(false);

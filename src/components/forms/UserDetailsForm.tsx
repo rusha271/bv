@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useEffect, useState } from 'react';
-import { useThemeContext } from '@/contexts/ThemeContext';
+import { useGlobalTheme } from '@/contexts/GlobalThemeContext';
 import { useDeviceType } from '@/utils/useDeviceType';
 import { Box, Typography, Container, TextField, MenuItem, Button } from '@mui/material';
 import styles from '@/app/crop/cropPage.module.css';
@@ -17,7 +17,7 @@ function FadeInSection({ children }: { children: React.ReactNode }) {
 }
 
 export default function VastuForm() {
-  const { theme } = useThemeContext();
+  const { theme, isDarkMode, isLightMode } = useGlobalTheme();
   const { isMobile, isTablet } = useDeviceType();
   const [isLoggedIn, setIsLoggedIn] = useState(false);
 
@@ -78,7 +78,7 @@ export default function VastuForm() {
         className={`${styles.backgroundGradient} ${styles.animateGradient}`}
         style={{
           background: 'linear-gradient(45deg, #E3F2FD, #FFF9C4, #FCE4EC)',
-          ...(theme.palette.mode === 'dark' && { background: 'linear-gradient(45deg, #18181B, #27272A, #18181B)' }),
+          ...(isDarkMode && { background: 'linear-gradient(45deg, #18181B, #27272A, #18181B)' }),
         }}
       />
       <Container
@@ -192,10 +192,10 @@ export default function VastuForm() {
                     color: theme.palette.primary.contrastText,
                     padding: buttonPadding,
                     fontSize: buttonFontSize,
-                    boxShadow: theme.palette.mode === 'dark' ? '0 8px 32px rgba(59, 130, 246, 0.3)' : '0 8px 32px rgba(59, 130, 246, 0.2)',
+                    boxShadow: isDarkMode ? '0 8px 32px rgba(59, 130, 246, 0.3)' : '0 8px 32px rgba(59, 130, 246, 0.2)',
                     '&:hover': {
                       transform: 'translateY(-2px)',
-                      boxShadow: theme.palette.mode === 'dark' ? '0 12px 40px rgba(59, 130, 246, 0.4)' : '0 12px 40px rgba(59, 130, 246, 0.3)',
+                      boxShadow: isDarkMode ? '0 12px 40px rgba(59, 130, 246, 0.4)' : '0 12px 40px rgba(59, 130, 246, 0.3)',
                     },
                   }}
                 >

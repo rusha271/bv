@@ -53,7 +53,7 @@ import { useThemeContext } from "@/contexts/ThemeContext";
 import { Image } from "lucide-react";
 
 export default function FloorPlanAnalysesPage() {
-  const { mode } = useThemeContext();
+  const { mode, isDarkMode, isLightMode } = useGlobalTheme();
   const [analyses, setAnalyses] = useState<FloorPlanAnalysis[]>([]);
   const [filteredAnalyses, setFilteredAnalyses] = useState<FloorPlanAnalysis[]>([]);
   const [loading, setLoading] = useState(true);

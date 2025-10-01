@@ -149,142 +149,119 @@ export default function GuestBanner() {
             <Box sx={{ 
               maxWidth: '1200px', 
               mx: 'auto', 
-              px: { xs: 2, sm: 3, md: 4 },
-              py: { xs: 1.5, sm: 2, md: 2.5 }
+              px: { xs: 1, sm: 3, md: 4 },
+              py: { xs: 0.5, sm: 2, md: 2.5 }
             }}>
               <Stack 
-                direction={{ xs: 'column', sm: 'row' }} 
-                spacing={{ xs: 1.5, sm: 2 }}
-                alignItems={{ xs: 'stretch', sm: 'center' }}
+                direction="row" 
+                spacing={{ xs: 1, sm: 2 }}
+                alignItems="center"
                 justifyContent="space-between"
+                sx={{ minHeight: { xs: '40px', sm: 'auto' } }}
               >
                 {/* Left side - Message */}
-                <Stack 
-                  direction={{ xs: 'column', sm: 'row' }} 
-                  spacing={1.5} 
-                  alignItems={{ xs: 'flex-start', sm: 'center' }}
-                  sx={{ flex: 1 }}
-                >
+                <Box sx={{ 
+                  display: 'flex', 
+                  alignItems: 'center', 
+                  gap: { xs: 0.5, sm: 1 },
+                  flex: 1,
+                  minWidth: 0
+                }}>
                   <Box sx={{ 
-                    display: 'flex', 
-                    alignItems: 'center', 
-                    gap: 1,
-                    p: 1,
-                    borderRadius: 2,
-                    background: theme.palette.mode === 'dark'
-                      ? 'rgba(255, 255, 255, 0.1)'
-                      : 'rgba(255, 255, 255, 0.2)',
-                    backdropFilter: 'blur(10px)',
-                    border: theme.palette.mode === 'dark'
-                      ? '1px solid rgba(255, 255, 255, 0.1)'
-                      : '1px solid rgba(255, 255, 255, 0.2)',
+                    p: { xs: 0.3, sm: 0.4 }, 
+                    borderRadius: 1, 
+                    background: 'linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%)',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    flexShrink: 0
                   }}>
-                    <Box sx={{ 
-                      p: 0.3, 
-                      borderRadius: 1, 
-                      background: 'linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%)',
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center'
-                    }}>
-                      <Crown size={14} color="white" />
-                    </Box>
-                    <Box>
-                      <Typography 
-                        variant="body2" 
-                        sx={{ 
-                          fontWeight: 600,
-                          color: 'white',
-                          fontSize: { xs: '0.8rem', sm: '0.85rem' },
-                          lineHeight: 1.2
-                        }}
-                      >
-                        👋 Welcome, {user?.name || 'Guest'}!
-                      </Typography>
-                      <Typography 
-                        variant="caption" 
-                        sx={{ 
-                          color: 'rgba(255, 255, 255, 0.8)',
-                          fontSize: { xs: '0.7rem', sm: '0.75rem' },
-                          lineHeight: 1.2
-                        }}
-                      >
-                        You're using a temporary guest account
-                      </Typography>
-                    </Box>
+                    <Crown size={isMobile ? 10 : 14} color="white" />
                   </Box>
+                  <Typography 
+                    variant="body2" 
+                    sx={{ 
+                      fontWeight: 600,
+                      color: 'white',
+                      fontSize: { xs: '0.7rem', sm: '0.85rem' },
+                      lineHeight: 1,
+                      whiteSpace: 'nowrap',
+                      overflow: 'hidden',
+                      textOverflow: 'ellipsis'
+                    }}
+                  >
+                    👋 Welcome, {user?.name || 'Guest'}!
+                  </Typography>
+                </Box>
 
-                  {/* Features preview */}
-                  {!isMobile && (
-                    <Stack direction="row" spacing={1} sx={{ ml: 2 }}>
-                      <Chip
-                        icon={<Shield size={14} />}
-                        label="Save Progress"
-                        size="small"
-                        sx={{
-                          background: 'rgba(255, 255, 255, 0.15)',
-                          color: 'white',
-                          border: '1px solid rgba(255, 255, 255, 0.2)',
-                          '& .MuiChip-icon': { color: 'white' },
-                          fontSize: '0.75rem',
-                          height: '24px'
-                        }}
-                      />
-                      <Chip
-                        icon={<Zap size={14} />}
-                        label="All Features"
-                        size="small"
-                        sx={{
-                          background: 'rgba(255, 255, 255, 0.15)',
-                          color: 'white',
-                          border: '1px solid rgba(255, 255, 255, 0.2)',
-                          '& .MuiChip-icon': { color: 'white' },
-                          fontSize: '0.75rem',
-                          height: '24px'
-                        }}
-                      />
-                      <Chip
-                        icon={<Star size={14} />}
-                        label="Premium"
-                        size="small"
-                        sx={{
-                          background: 'rgba(255, 255, 255, 0.15)',
-                          color: 'white',
-                          border: '1px solid rgba(255, 255, 255, 0.2)',
-                          '& .MuiChip-icon': { color: 'white' },
-                          fontSize: '0.75rem',
-                          height: '24px'
-                        }}
-                      />
-                    </Stack>
-                  )}
-                </Stack>
+                {/* Features preview - Desktop only */}
+                {!isMobile && (
+                  <Stack direction="row" spacing={1} sx={{ ml: 2 }}>
+                    <Chip
+                      icon={<Shield size={14} />}
+                      label="Save Progress"
+                      size="small"
+                      sx={{
+                        background: 'rgba(255, 255, 255, 0.15)',
+                        color: 'white',
+                        border: '1px solid rgba(255, 255, 255, 0.2)',
+                        '& .MuiChip-icon': { color: 'white' },
+                        fontSize: '0.75rem',
+                        height: '24px'
+                      }}
+                    />
+                    <Chip
+                      icon={<Zap size={14} />}
+                      label="All Features"
+                      size="small"
+                      sx={{
+                        background: 'rgba(255, 255, 255, 0.15)',
+                        color: 'white',
+                        border: '1px solid rgba(255, 255, 255, 0.2)',
+                        '& .MuiChip-icon': { color: 'white' },
+                        fontSize: '0.75rem',
+                        height: '24px'
+                      }}
+                    />
+                    <Chip
+                      icon={<Star size={14} />}
+                      label="Premium"
+                      size="small"
+                      sx={{
+                        background: 'rgba(255, 255, 255, 0.15)',
+                        color: 'white',
+                        border: '1px solid rgba(255, 255, 255, 0.2)',
+                        '& .MuiChip-icon': { color: 'white' },
+                        fontSize: '0.75rem',
+                        height: '24px'
+                      }}
+                    />
+                  </Stack>
+                )}
 
                 {/* Right side - Actions */}
                 <Stack 
-                  direction={{ xs: 'row', sm: 'row' }} 
-                  spacing={1} 
+                  direction="row" 
+                  spacing={{ xs: 0.5, sm: 1 }} 
                   alignItems="center"
                   sx={{ 
-                    flexShrink: 0,
-                    width: { xs: '100%', sm: 'auto' },
-                    justifyContent: { xs: 'space-between', sm: 'flex-end' }
+                    flexShrink: 0
                   }}
                 >
                   <Button
               onClick={() => setShowUpgradeModal(true)}
                     variant="contained"
-                    size={isMobile ? 'medium' : 'large'}
-                    startIcon={<Sparkles size={16} />}
-                    endIcon={<ArrowUpRight size={16} />}
+                    size="small"
+                    startIcon={<Sparkles size={isMobile ? 10 : 16} />}
+                    endIcon={<ArrowUpRight size={isMobile ? 10 : 16} />}
                     sx={{
                       background: 'linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%)',
                       color: 'white',
-                      borderRadius: 3,
-                      px: { xs: 1.5, sm: 2.5 },
-                      py: { xs: 0.8, sm: 1 },
+                      borderRadius: 2,
+                      px: { xs: 0.8, sm: 2.5 },
+                      py: { xs: 0.4, sm: 1 },
                       fontWeight: 700,
-                      fontSize: { xs: '0.8rem', sm: '0.85rem' },
+                      fontSize: { xs: '0.65rem', sm: '0.85rem' },
                       textTransform: 'none',
                       boxShadow: '0 4px 15px rgba(251, 191, 36, 0.3)',
                       border: '1px solid rgba(255, 255, 255, 0.2)',
@@ -297,7 +274,7 @@ export default function GuestBanner() {
                       '&:active': {
                         transform: 'translateY(0px)',
                       },
-                      flex: { xs: 1, sm: 'none' }
+                      minWidth: 'auto'
                     }}
                   >
                     {isMobile ? 'Upgrade' : 'Upgrade Now'}
@@ -319,12 +296,12 @@ export default function GuestBanner() {
                         transform: 'scale(1.05)',
                       },
                       transition: 'all 0.3s ease',
-                      width: { xs: '36px', sm: '32px' },
-                      height: { xs: '36px', sm: '32px' }
+                      width: { xs: '24px', sm: '32px' },
+                      height: { xs: '24px', sm: '32px' }
                     }}
               aria-label="Close banner"
             >
-                    <X size={16} />
+                    <X size={isMobile ? 10 : 16} />
                   </IconButton>
                 </Stack>
               </Stack>

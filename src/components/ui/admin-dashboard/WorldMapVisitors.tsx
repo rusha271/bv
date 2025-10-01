@@ -48,7 +48,7 @@ export default function WorldMapVisitors() {
   const [tooltipContent, setTooltipContent] = useState<string>("");
   const [tooltipPosition, setTooltipPosition] = useState({ x: 0, y: 0 });
   const [zoom, setZoom] = useState(1);
-  const { mode } = useThemeContext();
+  const { mode, isDarkMode, isLightMode } = useGlobalTheme();
 
   useEffect(() => {
     const fetchVisitorData = async () => {

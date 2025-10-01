@@ -1,7 +1,7 @@
 "use client";
 
 import React from "react";
-import { useThemeContext } from "@/contexts/ThemeContext";
+import { useGlobalTheme } from "@/contexts/GlobalThemeContext";
 import ZodiacSignCard from "@/components/Card/ZodiacSignCard";
 
 const zodiacSigns = [
@@ -104,41 +104,41 @@ const zodiacSigns = [
 ];
 
 const ZodiacSignsDisplay: React.FC = () => {
-  const { theme } = useThemeContext();
+  const { theme, isDarkMode, isLightMode } = useGlobalTheme();
 
   return (
     <div
-      className="w-full mt-4 p-6 rounded-2xl transition-all duration-300 hover:shadow-2xl"
+      className="w-full mt-4 p-4 rounded-2xl transition-all duration-300 hover:shadow-2xl"
       style={{ 
-        background: theme.palette.mode === 'dark'
+        background: isDarkMode
           ? 'rgba(15, 23, 42, 0.95)'
           : 'rgba(255, 255, 255, 0.95)',
         backdropFilter: 'blur(20px)',
-        border: theme.palette.mode === 'dark'
+        border: isDarkMode
           ? '1px solid rgba(148, 163, 184, 0.1)'
           : '1px solid rgba(148, 163, 184, 0.2)',
-        boxShadow: theme.palette.mode === 'dark'
+        boxShadow: isDarkMode
           ? '0 25px 50px -12px rgba(0, 0, 0, 0.5)'
           : '0 25px 50px -12px rgba(0, 0, 0, 0.25)',
       }}
     >
       <h2
-        className="text-2xl font-bold mb-6 text-center"
+        className="text-xl font-bold mb-4 text-center"
         style={{ 
-          background: theme.palette.mode === 'dark'
+          backgroundImage: isDarkMode
             ? 'linear-gradient(135deg, #a78bfa 0%, #ec4899 100%)'
             : 'linear-gradient(135deg, #7c3aed 0%, #db2777 100%)',
           backgroundClip: 'text',
           WebkitBackgroundClip: 'text',
           WebkitTextFillColor: 'transparent',
-          textShadow: theme.palette.mode === 'dark' 
+          textShadow: isDarkMode 
             ? '0 2px 4px rgba(0, 0, 0, 0.1)' 
             : '0 2px 4px rgba(0, 0, 0, 0.1)',
         }}
       >
         ⭐ Zodiac Signs and Planetary Influences
       </h2>
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-x-6 gap-y-8">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-x-4 gap-y-6">
         {zodiacSigns.map((sign) => (
           <ZodiacSignCard
             key={sign.name}

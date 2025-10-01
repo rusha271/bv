@@ -1,6 +1,6 @@
 import { TextField, TextFieldProps } from '@mui/material';
 import { Controller, Control } from 'react-hook-form';
-import { useThemeContext } from '@/contexts/ThemeContext';
+import { useGlobalTheme } from '@/contexts/GlobalThemeContext';
 
 interface FormInputProps extends Omit<TextFieldProps, 'name'> {
   name: string;
@@ -9,7 +9,7 @@ interface FormInputProps extends Omit<TextFieldProps, 'name'> {
 }
 
 export const FormInput = ({ name, control, label, ...props }: FormInputProps) => {
-  const { theme } = useThemeContext();
+  const { theme, isDarkMode, isLightMode } = useGlobalTheme();
   return (
     <Controller
       name={name}

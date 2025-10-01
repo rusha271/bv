@@ -1,5 +1,6 @@
 import React, { useRef, useEffect, useState } from 'react';
 import * as THREE from 'three';
+import { useGlobalTheme } from '@/contexts/GlobalThemeContext';
 
 // OrbitControls implementation with zoom fix
 class OrbitControls {
@@ -129,6 +130,13 @@ class OrbitControls {
 }
 
 const DynamicSolarSystem = () => {
+  const { theme, isDarkMode, isLightMode } = useGlobalTheme();
+  
+  // Debug theme detection
+  useEffect(() => {
+    // console.log('Vastu3DAnimation theme mode:', theme.palette.mode, 'isDarkMode:', isDarkMode);
+  }, [theme.palette.mode, isDarkMode]);
+  
   const mountRef = useRef<HTMLDivElement>(null);
   const sceneRef = useRef<THREE.Scene | null>(null);
   const rendererRef = useRef<THREE.WebGLRenderer | null>(null);
@@ -427,19 +435,33 @@ const DynamicSolarSystem = () => {
   };
 
   useEffect(() => {
+    let resizeTimeout: NodeJS.Timeout;
+    
     const updateSize = () => {
       if (mountRef.current) {
-        setContainerSize({
-          width: mountRef.current.clientWidth,
-          height: mountRef.current.clientHeight,
+        // Use requestAnimationFrame to prevent forced reflow
+        requestAnimationFrame(() => {
+          setContainerSize({
+            width: mountRef.current!.clientWidth,
+            height: mountRef.current!.clientHeight,
+          });
         });
       }
     };
+    
+    const debouncedUpdateSize = () => {
+      clearTimeout(resizeTimeout);
+      resizeTimeout = setTimeout(updateSize, 100);
+    };
+    
     if (mountRef.current) {
       updateSize();
     }
-    window.addEventListener('resize', updateSize);
-    return () => window.removeEventListener('resize', updateSize);
+    window.addEventListener('resize', debouncedUpdateSize, { passive: true });
+    return () => {
+      clearTimeout(resizeTimeout);
+      window.removeEventListener('resize', debouncedUpdateSize);
+    };
   }, []);
 
   const updatePlanetaryPositions = () => {
@@ -462,7 +484,7 @@ const DynamicSolarSystem = () => {
     isInitialized.current = true;
 
     const scene = new THREE.Scene();
-    scene.background = new THREE.Color(0x000011);
+    scene.background = new THREE.Color(isDarkMode ? 0x000011 : 0x001122);
     sceneRef.current = scene;
 
     const starsGeometry = new THREE.BufferGeometry();
@@ -594,18 +616,31 @@ const DynamicSolarSystem = () => {
     };
     animate();
 
+    let resizeTimeout: NodeJS.Timeout;
+    
     const handleResize = () => {
       if (!mountRef.current || !cam || !renderer) return;
-      const width = mountRef.current.clientWidth;
-      const height = mountRef.current.clientHeight;
-      cam.aspect = width / height;
-      cam.updateProjectionMatrix();
-      renderer.setSize(width, height);
+      
+      // Use requestAnimationFrame to prevent forced reflow
+      requestAnimationFrame(() => {
+        const width = mountRef.current!.clientWidth;
+        const height = mountRef.current!.clientHeight;
+        cam.aspect = width / height;
+        cam.updateProjectionMatrix();
+        renderer.setSize(width, height);
+      });
     };
-    window.addEventListener('resize', handleResize);
+    
+    const debouncedHandleResize = () => {
+      clearTimeout(resizeTimeout);
+      resizeTimeout = setTimeout(handleResize, 100);
+    };
+    
+    window.addEventListener('resize', debouncedHandleResize, { passive: true });
 
     return () => {
-      window.removeEventListener('resize', handleResize);
+      clearTimeout(resizeTimeout);
+      window.removeEventListener('resize', debouncedHandleResize);
       if (animationRef.current) {
         cancelAnimationFrame(animationRef.current);
       }
@@ -627,11 +662,22 @@ const DynamicSolarSystem = () => {
     planetsData.find(p => p.name === hoveredPlanet) : null;
 
   return (
-    <div className="w-full max-w-full mx-auto bg-gray-900 rounded-lg overflow-hidden">
+    <div 
+      className="w-full max-w-full mx-auto rounded-lg overflow-hidden"
+      style={{
+        backgroundColor: isDarkMode ? '#111827' : '#f8fafc',
+        border: isDarkMode 
+          ? '1px solid rgba(148, 163, 184, 0.1)' 
+          : '1px solid rgba(148, 163, 184, 0.2)',
+        boxShadow: isDarkMode
+          ? '0 25px 50px -12px rgba(0, 0, 0, 0.5)'
+          : '0 25px 50px -12px rgba(0, 0, 0, 0.25)',
+      }}
+    >
       <div className="relative">
         <div
           ref={mountRef} 
-          className="w-full h-[70vh] cursor-grab active:cursor-grabbing"
+          className="w-full h-[40vh] cursor-grab active:cursor-grabbing"
           onMouseMove={handleCanvasInteraction}
           onClick={handleCanvasInteraction}
           style={{ touchAction: 'none' }}
@@ -639,17 +685,39 @@ const DynamicSolarSystem = () => {
         
         {hoveredPlanet && hoveredPlanetData && (
           <div
-            className="absolute pointer-events-none z-10 bg-black bg-opacity-90 text-white p-3 rounded-lg border border-yellow-400 max-w-xs"
+            className="absolute pointer-events-none z-10 p-3 rounded-lg max-w-xs"
             style={{
               left: mousePosition.x + 10,
               top: mousePosition.y - 10,
-              transform: 'translateY(-100%)'
+              transform: 'translateY(-100%)',
+              backgroundColor: isDarkMode ? 'rgba(0, 0, 0, 0.9)' : 'rgba(255, 255, 255, 0.95)',
+              color: isDarkMode ? '#ffffff' : '#000000',
+              border: isDarkMode ? '1px solid #fbbf24' : '1px solid #f59e0b',
+              backdropFilter: 'blur(10px)',
             }}
           >
-            <h3 className="font-bold text-yellow-400 text-lg">{hoveredPlanetData.name}</h3>
-            <p className="text-sm text-gray-300 mb-2">{hoveredPlanetData.description}</p>
-            <p className="text-xs text-gray-400">{hoveredPlanetData.facts}</p>
-            <div className="text-xs text-gray-400 mt-2">
+            <h3 
+              className="font-bold text-lg"
+              style={{ color: isDarkMode ? '#fbbf24' : '#f59e0b' }}
+            >
+              {hoveredPlanetData.name}
+            </h3>
+            <p 
+              className="text-sm mb-2"
+              style={{ color: isDarkMode ? '#d1d5db' : '#4b5563' }}
+            >
+              {hoveredPlanetData.description}
+            </p>
+            <p 
+              className="text-xs"
+              style={{ color: isDarkMode ? '#9ca3af' : '#6b7280' }}
+            >
+              {hoveredPlanetData.facts}
+            </p>
+            <div 
+              className="text-xs mt-2"
+              style={{ color: isDarkMode ? '#9ca3af' : '#6b7280' }}
+            >
               <p>Orbital Period: {hoveredPlanetData.orbitalPeriod.toFixed(1)} days</p>
               <p>Distance from Sun: {hoveredPlanetData.distance * 5.9} million km</p>
             </div>

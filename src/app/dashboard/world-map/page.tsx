@@ -7,7 +7,7 @@ import { Globe, Users, TrendingUp, MapPin, ArrowLeft } from "lucide-react";
 import Link from "next/link";
 
 export default function WorldMapPage() {
-  const { mode } = useThemeContext();
+  const { mode, isDarkMode, isLightMode } = useGlobalTheme();
 
   return (
     <DashboardLayout>

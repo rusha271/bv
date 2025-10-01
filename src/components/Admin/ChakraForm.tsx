@@ -18,7 +18,7 @@ import {
 } from '@mui/material';
 import { Save, Close, Add, Upload, Delete, Image as ImageIcon } from '@mui/icons-material';
 import { ChakraPoint, ChakraPointForm, convertBackendToFrontend, convertFrontendToBackend } from '@/types/chakra';
-import { useThemeContext } from '@/contexts/ThemeContext';
+import { useGlobalTheme } from '@/contexts/GlobalThemeContext';
 import { apiService } from '@/utils/apiService';
 
 interface ChakraFormProps {
@@ -48,7 +48,7 @@ export const ChakraForm: React.FC<ChakraFormProps> = ({
   const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
   const [selectedImage, setSelectedImage] = useState<File | null>(null);
   const [isUploadingImage, setIsUploadingImage] = useState(false);
-  const { mode } = useThemeContext();
+  const { mode, isDarkMode, isLightMode } = useGlobalTheme();
 
   // Initialize form data when chakraPoint prop changes
   useEffect(() => {

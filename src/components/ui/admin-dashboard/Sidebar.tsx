@@ -26,7 +26,7 @@ interface SidebarProps {
 
 export default function Sidebar({ onClose, collapsed = false, onToggleCollapse }: SidebarProps) {
   const pathname = usePathname();
-  const { mode } = useThemeContext();
+  const { mode, isDarkMode, isLightMode } = useGlobalTheme();
 
   const navigation = [
     { name: "Dashboard", href: "/dashboard", icon: LayoutDashboard },

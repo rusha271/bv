@@ -6,7 +6,7 @@ import DownloadIcon from '@mui/icons-material/Download';
 import Image from 'next/image';
 import CircularImagePoints from '@/components/CircularImagePoints';
 import ChakraDetailsModal from '@/components/Chakra/ChakraDetailsModal';
-import { getChakraPointsInOrder } from '@/utils/chakraCoordinateConverter';
+import { getLegacyChakraPointsInOrder, getChakraPointsInOrder, getMainDirectionsData } from '@/utils/chakraCoordinateConverter';
 import { ChakraPoint } from '@/types/chakra';
 import { apiService } from '@/utils/apiService';
 
@@ -152,8 +152,13 @@ const ChakraEditor: React.FC<ChakraEditorProps> = ({ floorPlanImageUrl }) => {
     fetchChakraPoints();
   }, []);
 
-  // Get chakra points data
-  const chakraPoints = getChakraPointsInOrder();
+  // Get both legacy 32-point system and 16 main directions
+  const legacyChakraPoints = getLegacyChakraPointsInOrder();
+  const mainDirectionPoints = getChakraPointsInOrder();
+  const mainDirectionsData = getMainDirectionsData();
+  
+  // Combine both systems for display
+  const chakraPoints = [...legacyChakraPoints, ...mainDirectionPoints];
 
   // Handle chakra point click
   const handleChakraPointClick = (point: any) => {
@@ -162,7 +167,7 @@ const ChakraEditor: React.FC<ChakraEditorProps> = ({ floorPlanImageUrl }) => {
     console.log('ChakraEditor: Looking for point ID:', point.id);
     console.log('ChakraEditor: Total chakra points loaded:', Object.keys(chakraPointsData).length);
     
-    // Check if the point ID exists in our data
+    // Check if the point ID exists in our API data
     const availableIds = Object.keys(chakraPointsData);
     console.log('ChakraEditor: Available IDs:', availableIds);
     console.log('ChakraEditor: Is N1 in available IDs?', availableIds.includes('N1'));
@@ -174,8 +179,17 @@ const ChakraEditor: React.FC<ChakraEditorProps> = ({ floorPlanImageUrl }) => {
     console.log('ChakraEditor: Is chakraPointsData an object?', typeof chakraPointsData === 'object');
     console.log('ChakraEditor: chakraPointsData constructor:', chakraPointsData?.constructor?.name);
     
-    const chakraPointData = chakraPointsData[point.id];
-    console.log('ChakraEditor: Found chakra point data:', chakraPointData);
+    // First check API data
+    let chakraPointData = chakraPointsData[point.id];
+    
+    // If not found in API data, check static main directions data
+    if (!chakraPointData) {
+      chakraPointData = mainDirectionsData[point.id] as ChakraPoint;
+      console.log('ChakraEditor: Checking static main directions data for:', point.id);
+      console.log('ChakraEditor: Found in static data:', chakraPointData);
+    }
+    
+    console.log('ChakraEditor: Final chakra point data:', chakraPointData);
     
     if (chakraPointData) {
       setSelectedChakraPoint(chakraPointData);
@@ -183,7 +197,7 @@ const ChakraEditor: React.FC<ChakraEditorProps> = ({ floorPlanImageUrl }) => {
       console.log('ChakraEditor: Modal should open now');
     } else {
       console.log('ChakraEditor: No data found for point ID:', point.id);
-      console.log('ChakraEditor: This might mean the API data does not contain this chakra point ID');
+      console.log('ChakraEditor: This might mean neither API data nor static data contains this chakra point ID');
     }
   };
 
@@ -660,7 +674,7 @@ const ChakraEditor: React.FC<ChakraEditorProps> = ({ floorPlanImageUrl }) => {
           />
         </Box>
 
-        <Box sx={{ mb: 1 }}>
+        {/* <Box sx={{ mb: 1 }}>
           <FormControlLabel
             control={
               <Switch
@@ -680,7 +694,7 @@ const ChakraEditor: React.FC<ChakraEditorProps> = ({ floorPlanImageUrl }) => {
             label="Chakra Opacity"
             sx={{ fontSize: '0.9rem' }}
           />
-        </Box>
+        </Box> */}
 
         <Box sx={{ mb: 2 }}>
           <FormControlLabel

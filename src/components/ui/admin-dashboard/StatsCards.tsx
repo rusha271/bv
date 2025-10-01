@@ -13,7 +13,7 @@ export default function StatsCards() {
   const [stats, setStats] = useState<StatsData>({ totalVisitors: 0, consultationRequests: 0 });
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const { mode } = useThemeContext();
+  const { mode, isDarkMode, isLightMode } = useGlobalTheme();
 
   useEffect(() => {
     const fetchStats = async () => {

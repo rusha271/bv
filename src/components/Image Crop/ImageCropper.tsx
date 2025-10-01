@@ -1,7 +1,7 @@
 // src/components/ui/ImageCropper.tsx
 import React, { useState, useCallback, useEffect, useRef } from 'react';
 import { Box, Button, Stack, Typography } from '@mui/material';
-import { useThemeContext } from '@/contexts/ThemeContext';
+import { useGlobalTheme } from '@/contexts/GlobalThemeContext';
 import { useDeviceType } from '@/utils/useDeviceType';
 
 interface CropData {
@@ -23,7 +23,7 @@ interface Point {
 }
 
 const ImageCropper: React.FC<ImageCropperProps> = ({ imageUrl, onImageLoaded, onCropComplete }) => {
-  const { theme } = useThemeContext();
+  const { theme, isDarkMode, isLightMode } = useGlobalTheme();
   const { isMobile, isTablet } = useDeviceType();
   
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -34,7 +34,7 @@ const ImageCropper: React.FC<ImageCropperProps> = ({ imageUrl, onImageLoaded, on
   const [isDrawing, setIsDrawing] = useState(false);
   const [drawStart, setDrawStart] = useState<Point | null>(null);
   const [drawEnd, setDrawEnd] = useState<Point | null>(null);
-  const [shapeType, setShapeType] = useState<'polygon' | 'rectangle' | 'square'>(isMobile ? 'rectangle' : 'polygon');
+  const [shapeType, setShapeType] = useState<'polygon' | 'rectangle' | 'square'>('polygon');
   const [imageDimensions, setImageDimensions] = useState<{
     width: number;
     height: number;
@@ -85,7 +85,6 @@ const ImageCropper: React.FC<ImageCropperProps> = ({ imageUrl, onImageLoaded, on
         // Get container size with mobile considerations
         const container = canvas.parentElement;
         if (!container) {
-          console.warn('ImageCropper: Parent container not found, using default canvas size');
           canvas.width = isMobile ? 350 : 800;
           canvas.height = isMobile ? 400 : 600;
         } else {
@@ -151,8 +150,8 @@ const ImageCropper: React.FC<ImageCropperProps> = ({ imageUrl, onImageLoaded, on
     if (!ctx) return;
 
     const { scaledWidth, scaledHeight, offsetX, offsetY } = imageDimensions;
-    const pointSize = isMobile ? 12 : 8; // Larger points for mobile
-    const lineWidth = isMobile ? 4 : 3; // Thicker lines for mobile
+    const pointSize = isMobile ? 6 : 4; // Smaller points for better precision
+    const lineWidth = isMobile ? 2 : 2; // Thinner lines for cleaner look
 
     // Clear canvas
     ctx.clearRect(0, 0, canvas.width, canvas.height);
@@ -290,7 +289,10 @@ const ImageCropper: React.FC<ImageCropperProps> = ({ imageUrl, onImageLoaded, on
         if (Math.sqrt(dx * dx + dy * dy) < snapDistance) {
           setIsDragging(i);
           setUserInteracted(true);
-          e.preventDefault(); // Only prevent default when dragging
+          // Use requestAnimationFrame to avoid passive event listener issues
+          requestAnimationFrame(() => {
+            e.preventDefault();
+          });
           return;
         }
       }
@@ -299,7 +301,9 @@ const ImageCropper: React.FC<ImageCropperProps> = ({ imageUrl, onImageLoaded, on
       if (points.length === 0 && shapeType !== 'polygon') {
         setIsDrawing(true);
         setDrawStart({ x, y });
-        e.preventDefault();
+        requestAnimationFrame(() => {
+          e.preventDefault();
+        });
       }
     },
     [points, croppedImage, shapeType]
@@ -322,12 +326,17 @@ const ImageCropper: React.FC<ImageCropperProps> = ({ imageUrl, onImageLoaded, on
 
       // Only handle dragging if we're actually dragging a point
       if (isDragging !== null) {
-        e.preventDefault(); // Prevent scrolling only when dragging
+        // Use requestAnimationFrame to avoid passive event listener issues
+        requestAnimationFrame(() => {
+          e.preventDefault();
+        });
         const newPoints = [...points];
         newPoints[isDragging] = { x, y };
         setPoints(newPoints);
       } else if (isDrawing) {
-        e.preventDefault();
+        requestAnimationFrame(() => {
+          e.preventDefault();
+        });
         setDrawEnd({ x, y });
       }
     },
@@ -689,187 +698,6 @@ const ImageCropper: React.FC<ImageCropperProps> = ({ imageUrl, onImageLoaded, on
         gap: isMobile ? 1 : 2,
       }}
     >
-      {/* Shape type selector */}
-      {!croppedImage && (
-        <Stack direction="row" spacing={1} justifyContent="center" sx={{ mb: 1 }} flexWrap="wrap">
-          <Button
-            variant={shapeType === 'rectangle' ? 'contained' : 'outlined'}
-            onClick={() => setShapeType('rectangle')}
-            sx={{ 
-              fontSize: buttonFontSize, 
-              padding: buttonPadding, 
-              minWidth: '100px',
-              borderRadius: 3,
-              fontWeight: 600,
-              textTransform: 'none',
-              transition: 'all 0.3s ease',
-              ...(shapeType === 'rectangle' ? {
-                background: 'linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%)',
-                boxShadow: '0 4px 15px rgba(59, 130, 246, 0.3)',
-                '&:hover': {
-                  background: 'linear-gradient(135deg, #2563eb 0%, #7c3aed 100%)',
-                  transform: 'translateY(-2px)',
-                  boxShadow: '0 8px 25px rgba(59, 130, 246, 0.4)',
-                }
-              } : {
-                borderColor: theme.palette.mode === 'dark' ? 'rgba(148, 163, 184, 0.3)' : 'rgba(148, 163, 184, 0.5)',
-                color: theme.palette.text.primary,
-                '&:hover': {
-                  borderColor: '#3b82f6',
-                  backgroundColor: theme.palette.mode === 'dark' ? 'rgba(59, 130, 246, 0.1)' : 'rgba(59, 130, 246, 0.05)',
-                  transform: 'translateY(-1px)',
-                }
-              })
-            }}
-          >
-            📐 Rectangle
-          </Button>
-          <Button
-            variant={shapeType === 'square' ? 'contained' : 'outlined'}
-            onClick={() => setShapeType('square')}
-            sx={{ 
-              fontSize: buttonFontSize, 
-              padding: buttonPadding, 
-              minWidth: '100px',
-              borderRadius: 3,
-              fontWeight: 600,
-              textTransform: 'none',
-              transition: 'all 0.3s ease',
-              ...(shapeType === 'square' ? {
-                background: 'linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%)',
-                boxShadow: '0 4px 15px rgba(59, 130, 246, 0.3)',
-                '&:hover': {
-                  background: 'linear-gradient(135deg, #2563eb 0%, #7c3aed 100%)',
-                  transform: 'translateY(-2px)',
-                  boxShadow: '0 8px 25px rgba(59, 130, 246, 0.4)',
-                }
-              } : {
-                borderColor: theme.palette.mode === 'dark' ? 'rgba(148, 163, 184, 0.3)' : 'rgba(148, 163, 184, 0.5)',
-                color: theme.palette.text.primary,
-                '&:hover': {
-                  borderColor: '#3b82f6',
-                  backgroundColor: theme.palette.mode === 'dark' ? 'rgba(59, 130, 246, 0.1)' : 'rgba(59, 130, 246, 0.05)',
-                  transform: 'translateY(-1px)',
-                }
-              })
-            }}
-          >
-            ⬜ Square
-          </Button>
-          {!isMobile && (
-            <Button
-              variant={shapeType === 'polygon' ? 'contained' : 'outlined'}
-              onClick={() => setShapeType('polygon')}
-              sx={{ 
-                fontSize: buttonFontSize, 
-                padding: buttonPadding, 
-                minWidth: '100px',
-                borderRadius: 3,
-                fontWeight: 600,
-                textTransform: 'none',
-                transition: 'all 0.3s ease',
-                ...(shapeType === 'polygon' ? {
-                  background: 'linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%)',
-                  boxShadow: '0 4px 15px rgba(59, 130, 246, 0.3)',
-                  '&:hover': {
-                    background: 'linear-gradient(135deg, #2563eb 0%, #7c3aed 100%)',
-                    transform: 'translateY(-2px)',
-                    boxShadow: '0 8px 25px rgba(59, 130, 246, 0.4)',
-                  }
-                } : {
-                  borderColor: theme.palette.mode === 'dark' ? 'rgba(148, 163, 184, 0.3)' : 'rgba(148, 163, 184, 0.5)',
-                  color: theme.palette.text.primary,
-                  '&:hover': {
-                    borderColor: '#3b82f6',
-                    backgroundColor: theme.palette.mode === 'dark' ? 'rgba(59, 130, 246, 0.1)' : 'rgba(59, 130, 246, 0.05)',
-                    transform: 'translateY(-1px)',
-                  }
-                })
-              }}
-            >
-              🔷 Polygon
-            </Button>
-          )}
-          <Button
-            variant="outlined"
-            disabled={true}
-            sx={{ 
-              fontSize: buttonFontSize, 
-              padding: buttonPadding, 
-              minWidth: '100px',
-              borderRadius: 3,
-              fontWeight: 600,
-              textTransform: 'none',
-              transition: 'all 0.3s ease',
-              position: 'relative',
-              borderColor: theme.palette.mode === 'dark' ? 'rgba(148, 163, 184, 0.1)' : 'rgba(148, 163, 184, 0.2)',
-              color: theme.palette.text.disabled,
-              '&:disabled': {
-                borderColor: theme.palette.mode === 'dark' ? 'rgba(148, 163, 184, 0.1)' : 'rgba(148, 163, 184, 0.2)',
-                color: theme.palette.text.disabled,
-                backgroundColor: 'transparent',
-                transform: 'none',
-              }
-            }}
-          >
-            🤖 Auto Crop
-            <Typography 
-              variant="caption" 
-              sx={{ 
-                position: 'absolute',
-                top: -8,
-                right: -8,
-                background: theme.palette.mode === 'dark' ? 'rgba(34, 197, 94, 0.2)' : 'rgba(34, 197, 94, 0.1)',
-                color: theme.palette.mode === 'dark' ? '#22c55e' : '#059669',
-                px: 1,
-                py: 0.5,
-                borderRadius: 1,
-                fontSize: '0.7rem',
-                fontWeight: 600,
-                border: theme.palette.mode === 'dark' ? '1px solid rgba(34, 197, 94, 0.3)' : '1px solid rgba(34, 197, 94, 0.2)',
-              }}
-            >
-              Coming Soon
-            </Typography>
-          </Button>
-        </Stack>
-      )}
-
-      {/* Instructions for mobile */}
-      {isMobile && !croppedImage && (
-        <Box sx={{ 
-          mb: 1, 
-          p: 3, 
-          background: theme.palette.mode === 'dark'
-            ? 'rgba(15, 23, 42, 0.8)'
-            : 'rgba(255, 255, 255, 0.8)',
-          backdropFilter: 'blur(20px)',
-          borderRadius: 3,
-          border: theme.palette.mode === 'dark'
-            ? '1px solid rgba(148, 163, 184, 0.1)'
-            : '1px solid rgba(148, 163, 184, 0.2)',
-          boxShadow: theme.palette.mode === 'dark'
-            ? '0 8px 32px rgba(0, 0, 0, 0.3)'
-            : '0 8px 32px rgba(0, 0, 0, 0.1)',
-        }}>
-          <Typography variant="body2" sx={{ 
-            color: theme.palette.text.secondary, 
-            fontSize: '0.9rem',
-            textAlign: 'center',
-            fontWeight: 500,
-            background: theme.palette.mode === 'dark'
-              ? 'linear-gradient(135deg, #60a5fa 0%, #a78bfa 100%)'
-              : 'linear-gradient(135deg, #1e40af 0%, #7c3aed 100%)',
-            backgroundClip: 'text',
-            WebkitBackgroundClip: 'text',
-            WebkitTextFillColor: 'transparent',
-          }}>
-            {shapeType === 'polygon'
-              ? '📱 Tap to add points • Tap close to first point to close • Touch & hold point to drag'
-              : '📱 Drag to select area • Touch & hold corner to drag'}
-          </Typography>
-        </Box>
-      )}
 
       {/* Canvas Container */}
       <Box
@@ -880,7 +708,7 @@ const ImageCropper: React.FC<ImageCropperProps> = ({ imageUrl, onImageLoaded, on
           height: '100%',
           minHeight: isMobile ? '300px' : '400px',
           background: '#000',
-          borderRadius: 1,
+          borderRadius: 0,
           overflow: 'hidden',
         }}
       >
@@ -911,7 +739,7 @@ const ImageCropper: React.FC<ImageCropperProps> = ({ imageUrl, onImageLoaded, on
               alt="Source"
               src={imageUrl}
               style={{ display: 'none' }}
-              onLoad={() => console.log('ImageCropper: Image loaded', imageUrl)}
+              onLoad={() => {}}
             />
           </>
         ) : (
@@ -928,6 +756,7 @@ const ImageCropper: React.FC<ImageCropperProps> = ({ imageUrl, onImageLoaded, on
         direction={isMobile ? 'column' : 'row'} 
         spacing={isMobile ? 1 : 2} 
         justifyContent="center"
+        sx={{ mt: 2 }}
       >
         <Button
           variant="contained"
@@ -949,7 +778,7 @@ const ImageCropper: React.FC<ImageCropperProps> = ({ imageUrl, onImageLoaded, on
               boxShadow: '0 8px 25px rgba(59, 130, 246, 0.4)',
             },
             '&:disabled': {
-              background: theme.palette.mode === 'dark' ? 'rgba(148, 163, 184, 0.1)' : 'rgba(148, 163, 184, 0.05)',
+              background: isDarkMode ? 'rgba(148, 163, 184, 0.1)' : 'rgba(148, 163, 184, 0.05)',
               color: theme.palette.text.disabled,
               boxShadow: 'none',
               transform: 'none',
@@ -963,7 +792,7 @@ const ImageCropper: React.FC<ImageCropperProps> = ({ imageUrl, onImageLoaded, on
           onClick={handleUndo}
           disabled={points.length === 0 || !!croppedImage}
           sx={{ 
-            borderColor: theme.palette.mode === 'dark' ? 'rgba(148, 163, 184, 0.3)' : 'rgba(148, 163, 184, 0.5)',
+            borderColor: isDarkMode ? 'rgba(148, 163, 184, 0.3)' : 'rgba(148, 163, 184, 0.5)',
             color: theme.palette.text.primary,
             borderRadius: 3,
             fontWeight: 600,
@@ -974,11 +803,11 @@ const ImageCropper: React.FC<ImageCropperProps> = ({ imageUrl, onImageLoaded, on
             transition: 'all 0.3s ease',
             '&:hover': {
               borderColor: '#3b82f6',
-              backgroundColor: theme.palette.mode === 'dark' ? 'rgba(59, 130, 246, 0.1)' : 'rgba(59, 130, 246, 0.05)',
+              backgroundColor: isDarkMode ? 'rgba(59, 130, 246, 0.1)' : 'rgba(59, 130, 246, 0.05)',
               transform: 'translateY(-1px)',
             },
             '&:disabled': {
-              borderColor: theme.palette.mode === 'dark' ? 'rgba(148, 163, 184, 0.1)' : 'rgba(148, 163, 184, 0.2)',
+              borderColor: isDarkMode ? 'rgba(148, 163, 184, 0.1)' : 'rgba(148, 163, 184, 0.2)',
               color: theme.palette.text.disabled,
               backgroundColor: 'transparent',
               transform: 'none',
@@ -992,7 +821,7 @@ const ImageCropper: React.FC<ImageCropperProps> = ({ imageUrl, onImageLoaded, on
           onClick={handleReset}
           disabled={points.length === 0 && !croppedImage}
           sx={{ 
-            borderColor: theme.palette.mode === 'dark' ? 'rgba(148, 163, 184, 0.3)' : 'rgba(148, 163, 184, 0.5)',
+            borderColor: isDarkMode ? 'rgba(148, 163, 184, 0.3)' : 'rgba(148, 163, 184, 0.5)',
             color: theme.palette.text.primary,
             borderRadius: 3,
             fontWeight: 600,
@@ -1003,11 +832,11 @@ const ImageCropper: React.FC<ImageCropperProps> = ({ imageUrl, onImageLoaded, on
             transition: 'all 0.3s ease',
             '&:hover': {
               borderColor: '#ef4444',
-              backgroundColor: theme.palette.mode === 'dark' ? 'rgba(239, 68, 68, 0.1)' : 'rgba(239, 68, 68, 0.05)',
+              backgroundColor: isDarkMode ? 'rgba(239, 68, 68, 0.1)' : 'rgba(239, 68, 68, 0.05)',
               transform: 'translateY(-1px)',
             },
             '&:disabled': {
-              borderColor: theme.palette.mode === 'dark' ? 'rgba(148, 163, 184, 0.1)' : 'rgba(148, 163, 184, 0.2)',
+              borderColor: isDarkMode ? 'rgba(148, 163, 184, 0.1)' : 'rgba(148, 163, 184, 0.2)',
               color: theme.palette.text.disabled,
               backgroundColor: 'transparent',
               transform: 'none',

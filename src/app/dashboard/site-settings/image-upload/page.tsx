@@ -49,7 +49,7 @@ export default function SiteSettingsPage() {
     tour_video: null,
     chakra_points: null
   });
-  const { mode } = useThemeContext();
+  const { mode, isDarkMode, isLightMode } = useGlobalTheme();
 
   // Fetch current files on page load
   useEffect(() => {

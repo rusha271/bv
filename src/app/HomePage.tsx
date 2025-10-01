@@ -14,7 +14,7 @@ import PlayCircleOutlineIcon from '@mui/icons-material/PlayCircleOutline';
 import CloseIcon from '@mui/icons-material/Close';
 import * as yup from "yup";
 import dynamic from 'next/dynamic';
-import { useThemeContext } from '@/contexts/ThemeContext';
+import { useGlobalTheme } from '@/contexts/GlobalThemeContext';
 import { useRouter } from 'next/navigation';
 import { sessionStorageManager } from '@/utils/sessionStorage';
 import { apiService } from '@/utils/apiService';
@@ -75,7 +75,7 @@ export default function HomePage() {
   const [processingError, setProcessingError] = useState<string | null>(null);
   const [errorDialogOpen, setErrorDialogOpen] = useState(false);
   const [tourVideoUrl, setTourVideoUrl] = useState<string>('');
-  const { theme } = useThemeContext();
+  const { theme, isDarkMode, isLightMode } = useGlobalTheme();
   const router = useRouter();
 
   useEffect(() => {
@@ -389,7 +389,7 @@ export default function HomePage() {
         {renderContent()}
         
         <Box sx={{ 
-          mt: { xs: 3, sm: 4 }, 
+          mt: { xs: 2, sm: 4 }, 
           display: 'flex', 
           justifyContent: 'center', 
           width: '100%',

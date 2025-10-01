@@ -5,7 +5,7 @@ import { useForm, UseFormProps, FieldValues, Control } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
 import { Box, Button, ButtonProps } from '@mui/material';
 import * as yup from 'yup';
-import { useThemeContext } from '@/contexts/ThemeContext';
+import { useGlobalTheme } from '@/contexts/GlobalThemeContext';
 
 interface FormProps<T extends FieldValues> {
   onSubmit: (data: T) => void;
@@ -24,7 +24,7 @@ export const Form = <T extends FieldValues>({
   submitButtonText = 'Submit',
   submitButtonProps,
 }: FormProps<T>) => {
-  const { theme } = useThemeContext();
+  const { theme, isDarkMode, isLightMode } = useGlobalTheme();
   const {
     handleSubmit,
     control,

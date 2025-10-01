@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useEffect } from 'react';
-import { useThemeContext } from '@/contexts/ThemeContext';
+import { useGlobalTheme } from '@/contexts/GlobalThemeContext';
 import { useDeviceType } from '@/utils/useDeviceType';
 // Note: You'll need to define the Blog interface in your API service
 interface Blog {
@@ -25,7 +25,7 @@ interface BlogPostPageProps {
 }
 
 export default function BlogPostPage({ blog }: BlogPostPageProps) {
-  const { theme } = useThemeContext();
+  const { theme, isDarkMode, isLightMode } = useGlobalTheme();
   const { isMobile, isTablet } = useDeviceType();
 
   // Generate breadcrumb structured data

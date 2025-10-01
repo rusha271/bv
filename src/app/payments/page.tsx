@@ -6,7 +6,7 @@ import { Download, Payment, Receipt, History, CreditCard, GetApp, Visibility, Ch
 import Navbar from '@/components/ui/Navbar';
 import Footer from '@/components/ui/Footer';
 import { useAuthUser } from '@/contexts/AuthContext';
-import { useThemeContext } from '@/contexts/ThemeContext';
+import { useGlobalTheme } from '@/contexts/GlobalThemeContext';
 import { toast } from 'react-hot-toast';
 import { useRouter } from 'next/navigation';
 
@@ -32,7 +32,7 @@ interface PDFDocument {
 }
 
 export default function PaymentsPage() {
-  const { mode } = useThemeContext();
+  const { mode, isDarkMode, isLightMode } = useGlobalTheme();
   const user = useAuthUser();
   const router = useRouter();
   const [payments, setPayments] = useState<PaymentRecord[]>([]);

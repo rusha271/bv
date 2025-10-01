@@ -7,6 +7,7 @@ import InstagramIcon from '@mui/icons-material/Instagram';
 import WhatsAppIcon from '@mui/icons-material/WhatsApp';
 import YouTubeIcon from '@mui/icons-material/YouTube';
 import { useTheme } from '@mui/material/styles';
+import { useDeviceType } from '@/utils/useDeviceType';
 
 const icons = [
   { icon: <LinkedInIcon />, label: 'Linked In', href: 'https://www.linkedin.com/in/karishmakori/?originalSubdomain=in' },
@@ -17,30 +18,38 @@ const icons = [
 
 export default function SocialIcons({ direction = 'row' }: { direction?: 'row' | 'column' }) {
   const theme = useTheme();
+  const { isMobile, isTablet } = useDeviceType();
+  const isDarkMode = theme.palette.mode === 'dark';
+  
+  // Responsive sizing
+  const iconSize = isMobile ? 32 : isTablet ? 40 : 48;
+  const containerPadding = isMobile ? 1 : 2;
+  const gap = isMobile ? 1 : 2;
   
   return (
     <Box
       sx={{
         display: 'flex',
         flexDirection: { xs: 'row', sm: direction },
-        gap: 2,
+        gap: gap,
         justifyContent: 'center',
         alignItems: 'center',
-        width: '50%',
-        p: 2,
-        background: theme.palette.mode === 'dark'
+        width: isMobile ? '100%' : '50%',
+        p: containerPadding,
+        background: isDarkMode
           ? 'linear-gradient(135deg, rgba(15, 23, 42, 0.8) 0%, rgba(30, 41, 59, 0.6) 100%)'
           : 'linear-gradient(135deg, rgba(255, 255, 255, 0.8) 0%, rgba(248, 250, 252, 0.6) 100%)',
         backdropFilter: 'blur(20px)',
-        borderRadius: 4,
-        border: theme.palette.mode === 'dark'
+        borderRadius: isMobile ? 2 : 4,
+        border: isDarkMode
           ? '1px solid rgba(148, 163, 184, 0.1)'
           : '1px solid rgba(148, 163, 184, 0.2)',
-        boxShadow: theme.palette.mode === 'dark'
+        boxShadow: isDarkMode
           ? '0 8px 32px rgba(0, 0, 0, 0.3)'
           : '0 8px 32px rgba(0, 0, 0, 0.1)',
         minWidth: { xs: "90vw", sm: 480 },
         maxWidth: { xs: "90vw", sm: 480 },
+        minHeight: isMobile ? 'auto' : 'auto',
       }}
     >
       {icons.map(({ icon, label, href }) => (
@@ -50,31 +59,31 @@ export default function SocialIcons({ direction = 'row' }: { direction?: 'row' |
             target="_blank"
             rel="noopener"
             sx={{
-              width: 48,
-              height: 48,
-              borderRadius: 3,
-              background: theme.palette.mode === 'dark'
+              width: iconSize,
+              height: iconSize,
+              borderRadius: isMobile ? 2 : 3,
+              background: isDarkMode
                 ? 'linear-gradient(135deg, rgba(59, 130, 246, 0.1) 0%, rgba(147, 51, 234, 0.1) 100%)'
                 : 'linear-gradient(135deg, rgba(59, 130, 246, 0.05) 0%, rgba(147, 51, 234, 0.05) 100%)',
-              border: theme.palette.mode === 'dark'
+              border: isDarkMode
                 ? '1px solid rgba(59, 130, 246, 0.2)'
                 : '1px solid rgba(59, 130, 246, 0.1)',
-              color: theme.palette.mode === 'dark' ? '#60a5fa' : '#1e40af',
+              color: isDarkMode ? '#60a5fa' : '#1e40af',
               transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
               '&:hover': {
-                transform: 'scale(1.1) translateY(-4px) rotate(5deg)',
-                background: theme.palette.mode === 'dark'
+                transform: isMobile ? 'scale(1.05) translateY(-2px)' : 'scale(1.1) translateY(-4px) rotate(5deg)',
+                background: isDarkMode
                   ? 'linear-gradient(135deg, rgba(59, 130, 246, 0.2) 0%, rgba(147, 51, 234, 0.2) 100%)'
                   : 'linear-gradient(135deg, rgba(59, 130, 246, 0.1) 0%, rgba(147, 51, 234, 0.1) 100%)',
-                boxShadow: theme.palette.mode === 'dark'
+                boxShadow: isDarkMode
                   ? '0 12px 40px rgba(59, 130, 246, 0.3)'
                   : '0 12px 40px rgba(59, 130, 246, 0.2)',
-                border: theme.palette.mode === 'dark'
+                border: isDarkMode
                   ? '1px solid rgba(59, 130, 246, 0.4)'
                   : '1px solid rgba(59, 130, 246, 0.3)',
               },
             }}
-            size="large"
+            size={isMobile ? "small" : "large"}
             aria-label={label}
           >
             {icon}

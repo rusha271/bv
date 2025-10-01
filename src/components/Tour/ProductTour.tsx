@@ -1,7 +1,7 @@
 'use client';
 import React, { useEffect, useState } from 'react';
 import { TourProvider, useTour, StepType } from '@reactour/tour';
-import { useThemeContext } from '@/contexts/ThemeContext';
+import { useGlobalTheme } from '@/contexts/GlobalThemeContext';
 import { IconButton, Box, Typography, Button, Chip } from '@mui/material';
 import ArrowForwardIcon from '@mui/icons-material/ArrowForward';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
@@ -19,20 +19,30 @@ interface BaseStyles {
 
 const TourWithSteps = ({ onVideoOpen }: { onVideoOpen?: () => void }) => {
   const { setIsOpen, currentStep, isOpen, setCurrentStep, setSteps } = useTour();
-  const { theme } = useThemeContext();
+  const { theme, isDarkMode, isLightMode } = useGlobalTheme();
   const [isClient, setIsClient] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
 
-  // Prevent hydration mismatch
+  // Prevent hydration mismatch - optimized with debouncing
   useEffect(() => {
     setIsClient(true);
     // Set mobile state after client mount to prevent hydration mismatch
+    let resizeTimeout: NodeJS.Timeout;
+    
     const checkMobile = () => {
-      setIsMobile(window.innerWidth <= 600);
+      // Debounce resize events to prevent excessive re-renders
+      clearTimeout(resizeTimeout);
+      resizeTimeout = setTimeout(() => {
+        setIsMobile(window.innerWidth <= 600);
+      }, 100);
     };
+    
     checkMobile();
-    window.addEventListener('resize', checkMobile);
-    return () => window.removeEventListener('resize', checkMobile);
+    window.addEventListener('resize', checkMobile, { passive: true });
+    return () => {
+      clearTimeout(resizeTimeout);
+      window.removeEventListener('resize', checkMobile);
+    };
   }, []);
 
   // Custom close button component
@@ -44,13 +54,13 @@ const TourWithSteps = ({ onVideoOpen }: { onVideoOpen?: () => void }) => {
         position: 'absolute',
         top: isClient && isMobile ? 8 : 12,
         right: isClient && isMobile ? 8 : 12,
-        backgroundColor: theme.palette.mode === 'dark' ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.05)',
-        color: theme.palette.mode === 'dark' ? '#ffffff' : '#666666',
+        backgroundColor: isDarkMode ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.05)',
+        color: isDarkMode ? '#ffffff' : '#666666',
         width: isClient && isMobile ? 28 : 32,
         height: isClient && isMobile ? 28 : 32,
         zIndex: 1,
         '&:hover': { 
-          backgroundColor: theme.palette.mode === 'dark' ? 'rgba(255,255,255,0.2)' : 'rgba(0,0,0,0.1)',
+          backgroundColor: isDarkMode ? 'rgba(255,255,255,0.2)' : 'rgba(0,0,0,0.1)',
         },
       }}
     >
@@ -68,12 +78,12 @@ const TourWithSteps = ({ onVideoOpen }: { onVideoOpen?: () => void }) => {
           position: 'absolute',
           top: isClient && isMobile ? 8 : 12,
           left: isClient && isMobile ? 8 : 12,
-          backgroundColor: theme.palette.mode === 'dark' ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.05)',
-          color: theme.palette.mode === 'dark' ? '#ffffff' : '#666666',
+          backgroundColor: isDarkMode ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.05)',
+          color: isDarkMode ? '#ffffff' : '#666666',
           width: isClient && isMobile ? 28 : 32,
           height: isClient && isMobile ? 28 : 32,
           '&:hover': { 
-            backgroundColor: theme.palette.mode === 'dark' ? 'rgba(255,255,255,0.2)' : 'rgba(0,0,0,0.1)',
+            backgroundColor: isDarkMode ? 'rgba(255,255,255,0.2)' : 'rgba(0,0,0,0.1)',
           },
         }}
       >
@@ -190,11 +200,14 @@ const TourWithSteps = ({ onVideoOpen }: { onVideoOpen?: () => void }) => {
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === 'Escape') {
-        setIsOpen(false);
+        // Use requestAnimationFrame to prevent blocking the main thread
+        requestAnimationFrame(() => {
+          setIsOpen(false);
+        });
       }
     };
     if (isOpen) {
-      window.addEventListener('keydown', handleKeyDown);
+      window.addEventListener('keydown', handleKeyDown, { passive: true });
     }
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [isOpen, setIsOpen]);
@@ -207,20 +220,30 @@ interface ProductTourProps {
 }
 
 export default function ProductTour({ onVideoOpen }: ProductTourProps) {
-  const { theme } = useThemeContext();
+  const { theme, isDarkMode, isLightMode } = useGlobalTheme();
   const [isClient, setIsClient] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
 
-  // Prevent hydration mismatch
+  // Prevent hydration mismatch - optimized with debouncing
   useEffect(() => {
     setIsClient(true);
     // Set mobile state after client mount to prevent hydration mismatch
+    let resizeTimeout: NodeJS.Timeout;
+    
     const checkMobile = () => {
-      setIsMobile(window.innerWidth <= 600);
+      // Debounce resize events to prevent excessive re-renders
+      clearTimeout(resizeTimeout);
+      resizeTimeout = setTimeout(() => {
+        setIsMobile(window.innerWidth <= 600);
+      }, 100);
     };
+    
     checkMobile();
-    window.addEventListener('resize', checkMobile);
-    return () => window.removeEventListener('resize', checkMobile);
+    window.addEventListener('resize', checkMobile, { passive: true });
+    return () => {
+      clearTimeout(resizeTimeout);
+      window.removeEventListener('resize', checkMobile);
+    };
   }, []);
 
   const tourStyles = {
@@ -240,11 +263,11 @@ export default function ProductTour({ onVideoOpen }: ProductTourProps) {
       return {
         ...base,
         '--reactour-accent': theme.palette.primary.main,
-        backgroundColor: theme.palette.mode === 'dark' ? '#1a1a2e' : '#ffffff',
-        color: theme.palette.mode === 'dark' ? '#ffffff' : '#1a1a2e',
-        border: `1px solid ${theme.palette.mode === 'dark' ? '#333366' : '#e0e0e0'}`,
+        backgroundColor: isDarkMode ? '#1a1a2e' : '#ffffff',
+        color: isDarkMode ? '#ffffff' : '#1a1a2e',
+        border: `1px solid ${isDarkMode ? '#333366' : '#e0e0e0'}`,
         borderRadius: '16px',
-        boxShadow: theme.palette.mode === 'dark' 
+        boxShadow: isDarkMode 
           ? '0 20px 40px rgba(0,0,0,0.4), 0 0 0 1px rgba(255,255,255,0.1)' 
           : '0 20px 40px rgba(0,0,0,0.15), 0 0 0 1px rgba(0,0,0,0.05)',
         padding: '0',
@@ -256,7 +279,7 @@ export default function ProductTour({ onVideoOpen }: ProductTourProps) {
     },
     maskWrapper: (base: BaseStyles) => ({
       ...base,
-      backgroundColor: theme.palette.mode === 'dark' ? 'rgba(0,0,0,0.8)' : 'rgba(0,0,0,0.6)',
+      backgroundColor: isDarkMode ? 'rgba(0,0,0,0.8)' : 'rgba(0,0,0,0.6)',
       backdropFilter: 'blur(4px)',
       zIndex: 9998,
     }),
@@ -281,7 +304,7 @@ export default function ProductTour({ onVideoOpen }: ProductTourProps) {
       right: '-14px !important',
       zIndex: '10000 !important',
       boxShadow: '0 2px 8px rgba(0,0,0,0.2) !important',
-      border: `2px solid ${theme.palette.mode === 'dark' ? '#1a1a2e' : '#ffffff'} !important`,
+      border: `2px solid ${isDarkMode ? '#1a1a2e' : '#ffffff'} !important`,
     }),
     controls: (base: BaseStyles) => ({
       ...base,
@@ -300,8 +323,8 @@ export default function ProductTour({ onVideoOpen }: ProductTourProps) {
       alignItems: 'center',
       justifyContent: 'space-between',
       padding: isClient && isMobile ? '12px 16px' : '16px 20px',
-      borderTop: `1px solid ${theme.palette.mode === 'dark' ? '#333366' : '#f0f0f0'}`,
-      backgroundColor: theme.palette.mode === 'dark' ? 'rgba(255,255,255,0.02)' : 'rgba(0,0,0,0.02)',
+      borderTop: `1px solid ${isDarkMode ? '#333366' : '#f0f0f0'}`,
+      backgroundColor: isDarkMode ? 'rgba(255,255,255,0.02)' : 'rgba(0,0,0,0.02)',
     }}>
       <Box sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
         <Chip
@@ -334,13 +357,13 @@ export default function ProductTour({ onVideoOpen }: ProductTourProps) {
           size="small"
           onClick={() => setIsOpen(false)}
           sx={{
-            color: theme.palette.mode === 'dark' ? '#ffffff' : '#666666',
+            color: isDarkMode ? '#ffffff' : '#666666',
             textTransform: 'none',
             fontSize: isClient && isMobile ? '12px' : '13px',
             minWidth: 'auto',
             padding: isClient && isMobile ? '4px 8px' : '6px 12px',
             '&:hover': { 
-              backgroundColor: theme.palette.mode === 'dark' ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.05)',
+              backgroundColor: isDarkMode ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.05)',
             },
           }}
         >

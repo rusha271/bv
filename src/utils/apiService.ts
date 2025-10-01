@@ -134,20 +134,45 @@ export interface ChatResponse {
   context?: string;
 }
 
-// Blog Types
+// Enhanced Blog Types
+export interface PostContent {
+  type: 'text' | 'image' | 'video' | 'link' | 'file';
+  content: string;
+  metadata?: {
+    url?: string;
+    filename?: string;
+    size?: number;
+    duration?: string;
+    thumbnail?: string;
+  };
+}
+
 export interface BlogPost {
   id: string;
   title: string;
-  content: string;
+  description?: string;
+  content: PostContent[] | string; // Support both old and new format
   author: string;
   published_at: string;
   tags: string[];
+  category?: string;
+  status?: 'draft' | 'published';
+  post_type?: 'tip' | 'video' | 'book' | 'podcast' | 'article';
+  featured_image?: string;
+  created_at?: string;
+  updated_at?: string;
 }
 
 export interface CreateBlogRequest {
   title: string;
-  content: string;
+  description?: string;
+  content: PostContent[] | string; // Support both formats
   tags?: string[];
+  category?: string;
+  status?: 'draft' | 'published';
+  post_type?: 'tip' | 'video' | 'book' | 'podcast' | 'article';
+  featured_image?: string;
+  author?: string;
 }
 
 // Legal Types
@@ -684,7 +709,12 @@ class ApiService {
       return api.get<Book>(`/api/blog/books/${id}`);
     },
     create: async (data: FormData): Promise<Book> => {
-      return api.post<Book>("/api/blog/books", data);
+      return api.post<Book>("/api/blog/books", data, {
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
+        transformRequest: [(formData) => formData],
+      });
     },
     update: async (id: number, data: BookUpdate): Promise<Book> => {
       return api.put<Book>(`/api/blog/books/${id}`, data);
@@ -749,11 +779,13 @@ class ApiService {
     getAll: async (): Promise<Tip[]> => {
       return api.get<Tip[]>("/api/blog/tips");
     },
-    create: async (
-      formData: FormData,
-      config: { headers: { "Content-Type": string } } = { headers: { "Content-Type": "multipart/form-data" } }
-    ): Promise<Tip> => {
-      return api.post<Tip>("/api/blog/tips", formData, config);
+    create: async (data: FormData): Promise<Tip> => {
+      return api.post<Tip>("/api/blog/tips", data, {
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
+        transformRequest: [(formData) => formData],
+      });
     },    
   };
 

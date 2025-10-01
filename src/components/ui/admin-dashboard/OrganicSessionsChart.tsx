@@ -29,7 +29,7 @@ export default function OrganicSessionsChart() {
   const [data, setData] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const { mode } = useThemeContext();
+  const { mode, isDarkMode, isLightMode } = useGlobalTheme();
 
   useEffect(() => {
     setMounted(true);

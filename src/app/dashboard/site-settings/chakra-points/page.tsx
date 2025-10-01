@@ -16,7 +16,7 @@ export default function ChakraPointsPage() {
   const [editingChakra, setEditingChakra] = useState<ChakraPoint | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
   const [filteredPoints, setFilteredPoints] = useState<ChakraPoint[]>([]);
-  const { mode } = useThemeContext();
+  const { mode, isDarkMode, isLightMode } = useGlobalTheme();
 
   // Clear any duplicate data from local storage on component mount
   useEffect(() => {

@@ -44,26 +44,26 @@ export const ChakraDetailsModal: React.FC<ChakraDetailsModalProps> = ({
   if (!chakraPoint) return null;
 
   const getStatusColor = () => {
-    if (chakraPoint.shouldAvoid) return 'error';
-    if (chakraPoint.isAuspicious) return 'success';
+    if (chakraPoint.should_avoid) return 'error';
+    if (chakraPoint.is_auspicious) return 'success';
     return 'warning';
   };
 
   const getStatusText = () => {
-    if (chakraPoint.shouldAvoid) return 'Avoid';
-    if (chakraPoint.isAuspicious) return 'Auspicious';
+    if (chakraPoint.should_avoid) return 'Avoid';
+    if (chakraPoint.is_auspicious) return 'Auspicious';
     return 'Neutral';
   };
 
   const getStatusIcon = () => {
-    if (chakraPoint.shouldAvoid) return <WarningIcon sx={{ fontSize: 20 }} />;
-    if (chakraPoint.isAuspicious) return <CheckCircleIcon sx={{ fontSize: 20 }} />;
+    if (chakraPoint.should_avoid) return <WarningIcon sx={{ fontSize: 20 }} />;
+    if (chakraPoint.is_auspicious) return <CheckCircleIcon sx={{ fontSize: 20 }} />;
     return <InfoIcon sx={{ fontSize: 20 }} />;
   };
 
   const getStatusGradient = () => {
-    if (chakraPoint.shouldAvoid) return 'linear-gradient(135deg, #ff6b6b 0%, #ee5a52 100%)';
-    if (chakraPoint.isAuspicious) return 'linear-gradient(135deg, #51cf66 0%, #40c057 100%)';
+    if (chakraPoint.should_avoid) return 'linear-gradient(135deg, #ff6b6b 0%, #ee5a52 100%)';
+    if (chakraPoint.is_auspicious) return 'linear-gradient(135deg, #51cf66 0%, #40c057 100%)';
     return 'linear-gradient(135deg, #ffd43b 0%, #fab005 100%)';
   };
 
@@ -165,7 +165,7 @@ export const ChakraDetailsModal: React.FC<ChakraDetailsModalProps> = ({
                 }
               }}
             />
-            {chakraPoint.shouldAvoid && (
+            {chakraPoint.should_avoid && (
               <Chip
                 label="Not Recommended"
                 color="error"
@@ -203,10 +203,10 @@ export const ChakraDetailsModal: React.FC<ChakraDetailsModalProps> = ({
               justifyContent: 'center',
               minWidth: { xs: '100%', md: '300px' }
             }}>
-              {chakraPoint.imageUrl ? (
+              {chakraPoint.image_url ? (
                 <Box
                   component="img"
-                  src={chakraPoint.imageUrl}
+                  src={chakraPoint.image_url}
                   alt={`${chakraPoint.name} - ${chakraPoint.direction}`}
                   sx={{
                     width: { xs: 250, md: 300 },

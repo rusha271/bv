@@ -1,7 +1,7 @@
 "use client";
 
 import React from "react";
-import { useThemeContext } from "@/contexts/ThemeContext";
+import { useGlobalTheme } from "@/contexts/GlobalThemeContext";
 import { useDeviceType } from "@/utils/useDeviceType";
 
 interface ZodiacSignCardProps {
@@ -21,27 +21,27 @@ const ZodiacSignCard: React.FC<ZodiacSignCardProps> = ({
   mantra,
   remedy,
 }) => {
-  const { theme } = useThemeContext();
+  const { theme, isDarkMode, isLightMode } = useGlobalTheme();
   const { isMobile, isTablet } = useDeviceType();
 
-  // Responsive font sizes and padding
-  const symbolFontSize = isMobile ? "2.5rem" : isTablet ? "3rem" : "3.5rem";
-  const nameFontSize = isMobile ? "1.25rem" : isTablet ? "1.5rem" : "1.75rem";
-  const detailFontSize = isMobile ? "0.875rem" : isTablet ? "1rem" : "1.125rem";
-  const padding = isMobile ? "1rem" : isTablet ? "1.25rem" : "1.5rem";
+  // Responsive font sizes and padding - Reduced sizes
+  const symbolFontSize = isMobile ? "1.8rem" : isTablet ? "2.2rem" : "2.5rem";
+  const nameFontSize = isMobile ? "1rem" : isTablet ? "1.2rem" : "1.4rem";
+  const detailFontSize = isMobile ? "0.75rem" : isTablet ? "0.85rem" : "0.95rem";
+  const padding = isMobile ? "0.75rem" : isTablet ? "1rem" : "1.25rem";
 
   return (
     <div
       className="w-full rounded-2xl transition-all duration-300 overflow-hidden flex flex-col group"
       style={{
-        background: theme.palette.mode === 'dark'
+        background: isDarkMode
           ? 'rgba(15, 23, 42, 0.8)'
           : 'rgba(255, 255, 255, 0.8)',
         backdropFilter: 'blur(20px)',
-        border: theme.palette.mode === 'dark'
+        border: isDarkMode
           ? '1px solid rgba(148, 163, 184, 0.1)'
           : '1px solid rgba(148, 163, 184, 0.2)',
-        boxShadow: theme.palette.mode === 'dark'
+        boxShadow: isDarkMode
           ? '0 8px 32px rgba(0, 0, 0, 0.3)'
           : '0 8px 32px rgba(0, 0, 0, 0.1)',
         color: theme.palette.text.primary,
@@ -49,14 +49,14 @@ const ZodiacSignCard: React.FC<ZodiacSignCardProps> = ({
       }}
       onMouseEnter={(e) => {
         e.currentTarget.style.transform = "scale(1.05)";
-        e.currentTarget.style.boxShadow = theme.palette.mode === 'dark'
+        e.currentTarget.style.boxShadow = isDarkMode
           ? '0 12px 40px rgba(0, 0, 0, 0.4)'
           : '0 12px 40px rgba(0, 0, 0, 0.15)';
-        e.currentTarget.style.filter = theme.palette.mode === 'dark' ? 'brightness(1.1)' : 'none';
+        e.currentTarget.style.filter = isDarkMode ? 'brightness(1.1)' : 'none';
       }}
       onMouseLeave={(e) => {
         e.currentTarget.style.transform = "scale(1)";
-        e.currentTarget.style.boxShadow = theme.palette.mode === 'dark'
+        e.currentTarget.style.boxShadow = isDarkMode
           ? '0 8px 32px rgba(0, 0, 0, 0.3)'
           : '0 8px 32px rgba(0, 0, 0, 0.1)';
         e.currentTarget.style.filter = "none";
@@ -71,13 +71,13 @@ const ZodiacSignCard: React.FC<ZodiacSignCardProps> = ({
           style={{
             fontSize: nameFontSize,
             fontWeight: "bold",
-            background: theme.palette.mode === 'dark'
+            backgroundImage: isDarkMode
               ? 'linear-gradient(135deg, #a78bfa 0%, #ec4899 100%)'
               : 'linear-gradient(135deg, #7c3aed 0%, #db2777 100%)',
             backgroundClip: 'text',
             WebkitBackgroundClip: 'text',
             WebkitTextFillColor: 'transparent',
-            textShadow: theme.palette.mode === 'dark' 
+            textShadow: isDarkMode 
               ? '0 2px 4px rgba(0, 0, 0, 0.1)' 
               : '0 2px 4px rgba(0, 0, 0, 0.1)',
           }}
@@ -87,12 +87,17 @@ const ZodiacSignCard: React.FC<ZodiacSignCardProps> = ({
       </div>
 
       {/* Details Section */}
-      <div className="flex-1" style={{ padding, paddingTop: '0.5rem' }}>
+      <div className="flex-1" style={{ 
+        paddingTop: '0.5rem',
+        paddingRight: padding,
+        paddingBottom: padding,
+        paddingLeft: padding
+      }}>
         <div style={{
-          background: theme.palette.mode === 'dark'
+          background: isDarkMode
             ? 'rgba(59, 130, 246, 0.1)'
             : 'rgba(59, 130, 246, 0.05)',
-          border: theme.palette.mode === 'dark'
+          border: isDarkMode
             ? '1px solid rgba(59, 130, 246, 0.2)'
             : '1px solid rgba(59, 130, 246, 0.1)',
           borderRadius: '12px',
@@ -128,10 +133,10 @@ const ZodiacSignCard: React.FC<ZodiacSignCardProps> = ({
         </div>
         
         <div style={{
-          background: theme.palette.mode === 'dark'
+          background: isDarkMode
             ? 'rgba(139, 92, 246, 0.1)'
             : 'rgba(139, 92, 246, 0.05)',
-          border: theme.palette.mode === 'dark'
+          border: isDarkMode
             ? '1px solid rgba(139, 92, 246, 0.2)'
             : '1px solid rgba(139, 92, 246, 0.1)',
           borderRadius: '12px',
@@ -156,10 +161,10 @@ const ZodiacSignCard: React.FC<ZodiacSignCardProps> = ({
         </div>
         
         <div style={{
-          background: theme.palette.mode === 'dark'
+          background: isDarkMode
             ? 'rgba(34, 197, 94, 0.1)'
             : 'rgba(34, 197, 94, 0.05)',
-          border: theme.palette.mode === 'dark'
+          border: isDarkMode
             ? '1px solid rgba(34, 197, 94, 0.2)'
             : '1px solid rgba(34, 197, 94, 0.1)',
           borderRadius: '12px',

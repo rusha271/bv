@@ -1,6 +1,6 @@
 import React from 'react';
 import { Box, Typography, Button, Alert } from '@mui/material';
-import { useThemeContext } from '@/contexts/ThemeContext';
+import { useGlobalTheme } from '@/contexts/GlobalThemeContext';
 
 interface ErrorDisplayProps {
   error: string;
@@ -17,7 +17,7 @@ export default function ErrorDisplay({
   variant = 'alert',
   retryText = 'Retry'
 }: ErrorDisplayProps) {
-  const { theme } = useThemeContext();
+  const { theme, isDarkMode, isLightMode } = useGlobalTheme();
 
   if (variant === 'alert') {
     return (

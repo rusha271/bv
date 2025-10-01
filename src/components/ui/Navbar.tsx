@@ -10,7 +10,7 @@ import IconButton from '@mui/material/IconButton';
 import useScrollTrigger from '@mui/material/useScrollTrigger';
 import Slide from '@mui/material/Slide';
 import Image from 'next/image';
-import { useThemeContext } from '@/contexts/ThemeContext';
+import { useGlobalTheme } from '@/contexts/GlobalThemeContext';
 import { apiService } from '@/utils/apiService';
 import { sessionCache } from '@/utils/apiCache';
 import MenuIcon from '@mui/icons-material/Menu';
@@ -52,7 +52,7 @@ function HideOnScroll({ children }: { children: React.ReactElement }) {
 
 const Navbar = memo(function Navbar() {
   const router = useRouter();
-  const { mode, toggleTheme, theme } = useThemeContext();
+  const { mode, toggleTheme, theme, isDarkMode, isLightMode } = useGlobalTheme();
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [loginDialogOpen, setLoginDialogOpen] = useState(false);
   const [userMenuAnchor, setUserMenuAnchor] = useState<null | HTMLElement>(null);
@@ -83,14 +83,17 @@ const Navbar = memo(function Navbar() {
   };
 
   useEffect(() => {
-    // Fetch uploaded logo from site settings with caching
+    // Fetch uploaded logo from site settings with caching - optimized
     const fetchUploadedLogo = async () => {
       try {
         // Use the shared cached method to avoid duplicate API calls
         const response = await apiService.siteSettings.getLatestByCategoryCached('logo');
         const logoUrl = response.file_url;
         if (logoUrl) {
-          setUploadedLogo(logoUrl);
+          // Use requestAnimationFrame to batch DOM updates
+          requestAnimationFrame(() => {
+            setUploadedLogo(logoUrl);
+          });
         }
       } catch (error) {
         console.error('Error fetching uploaded logo:', error);
@@ -98,7 +101,9 @@ const Navbar = memo(function Navbar() {
         try {
           const fallbackData = await apiService.admin.getLogo();
           if (fallbackData?.image_url) {
-            setUploadedLogo(fallbackData.image_url);
+            requestAnimationFrame(() => {
+              setUploadedLogo(fallbackData.image_url);
+            });
           }
         } catch (fallbackError) {
           console.error('Fallback logo fetch also failed:', fallbackError);
@@ -106,22 +111,33 @@ const Navbar = memo(function Navbar() {
       }
     };
 
-    fetchUploadedLogo();
+    // Use requestIdleCallback for non-critical operations
+    if ('requestIdleCallback' in window) {
+      requestIdleCallback(fetchUploadedLogo);
+    } else {
+      setTimeout(fetchUploadedLogo, 0);
+    }
   }, []);
 
-  // User menu handlers
+  // User menu handlers - optimized with requestAnimationFrame
   const handleUserMenuOpen = (event: React.MouseEvent<HTMLElement>) => {
-    setUserMenuAnchor(event.currentTarget);
+    requestAnimationFrame(() => {
+      setUserMenuAnchor(event.currentTarget);
+    });
   };
 
   const handleUserMenuClose = () => {
-    setUserMenuAnchor(null);
+    requestAnimationFrame(() => {
+      setUserMenuAnchor(null);
+    });
   };
 
   const handleLogout = async () => {
     try {
       await logout();
-      handleUserMenuClose();
+      requestAnimationFrame(() => {
+        handleUserMenuClose();
+      });
       // Don't redirect - let user stay on current page
     } catch (error) {
       //  console.error('Logout error:', error);
@@ -129,31 +145,43 @@ const Navbar = memo(function Navbar() {
   };
 
   const handleProfileClick = () => {
-    handleUserMenuClose();
-    router.push('/profile');
+    requestAnimationFrame(() => {
+      handleUserMenuClose();
+      router.push('/profile');
+    });
   };
 
   const handleDashboardClick = () => {
-    handleUserMenuClose();
-    router.push('/dashboard');
+    requestAnimationFrame(() => {
+      handleUserMenuClose();
+      router.push('/dashboard');
+    });
   };
 
   const handlePaymentsClick = () => {
-    handleUserMenuClose();
-    router.push('/payments');
+    requestAnimationFrame(() => {
+      handleUserMenuClose();
+      router.push('/payments');
+    });
   };
 
   const handleLoginClick = () => {
-    setLoginDialogOpen(true);
+    requestAnimationFrame(() => {
+      setLoginDialogOpen(true);
+    });
   };
 
   const handleLoginClose = () => {
-    setLoginDialogOpen(false);
+    requestAnimationFrame(() => {
+      setLoginDialogOpen(false);
+    });
   };
 
-  // Toggle mobile drawer
+  // Toggle mobile drawer - optimized
   const toggleDrawer = () => {
-    setDrawerOpen(!drawerOpen);
+    requestAnimationFrame(() => {
+      setDrawerOpen(!drawerOpen);
+    });
   };
 
   return (
@@ -163,14 +191,14 @@ const Navbar = memo(function Navbar() {
           position="fixed"
           elevation={0}
           sx={{
-            background: theme.palette.mode === 'dark' 
+            background: isDarkMode 
               ? 'linear-gradient(135deg, rgba(15, 23, 42, 0.95) 0%, rgba(30, 41, 59, 0.9) 100%)'
               : 'linear-gradient(135deg, rgba(255, 255, 255, 0.95) 0%, rgba(248, 250, 252, 0.9) 100%)',
             backdropFilter: 'blur(20px)',
-            borderBottom: theme.palette.mode === 'dark' 
+            borderBottom: isDarkMode 
               ? '1px solid rgba(148, 163, 184, 0.1)' 
               : '1px solid rgba(148, 163, 184, 0.2)',
-            boxShadow: theme.palette.mode === 'dark'
+            boxShadow: isDarkMode
               ? '0 8px 32px rgba(0, 0, 0, 0.3)'
               : '0 8px 32px rgba(0, 0, 0, 0.1)',
             color: theme.palette.text.primary,
@@ -193,10 +221,10 @@ const Navbar = memo(function Navbar() {
                     sx={{
                       p: 1,
                       borderRadius: 2,
-                      background: theme.palette.mode === 'dark'
+                      background: isDarkMode
                         ? 'linear-gradient(135deg, rgba(59, 130, 246, 0.2) 0%, rgba(147, 51, 234, 0.2) 100%)'
                         : 'linear-gradient(135deg, rgba(59, 130, 246, 0.1) 0%, rgba(147, 51, 234, 0.1) 100%)',
-                      border: theme.palette.mode === 'dark'
+                      border: isDarkMode
                         ? '1px solid rgba(59, 130, 246, 0.3)'
                         : '1px solid rgba(59, 130, 246, 0.2)',
                       display: 'flex',
@@ -211,7 +239,13 @@ const Navbar = memo(function Navbar() {
                       alt="Brahma Vastu Logo"
                       width={32}
                       height={32}
-                      style={{ borderRadius: 6 }}
+                      style={{ 
+                        borderRadius: 6,
+                        width: "32px",
+                        height: "32px",
+                        objectFit: "contain",
+                        display: "block"
+                      }}
                       onError={(e) => {
                         const target = e.target as HTMLImageElement;
                         target.src = "/images/bv.png";
@@ -221,10 +255,10 @@ const Navbar = memo(function Navbar() {
                   <Typography 
                     variant="h6" 
                     fontWeight={800} 
-                    onClick={() => router.push('/')} 
+                    onClick={() => requestAnimationFrame(() => router.push('/'))} 
                     sx={{ 
                       cursor: 'pointer',
-                      background: theme.palette.mode === 'dark'
+                      background: isDarkMode
                         ? 'linear-gradient(135deg, #60a5fa 0%, #a78bfa 100%)'
                         : 'linear-gradient(135deg, #1e40af 0%, #7c3aed 100%)',
                       backgroundClip: 'text',
@@ -252,7 +286,7 @@ const Navbar = memo(function Navbar() {
                 return (
                   <Button 
                     key={item.label} 
-                    onClick={() => router.push(item.href)} 
+                    onClick={() => requestAnimationFrame(() => router.push(item.href))} 
                     startIcon={<IconComponent size={18} />}
                     sx={{ 
                       color: theme.palette.text.primary, 
@@ -263,11 +297,11 @@ const Navbar = memo(function Navbar() {
                       transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
                       background: 'transparent',
                       '&:hover': {
-                        background: theme.palette.mode === 'dark'
+                        background: isDarkMode
                           ? 'rgba(59, 130, 246, 0.1)'
                           : 'rgba(59, 130, 246, 0.05)',
                         transform: 'translateY(-2px)',
-                        boxShadow: theme.palette.mode === 'dark'
+                        boxShadow: isDarkMode
                           ? '0 4px 20px rgba(59, 130, 246, 0.2)'
                           : '0 4px 20px rgba(59, 130, 246, 0.1)',
                       }
@@ -279,24 +313,24 @@ const Navbar = memo(function Navbar() {
               })}
               {isAdmin && (
                 <Button 
-                  onClick={() => router.push('/dashboard')}
+                  onClick={() => requestAnimationFrame(() => router.push('/dashboard'))}
                   startIcon={<Shield size={18} />}
                   sx={{ 
-                    color: theme.palette.mode === 'dark' ? '#fff' : '#fff',
+                    color: isDarkMode ? '#fff' : '#fff',
                     fontWeight: 600,
                     px: 3,
                     py: 1,
                     borderRadius: 2,
-                    background: theme.palette.mode === 'dark'
+                    background: isDarkMode
                       ? 'linear-gradient(135deg, #7c3aed 0%, #3b82f6 100%)'
                       : 'linear-gradient(135deg, #1e40af 0%, #7c3aed 100%)',
-                    boxShadow: theme.palette.mode === 'dark'
+                    boxShadow: isDarkMode
                       ? '0 4px 20px rgba(124, 58, 237, 0.3)'
                       : '0 4px 20px rgba(30, 64, 175, 0.3)',
                     transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
                     '&:hover': {
                       transform: 'translateY(-2px)',
-                      boxShadow: theme.palette.mode === 'dark'
+                      boxShadow: isDarkMode
                         ? '0 8px 30px rgba(124, 58, 237, 0.4)'
                         : '0 8px 30px rgba(30, 64, 175, 0.4)',
                       filter: 'brightness(1.1)',
@@ -313,16 +347,16 @@ const Navbar = memo(function Navbar() {
                      sx={{
                        p: 0.5,
                        borderRadius: 2,
-                       background: theme.palette.mode === 'dark'
+                       background: isDarkMode
                          ? 'linear-gradient(135deg, rgba(59, 130, 246, 0.2) 0%, rgba(147, 51, 234, 0.2) 100%)'
                          : 'linear-gradient(135deg, rgba(59, 130, 246, 0.1) 0%, rgba(147, 51, 234, 0.1) 100%)',
-                       border: theme.palette.mode === 'dark'
+                       border: isDarkMode
                          ? '1px solid rgba(59, 130, 246, 0.3)'
                          : '1px solid rgba(59, 130, 246, 0.2)',
                        transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
                        '&:hover': {
                          transform: 'scale(1.05)',
-                         boxShadow: theme.palette.mode === 'dark'
+                         boxShadow: isDarkMode
                            ? '0 4px 20px rgba(59, 130, 246, 0.3)'
                            : '0 4px 20px rgba(59, 130, 246, 0.2)',
                        },
@@ -332,13 +366,13 @@ const Navbar = memo(function Navbar() {
                        sx={{
                          width: 32,
                          height: 32,
-                         background: theme.palette.mode === 'dark'
+                         background: isDarkMode
                            ? 'linear-gradient(135deg, #3b82f6 0%, #7c3aed 100%)'
                            : 'linear-gradient(135deg, #1e40af 0%, #7c3aed 100%)',
                          color: '#fff',
                          fontSize: '0.8rem',
                          fontWeight: 700,
-                         boxShadow: theme.palette.mode === 'dark'
+                         boxShadow: isDarkMode
                            ? '0 2px 10px rgba(59, 130, 246, 0.3)'
                            : '0 2px 10px rgba(30, 64, 175, 0.3)',
                        }}
@@ -356,16 +390,16 @@ const Navbar = memo(function Navbar() {
                     px: 3,
                     py: 1,
                     borderRadius: 2,
-                    background: theme.palette.mode === 'dark'
+                    background: isDarkMode
                       ? 'linear-gradient(135deg, #3b82f6 0%, #7c3aed 100%)'
                       : 'linear-gradient(135deg, #1e40af 0%, #7c3aed 100%)',
-                    boxShadow: theme.palette.mode === 'dark'
+                    boxShadow: isDarkMode
                       ? '0 4px 20px rgba(59, 130, 246, 0.3)'
                       : '0 4px 20px rgba(30, 64, 175, 0.3)',
                     transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
                     '&:hover': {
                       transform: 'translateY(-2px)',
-                      boxShadow: theme.palette.mode === 'dark'
+                      boxShadow: isDarkMode
                         ? '0 8px 30px rgba(59, 130, 246, 0.4)'
                         : '0 8px 30px rgba(30, 64, 175, 0.4)',
                       filter: 'brightness(1.1)',
@@ -375,7 +409,7 @@ const Navbar = memo(function Navbar() {
                   Log in
                 </Button>
               )}
-              <ThemeSwitcher toggleTheme={toggleTheme} mode={mode} />
+              <ThemeSwitcher />
             </Box>
             <Box 
               display={{ xs: 'flex', md: 'none' }}
@@ -385,17 +419,17 @@ const Navbar = memo(function Navbar() {
                 sx={{
                   p: 1.5,
                   borderRadius: 2,
-                  background: theme.palette.mode === 'dark'
+                  background: isDarkMode
                     ? 'linear-gradient(135deg, rgba(59, 130, 246, 0.2) 0%, rgba(147, 51, 234, 0.2) 100%)'
                     : 'linear-gradient(135deg, rgba(59, 130, 246, 0.1) 0%, rgba(147, 51, 234, 0.1) 100%)',
-                  border: theme.palette.mode === 'dark'
+                  border: isDarkMode
                     ? '1px solid rgba(59, 130, 246, 0.3)'
                     : '1px solid rgba(59, 130, 246, 0.2)',
-                  color: theme.palette.mode === 'dark' ? '#60a5fa' : '#1e40af',
+                  color: isDarkMode ? '#60a5fa' : '#1e40af',
                   transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
                   '&:hover': {
                     transform: 'scale(1.05)',
-                    boxShadow: theme.palette.mode === 'dark'
+                    boxShadow: isDarkMode
                       ? '0 4px 20px rgba(59, 130, 246, 0.3)'
                       : '0 4px 20px rgba(59, 130, 246, 0.2)',
                   }
@@ -410,14 +444,14 @@ const Navbar = memo(function Navbar() {
                 PaperProps={{
                   sx: {
                     width: 280,
-                    background: theme.palette.mode === 'dark'
+                    background: isDarkMode
                       ? 'linear-gradient(135deg, rgba(15, 23, 42, 0.95) 0%, rgba(30, 41, 59, 0.9) 100%)'
                       : 'linear-gradient(135deg, rgba(255, 255, 255, 0.95) 0%, rgba(248, 250, 252, 0.9) 100%)',
                     backdropFilter: 'blur(20px)',
-                    borderLeft: theme.palette.mode === 'dark'
+                    borderLeft: isDarkMode
                       ? '1px solid rgba(148, 163, 184, 0.1)'
                       : '1px solid rgba(148, 163, 184, 0.2)',
-                    boxShadow: theme.palette.mode === 'dark'
+                    boxShadow: isDarkMode
                       ? '0 8px 32px rgba(0, 0, 0, 0.3)'
                       : '0 8px 32px rgba(0, 0, 0, 0.1)',
                   }
@@ -429,7 +463,7 @@ const Navbar = memo(function Navbar() {
                       variant="h6" 
                       fontWeight={800}
                       sx={{
-                        background: theme.palette.mode === 'dark'
+                        background: isDarkMode
                           ? 'linear-gradient(135deg, #60a5fa 0%, #a78bfa 100%)'
                           : 'linear-gradient(135deg, #1e40af 0%, #7c3aed 100%)',
                         backgroundClip: 'text',
@@ -447,8 +481,10 @@ const Navbar = memo(function Navbar() {
                         <ListItem key={item.label} disablePadding sx={{ mb: 1 }}>
                           <ListItemButton 
                             onClick={() => {
-                              router.push(item.href);
-                              setDrawerOpen(false);
+                              requestAnimationFrame(() => {
+                                router.push(item.href);
+                                setDrawerOpen(false);
+                              });
                             }}
                             sx={{
                               borderRadius: 2,
@@ -456,7 +492,7 @@ const Navbar = memo(function Navbar() {
                               py: 1.5,
                               transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
                               '&:hover': {
-                                background: theme.palette.mode === 'dark'
+                                background: isDarkMode
                                   ? 'rgba(59, 130, 246, 0.1)'
                                   : 'rgba(59, 130, 246, 0.05)',
                                 transform: 'translateX(4px)',
@@ -466,7 +502,7 @@ const Navbar = memo(function Navbar() {
                             <ListItemIcon sx={{ minWidth: 40 }}>
                               <IconComponent 
                                 size={20} 
-                                className={theme.palette.mode === 'dark' ? 'text-blue-400' : 'text-blue-600'} 
+                                className={isDarkMode ? 'text-blue-400' : 'text-blue-600'} 
                               />
                             </ListItemIcon>
                             <ListItemText 
@@ -485,8 +521,10 @@ const Navbar = memo(function Navbar() {
                          <Divider sx={{ my: 1 }} />
                          <ListItem disablePadding>
                            <ListItemButton onClick={() => {
-                             handleProfileClick();
-                             setDrawerOpen(false);
+                             requestAnimationFrame(() => {
+                               handleProfileClick();
+                               setDrawerOpen(false);
+                             });
                            }}>
                              <ListItemIcon>
                                <Person />
@@ -497,8 +535,10 @@ const Navbar = memo(function Navbar() {
                          {isAdmin && (
                            <ListItem disablePadding>
                              <ListItemButton onClick={() => {
-                               handleDashboardClick();
-                               setDrawerOpen(false);
+                               requestAnimationFrame(() => {
+                                 handleDashboardClick();
+                                 setDrawerOpen(false);
+                               });
                              }}>
                                <ListItemIcon>
                                  <Dashboard />
@@ -510,8 +550,10 @@ const Navbar = memo(function Navbar() {
                          {!isAdmin && (
                            <ListItem disablePadding>
                              <ListItemButton onClick={() => {
-                               handlePaymentsClick();
-                               setDrawerOpen(false);
+                               requestAnimationFrame(() => {
+                                 handlePaymentsClick();
+                                 setDrawerOpen(false);
+                               });
                              }}>
                                <ListItemIcon>
                                  <Payment />
@@ -522,10 +564,12 @@ const Navbar = memo(function Navbar() {
                          )}
                          <Divider sx={{ my: 1 }} />
                          <ListItem disablePadding>
-                           <ListItemButton onClick={() => {
-                             handleLogout();
-                             setDrawerOpen(false);
-                           }}>
+                             <ListItemButton onClick={() => {
+                               requestAnimationFrame(() => {
+                                 handleLogout();
+                                 setDrawerOpen(false);
+                               });
+                             }}>
                              <ListItemIcon>
                                <Logout />
                              </ListItemIcon>
@@ -536,8 +580,10 @@ const Navbar = memo(function Navbar() {
                      ) : (
                       <ListItem disablePadding>
                         <ListItemButton onClick={() => {
-                          handleLoginClick();
-                          setDrawerOpen(false);
+                          requestAnimationFrame(() => {
+                            handleLoginClick();
+                            setDrawerOpen(false);
+                          });
                         }}>
                           <ListItemText primary="Log in" sx={{ color: theme.palette.text.primary }} />
                         </ListItemButton>
@@ -545,7 +591,7 @@ const Navbar = memo(function Navbar() {
                     )}
                   </List>
                   <Box mt={2} display="flex" justifyContent="center">
-                    <ThemeSwitcher toggleTheme={toggleTheme} mode={mode} />
+                    <ThemeSwitcher />
                   </Box>
                 </Box>
               </Drawer>
@@ -564,15 +610,15 @@ const Navbar = memo(function Navbar() {
             sx: {
               mt: 1,
               minWidth: 220,
-              background: theme.palette.mode === 'dark'
+              background: isDarkMode
                 ? 'linear-gradient(135deg, rgba(15, 23, 42, 0.95) 0%, rgba(30, 41, 59, 0.9) 100%)'
                 : 'linear-gradient(135deg, rgba(255, 255, 255, 0.95) 0%, rgba(248, 250, 252, 0.9) 100%)',
               backdropFilter: 'blur(20px)',
-              boxShadow: theme.palette.mode === 'dark' 
+              boxShadow: isDarkMode 
                 ? '0 8px 32px rgba(0,0,0,0.4)' 
                 : '0 8px 32px rgba(0,0,0,0.1)',
               borderRadius: 3,
-              border: theme.palette.mode === 'dark' 
+              border: isDarkMode 
                 ? '1px solid rgba(148, 163, 184, 0.1)' 
                 : '1px solid rgba(148, 163, 184, 0.2)',
               overflow: 'hidden',
@@ -588,7 +634,7 @@ const Navbar = memo(function Navbar() {
               px: 2,
               transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
               '&:hover': {
-                background: theme.palette.mode === 'dark'
+                background: isDarkMode
                   ? 'rgba(59, 130, 246, 0.1)'
                   : 'rgba(59, 130, 246, 0.05)',
                 transform: 'translateX(4px)',
@@ -596,7 +642,7 @@ const Navbar = memo(function Navbar() {
             }}
           >
             <ListItemIcon sx={{ minWidth: 40 }}>
-              <Person fontSize="small" className={theme.palette.mode === 'dark' ? 'text-blue-400' : 'text-blue-600'} />
+              <Person fontSize="small" className={isDarkMode ? 'text-blue-400' : 'text-blue-600'} />
             </ListItemIcon>
             <Typography fontWeight={600}>Profile</Typography>
           </MenuItem>
@@ -608,7 +654,7 @@ const Navbar = memo(function Navbar() {
                 px: 2,
                 transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
                 '&:hover': {
-                  background: theme.palette.mode === 'dark'
+                  background: isDarkMode
                     ? 'rgba(59, 130, 246, 0.1)'
                     : 'rgba(59, 130, 246, 0.05)',
                   transform: 'translateX(4px)',
@@ -616,7 +662,7 @@ const Navbar = memo(function Navbar() {
               }}
             >
               <ListItemIcon sx={{ minWidth: 40 }}>
-                <Dashboard fontSize="small" className={theme.palette.mode === 'dark' ? 'text-blue-400' : 'text-blue-600'} />
+                <Dashboard fontSize="small" className={isDarkMode ? 'text-blue-400' : 'text-blue-600'} />
               </ListItemIcon>
               <Typography fontWeight={600}>Admin Dashboard</Typography>
             </MenuItem>
@@ -629,7 +675,7 @@ const Navbar = memo(function Navbar() {
                 px: 2,
                 transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
                 '&:hover': {
-                  background: theme.palette.mode === 'dark'
+                  background: isDarkMode
                     ? 'rgba(59, 130, 246, 0.1)'
                     : 'rgba(59, 130, 246, 0.05)',
                   transform: 'translateX(4px)',
@@ -637,14 +683,14 @@ const Navbar = memo(function Navbar() {
               }}
             >
               <ListItemIcon sx={{ minWidth: 40 }}>
-                <Payment fontSize="small" className={theme.palette.mode === 'dark' ? 'text-blue-400' : 'text-blue-600'} />
+                <Payment fontSize="small" className={isDarkMode ? 'text-blue-400' : 'text-blue-600'} />
               </ListItemIcon>
               <Typography fontWeight={600}>Payments & PDFs</Typography>
             </MenuItem>
           )}
           <Divider sx={{ 
             my: 1, 
-            borderColor: theme.palette.mode === 'dark' 
+            borderColor: isDarkMode 
               ? 'rgba(148, 163, 184, 0.1)' 
               : 'rgba(148, 163, 184, 0.2)' 
           }} />
@@ -655,7 +701,7 @@ const Navbar = memo(function Navbar() {
               px: 2,
               transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
               '&:hover': {
-                background: theme.palette.mode === 'dark'
+                background: isDarkMode
                   ? 'rgba(239, 68, 68, 0.1)'
                   : 'rgba(239, 68, 68, 0.05)',
                 transform: 'translateX(4px)',
@@ -663,7 +709,7 @@ const Navbar = memo(function Navbar() {
             }}
           >
             <ListItemIcon sx={{ minWidth: 40 }}>
-              <Logout fontSize="small" className={theme.palette.mode === 'dark' ? 'text-red-400' : 'text-red-600'} />
+              <Logout fontSize="small" className={isDarkMode ? 'text-red-400' : 'text-red-600'} />
             </ListItemIcon>
             <Typography fontWeight={600}>Logout</Typography>
           </MenuItem>

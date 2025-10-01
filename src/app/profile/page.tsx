@@ -6,7 +6,7 @@ import { Edit, Save, Cancel, Person, Email, CalendarToday, Security, CheckCircle
 import Navbar from '@/components/ui/Navbar';
 import Footer from '@/components/ui/Footer';
 import { useAuthUser, useAuthActions } from '@/contexts/AuthContext';
-import { useThemeContext } from '@/contexts/ThemeContext';
+import { useGlobalTheme } from '@/contexts/GlobalThemeContext';
 import { apiService } from '@/utils/apiService';
 import { toast } from 'react-hot-toast';
 
@@ -27,7 +27,7 @@ interface UserProfile {
 }
 
 export default function ProfilePage() {
-  const { mode } = useThemeContext();
+  const { mode, isDarkMode, isLightMode } = useGlobalTheme();
   const user = useAuthUser();
   const { updateUser } = useAuthActions();
   const [profile, setProfile] = useState<UserProfile | null>(null);

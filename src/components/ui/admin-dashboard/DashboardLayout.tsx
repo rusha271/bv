@@ -9,7 +9,7 @@ import ThemeSwitcher from "@/components/ThemeSwitcher";
 export default function DashboardLayout({ children }: { children: ReactNode }) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
-  const { mode, toggleTheme } = useThemeContext();
+  const { mode, toggleTheme, isDarkMode, isLightMode } = useGlobalTheme();
 
   const toggleSidebar = () => {
     setSidebarOpen(!sidebarOpen);

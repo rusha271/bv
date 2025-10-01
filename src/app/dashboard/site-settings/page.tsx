@@ -6,7 +6,7 @@ import { useThemeContext } from "@/contexts/ThemeContext";
 import Link from "next/link";
 
 export default function SiteSettingsPage() {
-  const { mode } = useThemeContext();
+  const { mode, isDarkMode, isLightMode } = useGlobalTheme();
 
   return (
     <DashboardLayout>

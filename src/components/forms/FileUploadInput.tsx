@@ -4,7 +4,7 @@ import React from 'react';
 import { Controller, Control } from 'react-hook-form';
 import { Box, Typography, Button, Input, InputLabel } from '@mui/material';
 import UploadFileIcon from '@mui/icons-material/UploadFile';
-import { useThemeContext } from '@/contexts/ThemeContext';
+import { useGlobalTheme } from '@/contexts/GlobalThemeContext';
 import { Upload, FileImage } from 'lucide-react';
 
 interface FileUploadInputProps {
@@ -16,7 +16,7 @@ interface FileUploadInputProps {
 }
 
 export const FileUploadInput = ({ name, control, label = 'Floor Plan', accept = '.png,.jpg,.jpeg', className }: FileUploadInputProps) => {
-  const { theme } = useThemeContext();
+  const { theme, isDarkMode, isLightMode } = useGlobalTheme();
   return (
     <Controller
       name={name}
@@ -43,27 +43,27 @@ export const FileUploadInput = ({ name, control, label = 'Floor Plan', accept = 
               textTransform: 'none',
               justifyContent: 'center',
               alignItems: 'center',
-              gap: 1.5,
-              py: 2.5,
-              px: 2,
-              borderRadius: 3,
-              border: theme.palette.mode === 'dark'
+              gap: { xs: 1, sm: 1.5 },
+              py: { xs: 2, sm: 2.5 },
+              px: { xs: 1.5, sm: 2 },
+              borderRadius: { xs: 2, sm: 3 },
+              border: isDarkMode
                 ? '2px dashed rgba(148, 163, 184, 0.3)'
                 : '2px dashed rgba(148, 163, 184, 0.4)',
-              background: theme.palette.mode === 'dark'
+              background: isDarkMode
                 ? 'linear-gradient(135deg, rgba(59, 130, 246, 0.05) 0%, rgba(147, 51, 234, 0.05) 100%)'
                 : 'linear-gradient(135deg, rgba(59, 130, 246, 0.02) 0%, rgba(147, 51, 234, 0.02) 100%)',
               color: theme.palette.text.primary,
               transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
               '&:hover': {
-                border: theme.palette.mode === 'dark'
+                border: isDarkMode
                   ? '2px dashed rgba(59, 130, 246, 0.6)'
                   : '2px dashed rgba(59, 130, 246, 0.8)',
-                background: theme.palette.mode === 'dark'
+                background: isDarkMode
                   ? 'linear-gradient(135deg, rgba(59, 130, 246, 0.1) 0%, rgba(147, 51, 234, 0.1) 100%)'
                   : 'linear-gradient(135deg, rgba(59, 130, 246, 0.05) 0%, rgba(147, 51, 234, 0.05) 100%)',
-                transform: 'translateY(-2px)',
-                boxShadow: theme.palette.mode === 'dark'
+                transform: { xs: 'translateY(-1px)', sm: 'translateY(-2px)' },
+                boxShadow: isDarkMode
                   ? '0 8px 25px rgba(59, 130, 246, 0.2)'
                   : '0 8px 25px rgba(59, 130, 246, 0.15)',
               },
@@ -72,13 +72,13 @@ export const FileUploadInput = ({ name, control, label = 'Floor Plan', accept = 
             <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 1 }}>
               {value && value.length > 0 ? (
                 <FileImage 
-                  size={20} 
-                  className={theme.palette.mode === 'dark' ? 'text-green-400' : 'text-green-600'} 
+                  size={18} 
+                  className={isDarkMode ? 'text-green-400' : 'text-green-600'} 
                 />
               ) : (
                 <Upload 
-                  size={20} 
-                  className={theme.palette.mode === 'dark' ? 'text-blue-400' : 'text-blue-600'} 
+                  size={18} 
+                  className={isDarkMode ? 'text-blue-400' : 'text-blue-600'} 
                 />
               )}
               <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>

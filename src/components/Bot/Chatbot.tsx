@@ -35,7 +35,7 @@ import errorAnimation from '../../../public/error.json';
 import excitedAnimation from '../../../public/smile.json';
 // import sadAnimation from './animations/sad.json';
 import sleepingAnimation from '../../../public/sleeping.json';
-import { useThemeContext } from '@/contexts/ThemeContext';
+import { useGlobalTheme } from '@/contexts/GlobalThemeContext';
 import { useDeviceType } from '@/utils/useDeviceType';
 
 
@@ -58,7 +58,7 @@ function Chatbot() {
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   // Use theme and device type for all sizing, paddings, and colors
-  const { theme } = useThemeContext();
+  const { theme, isDarkMode, isLightMode } = useGlobalTheme();
   const { isMobile, isTablet, isDesktop } = useDeviceType();
 
   const CHAT_LIMIT = 100;
@@ -68,26 +68,40 @@ function Chatbot() {
     setIsClient(true);
   }, []);
 
-  // Auto-scroll to bottom
+  // Auto-scroll to bottom - optimized with requestAnimationFrame
   const scrollToBottom = () => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+    requestAnimationFrame(() => {
+      messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+    });
   };
 
   useEffect(() => {
     scrollToBottom();
   }, [messages]);
 
-  // Load chat count from localStorage only on client
+  // Load chat count from localStorage only on client - optimized
   useEffect(() => {
     if (isClient) {
-      const storedCount = localStorage.getItem('chatCount');
-      if (storedCount) {
-        setChatCount(parseInt(storedCount, 10));
+      // Use requestIdleCallback for non-critical operations
+      if ('requestIdleCallback' in window) {
+        requestIdleCallback(() => {
+          const storedCount = localStorage.getItem('chatCount');
+          if (storedCount) {
+            setChatCount(parseInt(storedCount, 10));
+          }
+        });
+      } else {
+        setTimeout(() => {
+          const storedCount = localStorage.getItem('chatCount');
+          if (storedCount) {
+            setChatCount(parseInt(storedCount, 10));
+          }
+        }, 0);
       }
     }
   }, [isClient]);
 
-  // Welcome message
+  // Welcome message - optimized with requestAnimationFrame
   useEffect(() => {
     if (isOpen && messages.length === 0 && isClient) {
       const welcomeMessage: Message = {
@@ -96,7 +110,11 @@ function Chatbot() {
         isUser: false,
         timestamp: new Date(),
       };
-      setMessages([welcomeMessage]);
+      
+      // Use requestAnimationFrame to batch DOM updates
+      requestAnimationFrame(() => {
+        setMessages([welcomeMessage]);
+      });
     }
   }, [isOpen, messages.length, isClient]);
 
@@ -122,11 +140,14 @@ function Chatbot() {
       timestamp: new Date(),
     };
 
-    setMessages((prev) => [...prev, userMessage]);
-    setInputMessage('');
-    setIsLoading(true);
-    setApiNotCalled(false);
-    setServerDown(false);
+    // Use requestAnimationFrame to batch state updates
+    requestAnimationFrame(() => {
+      setMessages((prev) => [...prev, userMessage]);
+      setInputMessage('');
+      setIsLoading(true);
+      setApiNotCalled(false);
+      setServerDown(false);
+    });
 
     try {
       const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/chat`, {
@@ -156,14 +177,26 @@ function Chatbot() {
         timestamp: new Date(),
       };
 
-      setMessages((prev) => [...prev, botMessage]);
+      // Use requestAnimationFrame to batch all state updates
+      requestAnimationFrame(() => {
+        setMessages((prev) => [...prev, botMessage]);
 
-      // Increment chat count
-      const newCount = chatCount + 1;
-      setChatCount(newCount);
-      if (isClient) {
-        localStorage.setItem('chatCount', newCount.toString());
-      }
+        // Increment chat count
+        const newCount = chatCount + 1;
+        setChatCount(newCount);
+        if (isClient) {
+          // Use requestIdleCallback for localStorage operations
+          if ('requestIdleCallback' in window) {
+            requestIdleCallback(() => {
+              localStorage.setItem('chatCount', newCount.toString());
+            });
+          } else {
+            setTimeout(() => {
+              localStorage.setItem('chatCount', newCount.toString());
+            }, 0);
+          }
+        }
+      });
     } catch (error) {
       console.error('Error generating response:', error);
       const errorMessage: Message = {
@@ -172,9 +205,12 @@ function Chatbot() {
         isUser: false,
         timestamp: new Date(),
       };
-      setMessages((prev) => [...prev, errorMessage]);
-    } finally {
-      setIsLoading(false);
+      
+      // Use requestAnimationFrame to batch error state updates
+      requestAnimationFrame(() => {
+        setMessages((prev) => [...prev, errorMessage]);
+        setIsLoading(false);
+      });
     }
   };
 
@@ -379,13 +415,13 @@ function Chatbot() {
                       p: 1.5,
                       backgroundColor: message.isUser
                         ? theme.palette.primary.main
-                        : theme.palette.mode === 'dark'
+                        : isDarkMode
                           ? theme.palette.grey[800] // darker bubble for dark mode
                           : theme.palette.grey[100], // light bubble for light mode
 
                       color: message.isUser
                         ? theme.palette.primary.contrastText
-                        : theme.palette.mode === 'dark'
+                        : isDarkMode
                           ? theme.palette.grey[100] // light text on dark bubble
                           : theme.palette.text.primary, // normal text in light mode
 
@@ -400,7 +436,7 @@ function Chatbot() {
                       sx={{
                         color: message.isUser
                           ? theme.palette.primary.contrastText
-                          : theme.palette.mode === 'dark'
+                          : isDarkMode
                             ? theme.palette.grey[100]
                             : theme.palette.text.primary,
                       }}

@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useRef, useEffect, useState } from 'react';
-import { useThemeContext } from '@/contexts/ThemeContext';
+import { useGlobalTheme } from '@/contexts/GlobalThemeContext';
 import { useDeviceType } from '@/utils/useDeviceType';
 import { Video } from '@/utils/apiService';
 import { startVideoTracking, updateVideoWatchTime, trackVideoView, stopVideoTracking } from '@/utils/videoTracking';
@@ -13,7 +13,7 @@ interface VideoModalProps {
 }
 
 export default function VideoModal({ video, isOpen, onClose }: VideoModalProps) {
-  const { theme } = useThemeContext();
+  const { theme, isDarkMode, isLightMode } = useGlobalTheme();
   const { isMobile, isTablet } = useDeviceType();
   const videoRef = useRef<HTMLVideoElement>(null);
   const [videoDuration, setVideoDuration] = useState<number>(0);

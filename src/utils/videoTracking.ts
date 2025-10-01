@@ -72,16 +72,27 @@ class VideoTrackingManager {
 
   private setupBeforeUnloadHandler(): void {
     if (typeof window !== 'undefined') {
+      // Use passive listeners to prevent blocking
       window.addEventListener('beforeunload', () => {
-        this.flushPendingViews();
-      });
+        // Use requestIdleCallback if available, otherwise use setTimeout
+        if ('requestIdleCallback' in window) {
+          requestIdleCallback(() => this.flushPendingViews());
+        } else {
+          setTimeout(() => this.flushPendingViews(), 0);
+        }
+      }, { passive: true });
 
-      // Also handle page visibility change
+      // Also handle page visibility change - optimized
       document.addEventListener('visibilitychange', () => {
         if (document.visibilityState === 'hidden') {
-          this.flushPendingViews();
+          // Use requestIdleCallback for non-critical operations
+          if ('requestIdleCallback' in window) {
+            requestIdleCallback(() => this.flushPendingViews());
+          } else {
+            setTimeout(() => this.flushPendingViews(), 0);
+          }
         }
-      });
+      }, { passive: true });
     }
   }
 

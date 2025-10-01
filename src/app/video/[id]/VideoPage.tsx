@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useEffect, useState } from 'react';
-import { useThemeContext } from '@/contexts/ThemeContext';
+import { useGlobalTheme } from '@/contexts/GlobalThemeContext';
 import { useDeviceType } from '@/utils/useDeviceType';
 import { Video } from '@/utils/apiService';
 import VideoModal from '@/components/Video/VideoModal';
@@ -14,7 +14,7 @@ interface VideoPageProps {
 }
 
 export default function VideoPage({ video }: VideoPageProps) {
-  const { theme } = useThemeContext();
+  const { theme, isDarkMode, isLightMode } = useGlobalTheme();
   const { isMobile, isTablet } = useDeviceType();
   const [isModalOpen, setIsModalOpen] = useState(false);
 

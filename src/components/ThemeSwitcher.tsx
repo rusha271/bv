@@ -1,25 +1,62 @@
-"use client"
-
+'use client';
 import React from 'react';
-import IconButton from '@mui/material/IconButton';
-import Brightness4Icon from '@mui/icons-material/Brightness4';
-import Brightness7Icon from '@mui/icons-material/Brightness7';
-import { useThemeContext } from '@/contexts/ThemeContext';
+import { IconButton, Tooltip } from '@mui/material';
+import { useGlobalTheme } from '@/contexts/GlobalThemeContext';
+import LightModeIcon from '@mui/icons-material/LightMode';
+import DarkModeIcon from '@mui/icons-material/DarkMode';
 
 interface ThemeSwitcherProps {
-  toggleTheme: () => void;
-  mode: 'light' | 'dark';
+  size?: 'small' | 'medium' | 'large';
+  showTooltip?: boolean;
 }
 
-export default function ThemeSwitcher({ toggleTheme, mode }: ThemeSwitcherProps) {
-  const { theme } = useThemeContext();
-  return (
+const ThemeSwitcher: React.FC<ThemeSwitcherProps> = ({ 
+  size = 'medium', 
+  showTooltip = true 
+}) => {
+  const { isDarkMode, toggleTheme } = useGlobalTheme();
+
+  const button = (
     <IconButton
       onClick={toggleTheme}
-      color="inherit"
-      sx={{ color: theme.palette.text.primary }}
+      size={size}
+      sx={{
+        backgroundColor: isDarkMode 
+          ? 'rgba(148, 163, 184, 0.1)' 
+          : 'rgba(148, 163, 184, 0.05)',
+        border: isDarkMode
+          ? '1px solid rgba(148, 163, 184, 0.2)'
+          : '1px solid rgba(148, 163, 184, 0.3)',
+        borderRadius: 2,
+        transition: 'all 0.3s ease',
+        '&:hover': {
+          backgroundColor: isDarkMode 
+            ? 'rgba(148, 163, 184, 0.2)' 
+            : 'rgba(148, 163, 184, 0.1)',
+          transform: 'translateY(-1px)',
+          boxShadow: isDarkMode
+            ? '0 4px 12px rgba(0, 0, 0, 0.3)'
+            : '0 4px 12px rgba(0, 0, 0, 0.1)',
+        },
+      }}
     >
-      {mode === 'dark' ? <Brightness7Icon /> : <Brightness4Icon />}
+      {isDarkMode ? (
+        <LightModeIcon sx={{ color: '#fbbf24' }} />
+      ) : (
+        <DarkModeIcon sx={{ color: '#64748b' }} />
+      )}
     </IconButton>
   );
-}
+
+  if (showTooltip) {
+    return (
+      <Tooltip title={isDarkMode ? 'Switch to Light Mode' : 'Switch to Dark Mode'}>
+        {button}
+      </Tooltip>
+    );
+  }
+
+  return button;
+};
+
+export default ThemeSwitcher;

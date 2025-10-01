@@ -24,7 +24,7 @@ const OrganicSessionsChart = dynamic(
 );
 
 export default function DashboardPage() {
-  const { mode } = useThemeContext();
+  const { mode, isDarkMode, isLightMode } = useGlobalTheme();
 
   return (
     <DashboardLayout>

@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useRef, useEffect } from 'react';
-import { useThemeContext } from '@/contexts/ThemeContext';
+import { useGlobalTheme } from '@/contexts/GlobalThemeContext';
 import { useDeviceType } from '@/utils/useDeviceType';
 import Navbar from '@/components/ui/Navbar';
 import Footer from '@/components/ui/Footer';
@@ -24,7 +24,7 @@ function FadeInSection({ children }: { children: React.ReactNode }) {
 }
 
 function TeamMemberBox({ member, imageOnRight = false }: { member: any, imageOnRight?: boolean }) {
-  const { theme } = useThemeContext();
+  const { theme, isDarkMode, isLightMode } = useGlobalTheme();
   const { isMobile } = useDeviceType();
   const [isClicked, setIsClicked] = useState(false);
   const videoRef = useRef<HTMLVideoElement>(null);
@@ -44,14 +44,14 @@ function TeamMemberBox({ member, imageOnRight = false }: { member: any, imageOnR
     <div
       className="relative overflow-hidden rounded-2xl transition-all duration-500 hover:scale-105 hover:shadow-2xl"
       style={{
-        background: theme.palette.mode === 'dark'
+        background: isDarkMode
           ? 'rgba(15, 23, 42, 0.8)'
           : 'rgba(255, 255, 255, 0.8)',
         backdropFilter: 'blur(20px)',
-        border: theme.palette.mode === 'dark'
+        border: isDarkMode
           ? '1px solid rgba(148, 163, 184, 0.1)'
           : '1px solid rgba(148, 163, 184, 0.2)',
-        boxShadow: theme.palette.mode === 'dark'
+        boxShadow: isDarkMode
           ? '0 8px 32px rgba(0, 0, 0, 0.3)'
           : '0 8px 32px rgba(0, 0, 0, 0.1)',
       }}
@@ -119,7 +119,7 @@ function TeamMemberBox({ member, imageOnRight = false }: { member: any, imageOnR
           <h3
             className="text-xl font-bold mb-2"
             style={{ 
-              backgroundImage: theme.palette.mode === 'dark'
+              backgroundImage: isDarkMode
                 ? 'linear-gradient(135deg, #60a5fa 0%, #a78bfa 100%)'
                 : 'linear-gradient(135deg, #1e40af 0%, #7c3aed 100%)',
               backgroundClip: 'text',
@@ -132,7 +132,7 @@ function TeamMemberBox({ member, imageOnRight = false }: { member: any, imageOnR
           <p
             className="font-semibold mb-3"
             style={{ 
-              backgroundImage: theme.palette.mode === 'dark'
+              backgroundImage: isDarkMode
                 ? 'linear-gradient(135deg, #34d399 0%, #10b981 100%)'
                 : 'linear-gradient(135deg, #059669 0%, #047857 100%)',
               backgroundClip: 'text',
@@ -154,11 +154,11 @@ function TeamMemberBox({ member, imageOnRight = false }: { member: any, imageOnR
                 key={index}
                 className="px-3 py-1 rounded-full text-xs font-medium transition-all duration-300 hover:scale-105"
                 style={{
-                  background: theme.palette.mode === 'dark'
+                  background: isDarkMode
                     ? 'rgba(59, 130, 246, 0.2)'
                     : 'rgba(59, 130, 246, 0.1)',
-                  color: theme.palette.mode === 'dark' ? '#60a5fa' : '#1e40af',
-                  border: theme.palette.mode === 'dark'
+                  color: isDarkMode ? '#60a5fa' : '#1e40af',
+                  border: isDarkMode
                     ? '1px solid rgba(59, 130, 246, 0.3)'
                     : '1px solid rgba(59, 130, 246, 0.2)',
                 }}
@@ -170,10 +170,10 @@ function TeamMemberBox({ member, imageOnRight = false }: { member: any, imageOnR
           <div className="flex items-center space-x-4 text-sm">
             <div className="flex items-center space-x-2 p-2 rounded-lg"
               style={{
-                background: theme.palette.mode === 'dark'
+                background: isDarkMode
                   ? 'rgba(34, 197, 94, 0.1)'
                   : 'rgba(34, 197, 94, 0.05)',
-                border: theme.palette.mode === 'dark'
+                border: isDarkMode
                   ? '1px solid rgba(34, 197, 94, 0.2)'
                   : '1px solid rgba(34, 197, 94, 0.1)',
               }}
@@ -185,10 +185,10 @@ function TeamMemberBox({ member, imageOnRight = false }: { member: any, imageOnR
             </div>
             <div className="flex items-center space-x-2 p-2 rounded-lg"
               style={{
-                background: theme.palette.mode === 'dark'
+                background: isDarkMode
                   ? 'rgba(34, 197, 94, 0.1)'
                   : 'rgba(34, 197, 94, 0.05)',
-                border: theme.palette.mode === 'dark'
+                border: isDarkMode
                   ? '1px solid rgba(34, 197, 94, 0.2)'
                   : '1px solid rgba(34, 197, 94, 0.1)',
               }}
@@ -206,7 +206,7 @@ function TeamMemberBox({ member, imageOnRight = false }: { member: any, imageOnR
 }
 
 function ConsultantBox({ member, imageOnRight = false }: { member: any, imageOnRight?: boolean }) {
-  const { theme } = useThemeContext();
+  const { theme, isDarkMode, isLightMode } = useGlobalTheme();
   const { isMobile } = useDeviceType();
   const [isClicked, setIsClicked] = useState(false);
   const videoRef = useRef<HTMLVideoElement>(null);
@@ -224,14 +224,14 @@ function ConsultantBox({ member, imageOnRight = false }: { member: any, imageOnR
     <div
       className="relative overflow-hidden rounded-2xl transition-all duration-500 hover:scale-105 hover:shadow-2xl"
       style={{
-        background: theme.palette.mode === 'dark'
+        background: isDarkMode
           ? 'rgba(15, 23, 42, 0.8)'
           : 'rgba(255, 255, 255, 0.8)',
         backdropFilter: 'blur(20px)',
-        border: theme.palette.mode === 'dark'
+        border: isDarkMode
           ? '1px solid rgba(148, 163, 184, 0.1)'
           : '1px solid rgba(148, 163, 184, 0.2)',
-        boxShadow: theme.palette.mode === 'dark'
+        boxShadow: isDarkMode
           ? '0 8px 32px rgba(0, 0, 0, 0.3)'
           : '0 8px 32px rgba(0, 0, 0, 0.1)',
       }}
@@ -299,7 +299,7 @@ function ConsultantBox({ member, imageOnRight = false }: { member: any, imageOnR
           <h3
             className="text-xl font-bold mb-2"
             style={{ 
-              backgroundImage: theme.palette.mode === 'dark'
+              backgroundImage: isDarkMode
                 ? 'linear-gradient(135deg, #60a5fa 0%, #a78bfa 100%)'
                 : 'linear-gradient(135deg, #1e40af 0%, #7c3aed 100%)',
               backgroundClip: 'text',
@@ -312,7 +312,7 @@ function ConsultantBox({ member, imageOnRight = false }: { member: any, imageOnR
           <p
             className="font-semibold mb-3"
             style={{ 
-              backgroundImage: theme.palette.mode === 'dark'
+              backgroundImage: isDarkMode
                 ? 'linear-gradient(135deg, #34d399 0%, #10b981 100%)'
                 : 'linear-gradient(135deg, #059669 0%, #047857 100%)',
               backgroundClip: 'text',
@@ -334,11 +334,11 @@ function ConsultantBox({ member, imageOnRight = false }: { member: any, imageOnR
                 key={index}
                 className="px-3 py-1 rounded-full text-xs font-medium transition-all duration-300 hover:scale-105"
                 style={{
-                  background: theme.palette.mode === 'dark'
+                  background: isDarkMode
                     ? 'rgba(59, 130, 246, 0.2)'
                     : 'rgba(59, 130, 246, 0.1)',
-                  color: theme.palette.mode === 'dark' ? '#60a5fa' : '#1e40af',
-                  border: theme.palette.mode === 'dark'
+                  color: isDarkMode ? '#60a5fa' : '#1e40af',
+                  border: isDarkMode
                     ? '1px solid rgba(59, 130, 246, 0.3)'
                     : '1px solid rgba(59, 130, 246, 0.2)',
                 }}
@@ -350,10 +350,10 @@ function ConsultantBox({ member, imageOnRight = false }: { member: any, imageOnR
           <div className="flex items-center space-x-4 text-sm">
             <div className="flex items-center space-x-2 p-2 rounded-lg"
               style={{
-                background: theme.palette.mode === 'dark'
+                background: isDarkMode
                   ? 'rgba(34, 197, 94, 0.1)'
                   : 'rgba(34, 197, 94, 0.05)',
-                border: theme.palette.mode === 'dark'
+                border: isDarkMode
                   ? '1px solid rgba(34, 197, 94, 0.2)'
                   : '1px solid rgba(34, 197, 94, 0.1)',
               }}
@@ -365,10 +365,10 @@ function ConsultantBox({ member, imageOnRight = false }: { member: any, imageOnR
             </div>
             <div className="flex items-center space-x-2 p-2 rounded-lg"
               style={{
-                background: theme.palette.mode === 'dark'
+                background: isDarkMode
                   ? 'rgba(34, 197, 94, 0.1)'
                   : 'rgba(34, 197, 94, 0.05)',
-                border: theme.palette.mode === 'dark'
+                border: isDarkMode
                   ? '1px solid rgba(34, 197, 94, 0.2)'
                   : '1px solid rgba(34, 197, 94, 0.1)',
               }}
@@ -386,7 +386,7 @@ function ConsultantBox({ member, imageOnRight = false }: { member: any, imageOnR
 }
 
 export default function ModernContactPage() {
-  const { theme } = useThemeContext();
+  const { theme, isDarkMode, isLightMode } = useGlobalTheme();
   const { isMobile, isTablet } = useDeviceType();
   const sectionTitleSize = isMobile ? '1.5rem' : isTablet ? '2rem' : '2.5rem';
   const [mounted, setMounted] = useState(false);
@@ -531,14 +531,14 @@ export default function ModernContactPage() {
       <main
         className="flex-1 w-full max-w-7xl mx-auto rounded-2xl px-4 py-6 sm:px-6 sm:py-8 lg:px-8 lg:py-10 box-border"
         style={{
-          background: theme.palette.mode === 'dark' 
+          background: isDarkMode 
             ? 'rgba(15, 23, 42, 0.95)' 
             : 'rgba(255, 255, 255, 0.95)',
           backdropFilter: 'blur(20px)',
-          border: theme.palette.mode === 'dark'
+          border: isDarkMode
             ? '1px solid rgba(148, 163, 184, 0.1)'
             : '1px solid rgba(148, 163, 184, 0.2)',
-          boxShadow: theme.palette.mode === 'dark'
+          boxShadow: isDarkMode
             ? '0 25px 50px -12px rgba(0, 0, 0, 0.5)'
             : '0 25px 50px -12px rgba(0, 0, 0, 0.25)',
           color: theme.palette.text.primary,
@@ -551,10 +551,10 @@ export default function ModernContactPage() {
         <div className="text-center mb-12">
           <div className="inline-flex items-center px-4 py-2 rounded-full mb-6 transition-all duration-300 hover:scale-105"
             style={{
-              background: theme.palette.mode === 'dark'
+              background: isDarkMode
                 ? 'rgba(139, 92, 246, 0.1)'
                 : 'rgba(139, 92, 246, 0.05)',
-              border: theme.palette.mode === 'dark'
+              border: isDarkMode
                 ? '1px solid rgba(139, 92, 246, 0.2)'
                 : '1px solid rgba(139, 92, 246, 0.1)',
             }}
@@ -569,13 +569,13 @@ export default function ModernContactPage() {
             className="font-bold mb-6"
             style={{ 
               fontSize: sectionTitleSize,
-              backgroundImage: theme.palette.mode === 'dark'
+              backgroundImage: isDarkMode
                 ? 'linear-gradient(135deg, #60a5fa 0%, #a78bfa 100%)'
                 : 'linear-gradient(135deg, #1e40af 0%, #7c3aed 100%)',
               backgroundClip: 'text',
               WebkitBackgroundClip: 'text',
               WebkitTextFillColor: 'transparent',
-              textShadow: theme.palette.mode === 'dark' 
+              textShadow: isDarkMode 
                 ? '0 2px 4px rgba(0, 0, 0, 0.1)' 
                 : '0 2px 4px rgba(0, 0, 0, 0.1)',
             }}
@@ -592,10 +592,10 @@ export default function ModernContactPage() {
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-8 max-w-4xl mx-auto">
             <div className="flex items-center justify-center space-x-3 p-4 rounded-xl transition-all duration-300 hover:scale-105"
               style={{
-                background: theme.palette.mode === 'dark'
+                background: isDarkMode
                   ? 'rgba(34, 197, 94, 0.1)'
                   : 'rgba(34, 197, 94, 0.05)',
-                border: theme.palette.mode === 'dark'
+                border: isDarkMode
                   ? '1px solid rgba(34, 197, 94, 0.2)'
                   : '1px solid rgba(34, 197, 94, 0.1)',
               }}
@@ -609,10 +609,10 @@ export default function ModernContactPage() {
             
             <div className="flex items-center justify-center space-x-3 p-4 rounded-xl transition-all duration-300 hover:scale-105"
               style={{
-                background: theme.palette.mode === 'dark'
+                background: isDarkMode
                   ? 'rgba(59, 130, 246, 0.1)'
                   : 'rgba(59, 130, 246, 0.05)',
-                border: theme.palette.mode === 'dark'
+                border: isDarkMode
                   ? '1px solid rgba(59, 130, 246, 0.2)'
                   : '1px solid rgba(59, 130, 246, 0.1)',
               }}
@@ -626,10 +626,10 @@ export default function ModernContactPage() {
             
             <div className="flex items-center justify-center space-x-3 p-4 rounded-xl transition-all duration-300 hover:scale-105"
               style={{
-                background: theme.palette.mode === 'dark'
+                background: isDarkMode
                   ? 'rgba(139, 92, 246, 0.1)'
                   : 'rgba(139, 92, 246, 0.05)',
-                border: theme.palette.mode === 'dark'
+                border: isDarkMode
                   ? '1px solid rgba(139, 92, 246, 0.2)'
                   : '1px solid rgba(139, 92, 246, 0.1)',
               }}
@@ -648,7 +648,7 @@ export default function ModernContactPage() {
           <h2
             className="text-2xl font-bold mb-6 text-center"
             style={{ 
-              backgroundImage: theme.palette.mode === 'dark'
+              backgroundImage: isDarkMode
                 ? 'linear-gradient(135deg, #60a5fa 0%, #a78bfa 100%)'
                 : 'linear-gradient(135deg, #1e40af 0%, #7c3aed 100%)',
               backgroundClip: 'text',
@@ -669,7 +669,7 @@ export default function ModernContactPage() {
           <h2
             className="text-2xl font-bold mb-6 text-center"
             style={{ 
-              backgroundImage: theme.palette.mode === 'dark'
+              backgroundImage: isDarkMode
                 ? 'linear-gradient(135deg, #60a5fa 0%, #a78bfa 100%)'
                 : 'linear-gradient(135deg, #1e40af 0%, #7c3aed 100%)',
               backgroundClip: 'text',
@@ -695,7 +695,7 @@ export default function ModernContactPage() {
           <h2
             className="text-2xl font-bold mb-6 text-center"
             style={{ 
-              backgroundImage: theme.palette.mode === 'dark'
+              backgroundImage: isDarkMode
                 ? 'linear-gradient(135deg, #60a5fa 0%, #a78bfa 100%)'
                 : 'linear-gradient(135deg, #1e40af 0%, #7c3aed 100%)',
               backgroundClip: 'text',
@@ -709,14 +709,14 @@ export default function ModernContactPage() {
             <div
               className="p-6 rounded-2xl transition-all duration-300 hover:scale-105 hover:shadow-2xl"
               style={{
-                background: theme.palette.mode === 'dark'
+                background: isDarkMode
                   ? 'rgba(15, 23, 42, 0.8)'
                   : 'rgba(255, 255, 255, 0.8)',
                 backdropFilter: 'blur(20px)',
-                border: theme.palette.mode === 'dark'
+                border: isDarkMode
                   ? '1px solid rgba(148, 163, 184, 0.1)'
                   : '1px solid rgba(148, 163, 184, 0.2)',
-                boxShadow: theme.palette.mode === 'dark'
+                boxShadow: isDarkMode
                   ? '0 8px 32px rgba(0, 0, 0, 0.3)'
                   : '0 8px 32px rgba(0, 0, 0, 0.1)',
               }}
@@ -724,7 +724,7 @@ export default function ModernContactPage() {
               <h3
                 className="text-2xl font-bold mb-6"
                 style={{ 
-                  backgroundImage: theme.palette.mode === 'dark'
+                  backgroundImage: isDarkMode
                     ? 'linear-gradient(135deg, #60a5fa 0%, #a78bfa 100%)'
                     : 'linear-gradient(135deg, #1e40af 0%, #7c3aed 100%)',
                   backgroundClip: 'text',
@@ -737,17 +737,17 @@ export default function ModernContactPage() {
               <div className="space-y-4">
                 <div className="flex items-center space-x-4 p-4 rounded-xl transition-all duration-300 hover:scale-105"
                   style={{
-                    background: theme.palette.mode === 'dark'
+                    background: isDarkMode
                       ? 'rgba(59, 130, 246, 0.1)'
                       : 'rgba(59, 130, 246, 0.05)',
-                    border: theme.palette.mode === 'dark'
+                    border: isDarkMode
                       ? '1px solid rgba(59, 130, 246, 0.2)'
                       : '1px solid rgba(59, 130, 246, 0.1)',
                   }}
                 >
                   <div className="p-2 rounded-lg"
                     style={{
-                      background: theme.palette.mode === 'dark'
+                      background: isDarkMode
                         ? 'rgba(59, 130, 246, 0.2)'
                         : 'rgba(59, 130, 246, 0.1)',
                     }}
@@ -765,17 +765,17 @@ export default function ModernContactPage() {
                 </div>
                 <div className="flex items-center space-x-4 p-4 rounded-xl transition-all duration-300 hover:scale-105"
                   style={{
-                    background: theme.palette.mode === 'dark'
+                    background: isDarkMode
                       ? 'rgba(59, 130, 246, 0.1)'
                       : 'rgba(59, 130, 246, 0.05)',
-                    border: theme.palette.mode === 'dark'
+                    border: isDarkMode
                       ? '1px solid rgba(59, 130, 246, 0.2)'
                       : '1px solid rgba(59, 130, 246, 0.1)',
                   }}
                 >
                   <div className="p-2 rounded-lg"
                     style={{
-                      background: theme.palette.mode === 'dark'
+                      background: isDarkMode
                         ? 'rgba(59, 130, 246, 0.2)'
                         : 'rgba(59, 130, 246, 0.1)',
                     }}
@@ -793,17 +793,17 @@ export default function ModernContactPage() {
                 </div>
                 <div className="flex items-center space-x-4 p-4 rounded-xl transition-all duration-300 hover:scale-105"
                   style={{
-                    background: theme.palette.mode === 'dark'
+                    background: isDarkMode
                       ? 'rgba(59, 130, 246, 0.1)'
                       : 'rgba(59, 130, 246, 0.05)',
-                    border: theme.palette.mode === 'dark'
+                    border: isDarkMode
                       ? '1px solid rgba(59, 130, 246, 0.2)'
                       : '1px solid rgba(59, 130, 246, 0.1)',
                   }}
                 >
                   <div className="p-2 rounded-lg"
                     style={{
-                      background: theme.palette.mode === 'dark'
+                      background: isDarkMode
                         ? 'rgba(59, 130, 246, 0.2)'
                         : 'rgba(59, 130, 246, 0.1)',
                     }}
@@ -821,17 +821,17 @@ export default function ModernContactPage() {
                 </div>
                 <div className="flex items-center space-x-4 p-4 rounded-xl transition-all duration-300 hover:scale-105"
                   style={{
-                    background: theme.palette.mode === 'dark'
+                    background: isDarkMode
                       ? 'rgba(59, 130, 246, 0.1)'
                       : 'rgba(59, 130, 246, 0.05)',
-                    border: theme.palette.mode === 'dark'
+                    border: isDarkMode
                       ? '1px solid rgba(59, 130, 246, 0.2)'
                       : '1px solid rgba(59, 130, 246, 0.1)',
                   }}
                 >
                   <div className="p-2 rounded-lg"
                     style={{
-                      background: theme.palette.mode === 'dark'
+                      background: isDarkMode
                         ? 'rgba(59, 130, 246, 0.2)'
                         : 'rgba(59, 130, 246, 0.1)',
                     }}
@@ -852,14 +852,14 @@ export default function ModernContactPage() {
             <div
               className="p-6 rounded-2xl transition-all duration-300 hover:scale-105 hover:shadow-2xl"
               style={{
-                background: theme.palette.mode === 'dark'
+                background: isDarkMode
                   ? 'rgba(15, 23, 42, 0.8)'
                   : 'rgba(255, 255, 255, 0.8)',
                 backdropFilter: 'blur(20px)',
-                border: theme.palette.mode === 'dark'
+                border: isDarkMode
                   ? '1px solid rgba(148, 163, 184, 0.1)'
                   : '1px solid rgba(148, 163, 184, 0.2)',
-                boxShadow: theme.palette.mode === 'dark'
+                boxShadow: isDarkMode
                   ? '0 8px 32px rgba(0, 0, 0, 0.3)'
                   : '0 8px 32px rgba(0, 0, 0, 0.1)',
               }}
@@ -867,7 +867,7 @@ export default function ModernContactPage() {
               <h3
                 className="text-2xl font-bold mb-6"
                 style={{ 
-                  backgroundImage: theme.palette.mode === 'dark'
+                  backgroundImage: isDarkMode
                     ? 'linear-gradient(135deg, #60a5fa 0%, #a78bfa 100%)'
                     : 'linear-gradient(135deg, #1e40af 0%, #7c3aed 100%)',
                   backgroundClip: 'text',
@@ -892,17 +892,17 @@ export default function ModernContactPage() {
                     key={index}
                     className="flex items-center space-x-3 p-3 rounded-xl transition-all duration-300 hover:scale-105"
                     style={{
-                      background: theme.palette.mode === 'dark'
+                      background: isDarkMode
                         ? 'rgba(34, 197, 94, 0.1)'
                         : 'rgba(34, 197, 94, 0.05)',
-                      border: theme.palette.mode === 'dark'
+                      border: isDarkMode
                         ? '1px solid rgba(34, 197, 94, 0.2)'
                         : '1px solid rgba(34, 197, 94, 0.1)',
                     }}
                   >
                     <div className="p-1 rounded-lg"
                       style={{
-                        background: theme.palette.mode === 'dark'
+                        background: isDarkMode
                           ? 'rgba(34, 197, 94, 0.2)'
                           : 'rgba(34, 197, 94, 0.1)',
                       }}
@@ -922,14 +922,14 @@ export default function ModernContactPage() {
         <div
           className="max-w-4xl mx-auto p-8 rounded-3xl transition-all duration-500 hover:shadow-2xl relative overflow-hidden"
           style={{
-            background: theme.palette.mode === 'dark'
+            background: isDarkMode
               ? 'rgba(15, 23, 42, 0.9)'
               : 'rgba(255, 255, 255, 0.9)',
             backdropFilter: 'blur(20px)',
-            border: theme.palette.mode === 'dark'
+            border: isDarkMode
               ? '1px solid rgba(148, 163, 184, 0.1)'
               : '1px solid rgba(148, 163, 184, 0.2)',
-            boxShadow: theme.palette.mode === 'dark'
+            boxShadow: isDarkMode
               ? '0 25px 50px -12px rgba(0, 0, 0, 0.5)'
               : '0 25px 50px -12px rgba(0, 0, 0, 0.25)',
           }}
@@ -948,10 +948,10 @@ export default function ModernContactPage() {
             <div className="text-center mb-8">
               <div className="inline-flex items-center px-4 py-2 rounded-full mb-4 transition-all duration-300 hover:scale-105"
                 style={{
-                  background: theme.palette.mode === 'dark'
+                  background: isDarkMode
                     ? 'rgba(59, 130, 246, 0.1)'
                     : 'rgba(59, 130, 246, 0.05)',
-                  border: theme.palette.mode === 'dark'
+                  border: isDarkMode
                     ? '1px solid rgba(59, 130, 246, 0.2)'
                     : '1px solid rgba(59, 130, 246, 0.1)',
                 }}
@@ -965,7 +965,7 @@ export default function ModernContactPage() {
               <h3
                 className="text-3xl font-bold mb-4"
                 style={{ 
-                  backgroundImage: theme.palette.mode === 'dark'
+                  backgroundImage: isDarkMode
                     ? 'linear-gradient(135deg, #60a5fa 0%, #a78bfa 100%)'
                     : 'linear-gradient(135deg, #1e40af 0%, #7c3aed 100%)',
                   backgroundClip: 'text',
@@ -995,10 +995,10 @@ export default function ModernContactPage() {
                   onChange={handleInputChange}
                   className="w-full p-4 rounded-xl border-2 transition-all duration-300 focus:outline-none focus:scale-105"
                   style={{
-                    borderColor: theme.palette.mode === 'dark' 
+                    borderColor: isDarkMode 
                       ? 'rgba(148, 163, 184, 0.2)' 
                       : 'rgba(148, 163, 184, 0.3)',
-                    background: theme.palette.mode === 'dark'
+                    background: isDarkMode
                       ? 'rgba(15, 23, 42, 0.5)'
                       : 'rgba(255, 255, 255, 0.7)',
                     backdropFilter: 'blur(10px)',
@@ -1009,7 +1009,7 @@ export default function ModernContactPage() {
                     e.target.style.boxShadow = '0 0 0 3px rgba(59, 130, 246, 0.1)';
                   }}
                   onBlur={(e) => {
-                    e.target.style.borderColor = theme.palette.mode === 'dark' 
+                    e.target.style.borderColor = isDarkMode 
                       ? 'rgba(148, 163, 184, 0.2)' 
                       : 'rgba(148, 163, 184, 0.3)';
                     e.target.style.boxShadow = 'none';
@@ -1030,10 +1030,10 @@ export default function ModernContactPage() {
                   onChange={handleInputChange}
                   className="w-full p-4 rounded-xl border-2 transition-all duration-300 focus:outline-none focus:scale-105"
                   style={{
-                    borderColor: theme.palette.mode === 'dark' 
+                    borderColor: isDarkMode 
                       ? 'rgba(148, 163, 184, 0.2)' 
                       : 'rgba(148, 163, 184, 0.3)',
-                    background: theme.palette.mode === 'dark'
+                    background: isDarkMode
                       ? 'rgba(15, 23, 42, 0.5)'
                       : 'rgba(255, 255, 255, 0.7)',
                     backdropFilter: 'blur(10px)',
@@ -1044,7 +1044,7 @@ export default function ModernContactPage() {
                     e.target.style.boxShadow = '0 0 0 3px rgba(59, 130, 246, 0.1)';
                   }}
                   onBlur={(e) => {
-                    e.target.style.borderColor = theme.palette.mode === 'dark' 
+                    e.target.style.borderColor = isDarkMode 
                       ? 'rgba(148, 163, 184, 0.2)' 
                       : 'rgba(148, 163, 184, 0.3)';
                     e.target.style.boxShadow = 'none';
@@ -1068,22 +1068,22 @@ export default function ModernContactPage() {
                       min={minDateTime}
                       className="w-full p-4 rounded-xl border-2 transition-all duration-300 focus:outline-none focus:scale-105"
                       style={{
-                        borderColor: theme.palette.mode === 'dark' 
+                        borderColor: isDarkMode 
                           ? 'rgba(148, 163, 184, 0.2)' 
                           : 'rgba(148, 163, 184, 0.3)',
-                        background: theme.palette.mode === 'dark'
+                        background: isDarkMode
                           ? 'rgba(15, 23, 42, 0.5)'
                           : 'rgba(255, 255, 255, 0.7)',
                         backdropFilter: 'blur(10px)',
                         color: theme.palette.text.primary,
-                        colorScheme: theme.palette.mode === 'dark' ? 'dark' : 'light',
+                        colorScheme: isDarkMode ? 'dark' : 'light',
                       }}
                       onFocus={(e) => {
                         e.target.style.borderColor = '#3b82f6';
                         e.target.style.boxShadow = '0 0 0 3px rgba(59, 130, 246, 0.1)';
                       }}
                       onBlur={(e) => {
-                        e.target.style.borderColor = theme.palette.mode === 'dark' 
+                        e.target.style.borderColor = isDarkMode 
                           ? 'rgba(148, 163, 184, 0.2)' 
                           : 'rgba(148, 163, 184, 0.3)';
                         e.target.style.boxShadow = 'none';
@@ -1097,10 +1097,10 @@ export default function ModernContactPage() {
                       disabled
                       className="w-full p-4 rounded-xl border-2 transition-all duration-300 focus:outline-none focus:scale-105"
                       style={{
-                        borderColor: theme.palette.mode === 'dark' 
+                        borderColor: isDarkMode 
                           ? 'rgba(148, 163, 184, 0.2)' 
                           : 'rgba(148, 163, 184, 0.3)',
-                        background: theme.palette.mode === 'dark'
+                        background: isDarkMode
                           ? 'rgba(15, 23, 42, 0.5)'
                           : 'rgba(255, 255, 255, 0.7)',
                         backdropFilter: 'blur(10px)',
@@ -1123,10 +1123,10 @@ export default function ModernContactPage() {
                     onChange={handleInputChange}
                     className="w-full p-4 rounded-xl border-2 transition-all duration-300 focus:outline-none focus:scale-105"
                     style={{
-                      borderColor: theme.palette.mode === 'dark' 
+                      borderColor: isDarkMode 
                         ? 'rgba(148, 163, 184, 0.2)' 
                         : 'rgba(148, 163, 184, 0.3)',
-                      background: theme.palette.mode === 'dark'
+                      background: isDarkMode
                         ? 'rgba(15, 23, 42, 0.5)'
                         : 'rgba(255, 255, 255, 0.7)',
                       backdropFilter: 'blur(10px)',
@@ -1137,7 +1137,7 @@ export default function ModernContactPage() {
                       e.target.style.boxShadow = '0 0 0 3px rgba(59, 130, 246, 0.1)';
                     }}
                     onBlur={(e) => {
-                      e.target.style.borderColor = theme.palette.mode === 'dark' 
+                      e.target.style.borderColor = isDarkMode 
                         ? 'rgba(148, 163, 184, 0.2)' 
                         : 'rgba(148, 163, 184, 0.3)';
                       e.target.style.boxShadow = 'none';
@@ -1158,10 +1158,10 @@ export default function ModernContactPage() {
                 onChange={handleInputChange}
                 className="w-full p-4 rounded-xl border-2 transition-all duration-300 focus:outline-none focus:scale-105 appearance-none cursor-pointer"
                 style={{
-                  borderColor: theme.palette.mode === 'dark' 
+                  borderColor: isDarkMode 
                     ? 'rgba(148, 163, 184, 0.2)' 
                     : 'rgba(148, 163, 184, 0.3)',
-                  backgroundColor: theme.palette.mode === 'dark'
+                  backgroundColor: isDarkMode
                     ? 'rgba(15, 23, 42, 0.5)'
                     : 'rgba(255, 255, 255, 0.7)',
                   backdropFilter: 'blur(10px)',
@@ -1178,7 +1178,7 @@ export default function ModernContactPage() {
                   e.target.style.backgroundImage = `url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%233b82f6' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='m6 8 4 4 4-4'/%3e%3c/svg%3e")`;
                 }}
                 onBlur={(e) => {
-                  e.target.style.borderColor = theme.palette.mode === 'dark' 
+                  e.target.style.borderColor = isDarkMode 
                     ? 'rgba(148, 163, 184, 0.2)' 
                     : 'rgba(148, 163, 184, 0.3)';
                   e.target.style.boxShadow = 'none';
@@ -1186,37 +1186,37 @@ export default function ModernContactPage() {
                 }}
               >
                 <option value="" style={{ 
-                  background: theme.palette.mode === 'dark' ? '#1e293b' : '#f8fafc',
+                  background: isDarkMode ? '#1e293b' : '#f8fafc',
                   color: theme.palette.text.secondary 
                 }}>
                   Select Consultation Type
                 </option>
                 <option value="Residential Vastu" style={{ 
-                  background: theme.palette.mode === 'dark' ? '#1e293b' : '#f8fafc',
+                  background: isDarkMode ? '#1e293b' : '#f8fafc',
                   color: theme.palette.text.primary 
                 }}>
                   🏡 Residential Vastu
                 </option>
                 <option value="Commercial Vastu" style={{ 
-                  background: theme.palette.mode === 'dark' ? '#1e293b' : '#f8fafc',
+                  background: isDarkMode ? '#1e293b' : '#f8fafc',
                   color: theme.palette.text.primary 
                 }}>
                   🏢 Commercial Vastu
                 </option>
                 <option value="Plot Selection" style={{ 
-                  background: theme.palette.mode === 'dark' ? '#1e293b' : '#f8fafc',
+                  background: isDarkMode ? '#1e293b' : '#f8fafc',
                   color: theme.palette.text.primary 
                 }}>
                   📍 Plot Selection
                 </option>
                 <option value="Remedial Solutions" style={{ 
-                  background: theme.palette.mode === 'dark' ? '#1e293b' : '#f8fafc',
+                  background: isDarkMode ? '#1e293b' : '#f8fafc',
                   color: theme.palette.text.primary 
                 }}>
                   🔧 Remedial Solutions
                 </option>
                 <option value="Online Consultation" style={{ 
-                  background: theme.palette.mode === 'dark' ? '#1e293b' : '#f8fafc',
+                  background: isDarkMode ? '#1e293b' : '#f8fafc',
                   color: theme.palette.text.primary 
                 }}>
                   💻 Online Consultation
@@ -1236,10 +1236,10 @@ export default function ModernContactPage() {
                 rows={4}
                 className="w-full p-4 rounded-xl border-2 transition-all duration-300 focus:outline-none focus:scale-105 resize-none"
                 style={{
-                  borderColor: theme.palette.mode === 'dark' 
+                  borderColor: isDarkMode 
                     ? 'rgba(148, 163, 184, 0.2)' 
                     : 'rgba(148, 163, 184, 0.3)',
-                  background: theme.palette.mode === 'dark'
+                  background: isDarkMode
                     ? 'rgba(15, 23, 42, 0.5)'
                     : 'rgba(255, 255, 255, 0.7)',
                   backdropFilter: 'blur(10px)',
@@ -1252,7 +1252,7 @@ export default function ModernContactPage() {
                   e.target.style.boxShadow = '0 0 0 3px rgba(59, 130, 246, 0.1)';
                 }}
                 onBlur={(e) => {
-                  e.target.style.borderColor = theme.palette.mode === 'dark' 
+                  e.target.style.borderColor = isDarkMode 
                     ? 'rgba(148, 163, 184, 0.2)' 
                     : 'rgba(148, 163, 184, 0.3)';
                   e.target.style.boxShadow = 'none';
@@ -1289,10 +1289,10 @@ export default function ModernContactPage() {
             <div className="mt-6 grid grid-cols-1 md:grid-cols-3 gap-4">
               <div className="flex items-center justify-center space-x-2 p-3 rounded-xl transition-all duration-300 hover:scale-105"
                 style={{
-                  background: theme.palette.mode === 'dark'
+                  background: isDarkMode
                     ? 'rgba(34, 197, 94, 0.1)'
                     : 'rgba(34, 197, 94, 0.05)',
-                  border: theme.palette.mode === 'dark'
+                  border: isDarkMode
                     ? '1px solid rgba(34, 197, 94, 0.2)'
                     : '1px solid rgba(34, 197, 94, 0.1)',
                 }}
@@ -1305,10 +1305,10 @@ export default function ModernContactPage() {
               
               <div className="flex items-center justify-center space-x-2 p-3 rounded-xl transition-all duration-300 hover:scale-105"
                 style={{
-                  background: theme.palette.mode === 'dark'
+                  background: isDarkMode
                     ? 'rgba(59, 130, 246, 0.1)'
                     : 'rgba(59, 130, 246, 0.05)',
-                  border: theme.palette.mode === 'dark'
+                  border: isDarkMode
                     ? '1px solid rgba(59, 130, 246, 0.2)'
                     : '1px solid rgba(59, 130, 246, 0.1)',
                 }}
@@ -1321,10 +1321,10 @@ export default function ModernContactPage() {
               
               <div className="flex items-center justify-center space-x-2 p-3 rounded-xl transition-all duration-300 hover:scale-105"
                 style={{
-                  background: theme.palette.mode === 'dark'
+                  background: isDarkMode
                     ? 'rgba(139, 92, 246, 0.1)'
                     : 'rgba(139, 92, 246, 0.05)',
-                  border: theme.palette.mode === 'dark'
+                  border: isDarkMode
                     ? '1px solid rgba(139, 92, 246, 0.2)'
                     : '1px solid rgba(139, 92, 246, 0.1)',
                 }}

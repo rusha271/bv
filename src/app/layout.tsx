@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import "./globals.css";
 import "../styles/jcrop.css";
 import CssBaseline from '@mui/material/CssBaseline';
-import { ThemeProvider } from '../contexts/ThemeContext';
+import { GlobalThemeProvider } from '../contexts/GlobalThemeContext';
 import { AuthProvider } from '../contexts/AuthContext';
 import { LoadingProvider } from '../contexts/LoadingContext';
 import { PlanetaryDataProvider } from '@/contexts/PlanetaryDataContext';
@@ -112,7 +112,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
+    <html lang="en" data-scroll-behavior="smooth">
       <head>
         <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=5" />
         <link rel="icon" href="/universe-big-cosmos-gravity-svgrepo-com.svg" type="image/svg+xml" />
@@ -231,7 +231,7 @@ export default function RootLayout({
       </head>
       <body>
         <ReduxProvider>
-          <ThemeProvider>
+          <GlobalThemeProvider>
             <CssBaseline />
             <LoadingProvider>
               <AuthProvider>
@@ -252,7 +252,7 @@ export default function RootLayout({
                 </GuestAccountManager>
               </AuthProvider>
             </LoadingProvider>
-          </ThemeProvider>
+          </GlobalThemeProvider>
         </ReduxProvider>
         <ClientOnly>
           <Toast />

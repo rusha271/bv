@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useEffect, useRef, useState } from 'react';
-import { useThemeContext } from '@/contexts/ThemeContext';
+import { useGlobalTheme } from '@/contexts/GlobalThemeContext';
 import { useDeviceType } from '@/utils/useDeviceType';
 import { useAppDispatch, useAppSelector } from '@/store';
 import { fetchVideos, clearVideosError } from '@/store/slices/blogSlice';
@@ -16,7 +16,7 @@ interface VideoCardProps {
 }
 
 function VideoCard({ video }: VideoCardProps) {
-  const { theme } = useThemeContext();
+  const { theme, isDarkMode, isLightMode } = useGlobalTheme();
   const { isMobile, isTablet } = useDeviceType();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const imgRef = useRef<HTMLImageElement>(null);
@@ -231,7 +231,7 @@ function VideoCard({ video }: VideoCardProps) {
 export default function VideoCardsList() {
   const dispatch = useAppDispatch();
   const { data: videos, loading, error } = useAppSelector((state) => state.blog.videos);
-  const { theme } = useThemeContext();
+  const { theme, isDarkMode, isLightMode } = useGlobalTheme();
   const { isMobile, isTablet } = useDeviceType();
   const hasFetched = useRef(false);
 
@@ -257,12 +257,12 @@ export default function VideoCardsList() {
           alignItems: 'center',
           py: 6,
           width: '100%',
-          background: theme.palette.mode === 'dark'
+          background: isDarkMode
             ? 'linear-gradient(135deg, rgba(15, 23, 42, 0.5) 0%, rgba(30, 41, 59, 0.5) 100%)'
             : 'linear-gradient(135deg, rgba(255, 255, 255, 0.5) 0%, rgba(248, 250, 252, 0.5) 100%)',
           backdropFilter: 'blur(10px)',
           borderRadius: 4,
-          border: theme.palette.mode === 'dark'
+          border: isDarkMode
             ? '1px solid rgba(148, 163, 184, 0.1)'
             : '1px solid rgba(148, 163, 184, 0.2)',
         }}
@@ -271,10 +271,10 @@ export default function VideoCardsList() {
           sx={{
             p: 2,
             borderRadius: 3,
-            background: theme.palette.mode === 'dark'
+            background: isDarkMode
               ? 'linear-gradient(135deg, rgba(59, 130, 246, 0.2) 0%, rgba(147, 51, 234, 0.2) 100%)'
               : 'linear-gradient(135deg, rgba(59, 130, 246, 0.1) 0%, rgba(147, 51, 234, 0.1) 100%)',
-            border: theme.palette.mode === 'dark'
+            border: isDarkMode
               ? '1px solid rgba(59, 130, 246, 0.3)'
               : '1px solid rgba(59, 130, 246, 0.2)',
             mb: 2,
@@ -282,13 +282,13 @@ export default function VideoCardsList() {
         >
           <VideoIcon 
             size={32} 
-            className={theme.palette.mode === 'dark' ? 'text-blue-400' : 'text-blue-600'} 
+            className={isDarkMode ? 'text-blue-400' : 'text-blue-600'} 
           />
         </Box>
         <CircularProgress 
           size={48}
           sx={{ 
-            color: theme.palette.mode === 'dark' ? '#60a5fa' : '#1e40af',
+            color: isDarkMode ? '#60a5fa' : '#1e40af',
             mb: 2,
           }}
         />
@@ -325,12 +325,12 @@ export default function VideoCardsList() {
           py: 4,
           px: 3,
           minHeight: '200px',
-          background: theme.palette.mode === 'dark'
+          background: isDarkMode
             ? 'linear-gradient(135deg, rgba(15, 23, 42, 0.5) 0%, rgba(30, 41, 59, 0.5) 100%)'
             : 'linear-gradient(135deg, rgba(255, 255, 255, 0.5) 0%, rgba(248, 250, 252, 0.5) 100%)',
           backdropFilter: 'blur(10px)',
           borderRadius: 4,
-          border: theme.palette.mode === 'dark'
+          border: isDarkMode
             ? '1px solid rgba(148, 163, 184, 0.1)'
             : '1px solid rgba(148, 163, 184, 0.2)',
         }}
@@ -339,10 +339,10 @@ export default function VideoCardsList() {
           sx={{
             p: 3,
             borderRadius: 4,
-            background: theme.palette.mode === 'dark'
+            background: isDarkMode
               ? 'linear-gradient(135deg, rgba(59, 130, 246, 0.2) 0%, rgba(147, 51, 234, 0.2) 100%)'
               : 'linear-gradient(135deg, rgba(59, 130, 246, 0.1) 0%, rgba(147, 51, 234, 0.1) 100%)',
-            border: theme.palette.mode === 'dark'
+            border: isDarkMode
               ? '1px solid rgba(59, 130, 246, 0.3)'
               : '1px solid rgba(59, 130, 246, 0.2)',
             mb: 3,
@@ -350,7 +350,7 @@ export default function VideoCardsList() {
         >
           <VideoIcon 
             size={48} 
-            className={theme.palette.mode === 'dark' ? 'text-blue-400' : 'text-blue-600'} 
+            className={isDarkMode ? 'text-blue-400' : 'text-blue-600'} 
           />
         </Box>
         <Typography

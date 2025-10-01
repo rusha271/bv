@@ -1,59 +1,59 @@
 'use client';
 import React from 'react';
-import { Box, Typography, styled } from '@mui/material';
-import { useThemeContext } from '@/contexts/ThemeContext';
+import { Box, Typography } from '@mui/material';
+import { useGlobalTheme } from '@/contexts/GlobalThemeContext';
 import { useDeviceType } from '@/utils/useDeviceType';
 
-const DisclaimerCard = styled(Box)(({ theme }) => ({
-  padding: theme.spacing(3, 4),
-  borderRadius: 24,
-  boxShadow: theme.palette.mode === 'dark'
-    ? '0 25px 50px -12px rgba(0, 0, 0, 0.5)'
-    : '0 25px 50px -12px rgba(0, 0, 0, 0.25)',
-  backgroundColor: theme.palette.mode === 'dark' 
-    ? 'rgba(15, 23, 42, 0.95)' 
-    : 'rgba(255, 255, 255, 0.95)',
-  border: theme.palette.mode === 'dark'
-    ? '1px solid rgba(148, 163, 184, 0.1)'
-    : '1px solid rgba(148, 163, 184, 0.2)',
-  backdropFilter: 'blur(20px)',
-  overflowY: 'auto',
-  maxHeight: '400px',
-  transition: 'all 0.3s ease',
-  '&:hover': {
-    transform: 'translateY(-2px)',
-    boxShadow: theme.palette.mode === 'dark'
-      ? '0 32px 64px -12px rgba(0, 0, 0, 0.6)'
-      : '0 32px 64px -12px rgba(0, 0, 0, 0.3)',
-  },
-  '&::-webkit-scrollbar': {
-    width: '8px',
-  },
-  '&::-webkit-scrollbar-track': {
-    background: theme.palette.mode === 'dark' ? 'rgba(148, 163, 184, 0.1)' : 'rgba(148, 163, 184, 0.05)',
-    borderRadius: '4px',
-  },
-  '&::-webkit-scrollbar-thumb': {
-    background: theme.palette.mode === 'dark' ? 'rgba(148, 163, 184, 0.3)' : 'rgba(148, 163, 184, 0.2)',
-    borderRadius: '4px',
-    '&:hover': {
-      background: theme.palette.mode === 'dark' ? 'rgba(148, 163, 184, 0.5)' : 'rgba(148, 163, 184, 0.3)',
-    },
-  },
-}));
+// Removed styled component - using dynamic styling instead
 
 const Disclaimer = () => {
-  const { theme } = useThemeContext();
+  const { theme, isDarkMode, isLightMode } = useGlobalTheme();
   const { isMobile, isTablet } = useDeviceType();
 
   const titleSize = isMobile ? '1.1rem' : '1.25rem';
   const textSize = isMobile ? '0.85rem' : '0.95rem';
 
   return (
-    <DisclaimerCard>
+    <Box sx={{
+      padding: theme.spacing(3, 4),
+      borderRadius: 0,
+      boxShadow: isDarkMode 
+        ? '0 25px 50px -12px rgba(0, 0, 0, 0.5)'
+        : '0 25px 50px -12px rgba(0, 0, 0, 0.25)',
+      backgroundColor: isDarkMode 
+        ? 'rgba(15, 23, 42, 0.95)' 
+        : 'rgba(255, 255, 255, 0.95)',
+      border: isDarkMode
+        ? '1px solid rgba(148, 163, 184, 0.1)'
+        : '1px solid rgba(148, 163, 184, 0.2)',
+      backdropFilter: 'blur(20px)',
+      overflowY: 'auto',
+      maxHeight: '400px',
+      transition: 'all 0.3s ease',
+      '&:hover': {
+        transform: 'translateY(-2px)',
+        boxShadow: isDarkMode
+          ? '0 32px 64px -12px rgba(0, 0, 0, 0.6)'
+          : '0 32px 64px -12px rgba(0, 0, 0, 0.3)',
+      },
+      '&::-webkit-scrollbar': {
+        width: '8px',
+      },
+      '&::-webkit-scrollbar-track': {
+        background: isDarkMode ? 'rgba(148, 163, 184, 0.1)' : 'rgba(148, 163, 184, 0.05)',
+        borderRadius: '4px',
+      },
+      '&::-webkit-scrollbar-thumb': {
+        background: isDarkMode ? 'rgba(148, 163, 184, 0.3)' : 'rgba(148, 163, 184, 0.2)',
+        borderRadius: '4px',
+        '&:hover': {
+          background: isDarkMode ? 'rgba(148, 163, 184, 0.5)' : 'rgba(148, 163, 184, 0.3)',
+        },
+      },
+    }}>
       <Typography variant="h6" fontWeight={700} gutterBottom sx={{ 
         fontSize: titleSize, 
-        background: theme.palette.mode === 'dark'
+        background: isDarkMode
           ? 'linear-gradient(135deg, #60a5fa 0%, #a78bfa 100%)'
           : 'linear-gradient(135deg, #1e40af 0%, #7c3aed 100%)',
         backgroundClip: 'text',
@@ -84,7 +84,7 @@ const Disclaimer = () => {
       <Typography variant="body2" sx={{ fontSize: textSize, color: theme.palette.text.secondary, mt: 2 }}>
         By using this website, you acknowledge that you have read this disclaimer and agree to its terms.
       </Typography>
-    </DisclaimerCard>
+    </Box>
   );
 };
 

@@ -72,7 +72,8 @@ export function hasPermission(user: User | null, permissionName: keyof typeof PE
   const permission = PERMISSIONS[permissionName];
   if (!permission) return false;
   
-  return permission.roles.includes(user.role as UserRole);
+  const userRole = user.role?.name || user.role;
+  return permission.roles.includes(userRole as UserRole);
 }
 
 /**
@@ -95,8 +96,9 @@ export function hasAllPermissions(user: User | null, permissionNames: (keyof typ
 export function getUserPermissions(user: User | null): string[] {
   if (!user) return [];
   
+  const userRole = user.role?.name || user.role;
   return Object.entries(PERMISSIONS)
-    .filter(([_, permission]) => permission.roles.includes(user.role as UserRole))
+    .filter(([_, permission]) => permission.roles.includes(userRole as UserRole))
     .map(([_, permission]) => permission.name);
 }
 
@@ -104,28 +106,28 @@ export function getUserPermissions(user: User | null): string[] {
  * Check if user is a guest
  */
 export function isGuestUser(user: User | null): boolean {
-  return user?.role === 'guest';
+  return user?.role?.name === 'guest' || user?.role === 'guest';
 }
 
 /**
  * Check if user is an admin
  */
 export function isAdminUser(user: User | null): boolean {
-  return user?.role === 'admin';
+  return user?.role?.name === 'admin' || user?.role === 'admin';
 }
 
 /**
  * Check if user is a consultant
  */
 export function isConsultantUser(user: User | null): boolean {
-  return user?.role === 'consultant';
+  return user?.role?.name === 'consultant' || user?.role === 'consultant';
 }
 
 /**
  * Check if user is a regular user (not guest, admin, or consultant)
  */
 export function isRegularUser(user: User | null): boolean {
-  return user?.role === 'user';
+  return user?.role?.name === 'user' || user?.role === 'user';
 }
 
 /**

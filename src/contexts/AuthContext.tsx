@@ -541,17 +541,28 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   }, [user]);
 
-  // Handle storage changes (cross-tab sync)
+  // Handle storage changes (cross-tab sync) - optimized with debouncing
   useEffect(() => {
+    let storageTimeout: NodeJS.Timeout;
+    
     const handleStorageChange = (e: StorageEvent) => {
       if (e.key === ACCESS_TOKEN_KEY || e.key === REFRESH_TOKEN_KEY) {
-        // Token changed in another tab, reinitialize auth
-        initializeAuth();
+        // Debounce storage changes to prevent excessive re-initialization
+        clearTimeout(storageTimeout);
+        storageTimeout = setTimeout(() => {
+          // Use requestAnimationFrame to batch DOM updates
+          requestAnimationFrame(() => {
+            initializeAuth();
+          });
+        }, 100);
       }
     };
 
-    window.addEventListener('storage', handleStorageChange);
-    return () => window.removeEventListener('storage', handleStorageChange);
+    window.addEventListener('storage', handleStorageChange, { passive: true });
+    return () => {
+      clearTimeout(storageTimeout);
+      window.removeEventListener('storage', handleStorageChange);
+    };
   }, [initializeAuth]);
 
   // Initialize auth on mount

@@ -22,7 +22,7 @@ const BlogCard: React.FC<BlogCardProps> = ({
   image,
   label = "VASTU TIP",
 }) => {
-  const { theme } = useThemeContext();
+  const { theme, isDarkMode, isLightMode } = useGlobalTheme();
   const { isMobile, isTablet } = useDeviceType(); // Use the device type hook
 
   // Responsive font sizes and padding

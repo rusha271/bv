@@ -8,7 +8,7 @@ import { Box, Typography, Card, Container, Fade, IconButton, Dialog, CircularPro
 import PlayCircleOutlineIcon from '@mui/icons-material/PlayCircleOutline';
 import CloseIcon from '@mui/icons-material/Close';
 import * as yup from "yup";
-import { useThemeContext } from '@/contexts/ThemeContext';
+import { useGlobalTheme } from '@/contexts/GlobalThemeContext';
 import { useRouter } from 'next/navigation';
 import { sessionStorageManager } from '@/utils/sessionStorage';
 import { apiService } from '@/utils/apiService';
@@ -34,7 +34,7 @@ export default function HomePageClient() {
   const [processingError, setProcessingError] = useState<string | null>(null);
   const [errorDialogOpen, setErrorDialogOpen] = useState(false);
   const [tourVideoUrl, setTourVideoUrl] = useState<string>('');
-  const { theme } = useThemeContext();
+  const { theme, isDarkMode, isLightMode } = useGlobalTheme();
   const router = useRouter();
 
   useEffect(() => {
@@ -54,7 +54,7 @@ export default function HomePageClient() {
     }
   };
 
-  // Fetch tour video from API with caching (client-side only)
+  // Fetch tour video from API with caching (client-side only) - optimized
   useEffect(() => {
     if (typeof window === 'undefined') return;
     
@@ -66,7 +66,11 @@ export default function HomePageClient() {
         if (tourVideoUrl) {
           const baseUrl = apiService.getBaseURL();
           const fullVideoUrl = tourVideoUrl.startsWith('http') ? tourVideoUrl : `${baseUrl}${tourVideoUrl}`;
-          setTourVideoUrl(fullVideoUrl);
+          
+          // Use requestAnimationFrame to batch DOM updates
+          requestAnimationFrame(() => {
+            setTourVideoUrl(fullVideoUrl);
+          });
         }
       } catch (error) {
         // console.log('No tour video found, using default:', error);
@@ -74,15 +78,23 @@ export default function HomePageClient() {
       }
     };
 
-    fetchTourVideo();
+    // Use requestIdleCallback for non-critical operations
+    if ('requestIdleCallback' in window) {
+      requestIdleCallback(fetchTourVideo);
+    } else {
+      setTimeout(fetchTourVideo, 0);
+    }
   }, []);
 
   const handleSubmit = async (data: any) => {
     try {
-      setSubmitted(true);
-      setProcessingError(null);
-      setIsProcessing(true);
-      setErrorDialogOpen(false);
+      // Use requestAnimationFrame to batch initial state updates
+      requestAnimationFrame(() => {
+        setSubmitted(true);
+        setProcessingError(null);
+        setIsProcessing(true);
+        setErrorDialogOpen(false);
+      });
   
       const file = data.floorPlan[0];
       if (!file) {
@@ -112,34 +124,42 @@ export default function HomePageClient() {
           // Store the image data locally with 1-hour expiration
           sessionStorageManager.storeOriginalFloorPlan(file, imageId, blobUrl);
           
-          // Navigate to crop page
-          router.push('/crop');
-          setIsProcessing(false);
-          setSubmitted(false);
+          // Use requestAnimationFrame to batch navigation and state updates
+          requestAnimationFrame(() => {
+            router.push('/crop');
+            setIsProcessing(false);
+            setSubmitted(false);
+          });
           
         } catch (error) {
           // console.error('Error processing image:', error);
-          setProcessingError("Error processing the image. Please try again.");
-          setErrorDialogOpen(true);
-          setIsProcessing(false);
-          setSubmitted(false);
+          requestAnimationFrame(() => {
+            setProcessingError("Error processing the image. Please try again.");
+            setErrorDialogOpen(true);
+            setIsProcessing(false);
+            setSubmitted(false);
+          });
         }
       };
   
       reader.onerror = () => {
-        setProcessingError("Error reading the file. Please try again.");
-        setErrorDialogOpen(true);
-        setIsProcessing(false);
-        setSubmitted(false);
+        requestAnimationFrame(() => {
+          setProcessingError("Error reading the file. Please try again.");
+          setErrorDialogOpen(true);
+          setIsProcessing(false);
+          setSubmitted(false);
+        });
       };
   
       reader.readAsDataURL(file);
     } catch (error) {
       // console.error('Error in form submission:', error);
-      setProcessingError(error instanceof Error ? error.message : "An error occurred. Please try again.");
-      setErrorDialogOpen(true);
-      setIsProcessing(false);
-      setSubmitted(false);
+      requestAnimationFrame(() => {
+        setProcessingError(error instanceof Error ? error.message : "An error occurred. Please try again.");
+        setErrorDialogOpen(true);
+        setIsProcessing(false);
+        setSubmitted(false);
+      });
     }
   };
 
@@ -152,16 +172,16 @@ export default function HomePageClient() {
     return (
       <Card
         sx={{
-          p: { xs: 3, sm: 4 },
-          borderRadius: 4,
+          p: { xs: 2, sm: 3, md: 4 },
+          borderRadius: { xs: 3, sm: 4 },
           boxShadow: safeTheme.palette.mode === 'dark'
             ? '0 25px 50px -12px rgba(0, 0, 0, 0.5)'
             : '0 25px 50px -12px rgba(0, 0, 0, 0.25)',
           background: safeTheme.palette.mode === "dark"
             ? 'linear-gradient(135deg, rgba(15, 23, 42, 0.95) 0%, rgba(30, 41, 59, 0.9) 100%)'
             : 'linear-gradient(135deg, rgba(255, 255, 255, 0.95) 0%, rgba(248, 250, 252, 0.9) 100%)',
-          minWidth: { xs: "90vw", sm: 400 },
-          maxWidth: { xs: "90vw", sm: 480 },
+          width: { xs: "95vw", sm: "90vw", md: 480 },
+          maxWidth: { xs: "95vw", sm: "90vw", md: 480 },
           backdropFilter: "blur(20px)",
           border: safeTheme.palette.mode === 'dark'
             ? '1px solid rgba(148, 163, 184, 0.1)'
@@ -175,9 +195,10 @@ export default function HomePageClient() {
           gutterBottom
           sx={{ 
             textAlign: "center", 
-            mb: 2,
-            fontSize: { xs: '1.1rem', sm: '1.25rem' },
-            lineHeight: 1.3,
+            mb: { xs: 1.5, sm: 2 },
+            fontSize: { xs: '1rem', sm: '1.1rem', md: '1.25rem' },
+            lineHeight: { xs: 1.2, sm: 1.3 },
+            px: { xs: 1, sm: 0 }
           }}
         >
           Check Vastu from your Floor Plan
@@ -189,22 +210,23 @@ export default function HomePageClient() {
           submitButtonText={isProcessing || submitted ? "Processing..." : "DivyaVastu"}
           submitButtonProps={{
             sx: {
-              mt: 3,
+              mt: { xs: 2, sm: 3 },
               fontWeight: 700,
-              fontSize: { xs: "0.95rem", sm: "1rem" },
+              fontSize: { xs: "0.9rem", sm: "0.95rem", md: "1rem" },
               letterSpacing: 0.5,
-              py: 1.2,
-              borderRadius: 2,
+              py: { xs: 1, sm: 1.2 },
+              px: { xs: 2, sm: 3 },
+              borderRadius: { xs: 1.5, sm: 2 },
               background: safeTheme.palette.mode === "dark"
                 ? "linear-gradient(90deg,#1976d2 0%,#1565c0 100%)"
                 : "linear-gradient(90deg,#1976d2 0%,#64b5f6 100%)",
-              boxShadow: 4,
+              boxShadow: { xs: 2, sm: 4 },
               transition: "all 0.2s",
               '&:hover': {
                 background: safeTheme.palette.mode === "dark"
                   ? "linear-gradient(90deg,#1565c0 0%,#1976d2 100%)"
                   : "linear-gradient(90deg,#64b5f6 0%,#1976d2 100%)",
-                transform: "scale(1.02)",
+                transform: { xs: "scale(1.01)", sm: "scale(1.02)" },
               },
               position: 'relative',
               '&:disabled': {
@@ -220,10 +242,10 @@ export default function HomePageClient() {
             disabled: isProcessing || submitted,
             startIcon: (isProcessing || submitted) ? (
               <CircularProgress 
-                size={20} 
+                size={18} 
                 sx={{ 
                   color: safeTheme.palette.primary.contrastText,
-                  mr: 1
+                  mr: 0.5
                 }} 
               />
             ) : undefined
@@ -239,16 +261,32 @@ export default function HomePageClient() {
             flexDirection: 'column',
             justifyContent: 'center', 
             alignItems: 'center', 
-            mt: 2,
-            gap: 1
+            mt: { xs: 1.5, sm: 2 },
+            gap: { xs: 0.5, sm: 1 },
+            px: { xs: 1, sm: 0 }
           }}>
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-              <CircularProgress size={16} sx={{ color: safeTheme.palette.primary.main }} />
-              <Typography variant="body2" color="text.secondary" sx={{ fontWeight: 500 }}>
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: { xs: 0.5, sm: 1 } }}>
+              <CircularProgress size={14} sx={{ color: safeTheme.palette.primary.main }} />
+              <Typography 
+                variant="body2" 
+                color="text.secondary" 
+                sx={{ 
+                  fontWeight: 500,
+                  fontSize: { xs: '0.75rem', sm: '0.875rem' }
+                }}
+              >
                 {isProcessing ? "Processing your floor plan..." : "Preparing crop page..."}
               </Typography>
             </Box>
-            <Typography variant="caption" color="text.secondary" sx={{ opacity: 0.8 }}>
+            <Typography 
+              variant="caption" 
+              color="text.secondary" 
+              sx={{ 
+                opacity: 0.8,
+                fontSize: { xs: '0.7rem', sm: '0.75rem' },
+                textAlign: 'center'
+              }}
+            >
               {isProcessing ? "Please wait while we process your image..." : "Redirecting to crop page..."}
             </Typography>
           </Box>
@@ -348,11 +386,12 @@ export default function HomePageClient() {
         {renderContent()}
         
         <Box sx={{ 
-          mt: { xs: 3, sm: 4 }, 
+          mt: { xs: 1.5, sm: 3, md: 4 }, 
           display: 'flex', 
           justifyContent: 'center', 
           width: '100%',
-          maxWidth: { xs: "90vw", sm: 480 },
+          maxWidth: { xs: "95vw", sm: "90vw", md: 480 },
+          px: { xs: 1, sm: 0 }
          }} className="social-icons">
            <SocialIcons />
          </Box>
@@ -366,10 +405,10 @@ export default function HomePageClient() {
         }}
         sx={{
           position: "fixed",
-          bottom: 24,
-          left: 24,
-          width: 44,
-          height: 44,
+          bottom: { xs: 16, sm: 24 },
+          left: { xs: 16, sm: 24 },
+          width: { xs: 40, sm: 44 },
+          height: { xs: 40, sm: 44 },
           borderRadius: "50%",
           background: safeTheme.palette.mode === "dark"
             ? 'linear-gradient(135deg, rgba(59, 130, 246, 0.2) 0%, rgba(147, 51, 234, 0.2) 100%)'
@@ -388,7 +427,7 @@ export default function HomePageClient() {
           justifyContent: "center",
           transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
           '&:hover': {
-            transform: 'scale(1.05) rotate(3deg)',
+            transform: { xs: 'scale(1.03)', sm: 'scale(1.05) rotate(3deg)' },
             boxShadow: safeTheme.palette.mode === 'dark'
               ? '0 8px 32px rgba(59, 130, 246, 0.4)'
               : '0 8px 32px rgba(59, 130, 246, 0.3)',
@@ -398,7 +437,7 @@ export default function HomePageClient() {
           },
         }}
       >
-        <PlayCircleOutlineIcon sx={{ fontSize: 20 }} />
+        <PlayCircleOutlineIcon sx={{ fontSize: { xs: 18, sm: 20 } }} />
       </IconButton>
   
       {/* Modern Footer Sections */}
@@ -409,8 +448,8 @@ export default function HomePageClient() {
           bottom: 0,
           left: 0,
           zIndex: 10,
-          py: 1.5,
-          px: 2.5,
+          py: { xs: 1, sm: 1.5 },
+          px: { xs: 1.5, sm: 2.5 },
           background: safeTheme.palette.mode === 'dark'
             ? 'linear-gradient(135deg, rgba(15, 23, 42, 0.8) 0%, rgba(30, 41, 59, 0.6) 100%)'
             : 'linear-gradient(135deg, rgba(255, 255, 255, 0.8) 0%, rgba(248, 250, 252, 0.6) 100%)',
@@ -420,11 +459,11 @@ export default function HomePageClient() {
             : '1px solid rgba(148, 163, 184, 0.2)',
           color: safeTheme.palette.mode === 'dark' ? '#e2e8f0' : '#475569',
           textAlign: "left",
-          fontSize: { xs: "0.75rem", sm: "0.8rem" },
+          fontSize: { xs: "0.65rem", sm: "0.75rem", md: "0.8rem" },
           fontWeight: 500,
           letterSpacing: 0.2,
-          borderRadius: '0 12px 0 0',
-          maxWidth: '45%',
+          borderRadius: { xs: '0 8px 0 0', sm: '0 12px 0 0' },
+          maxWidth: { xs: '50%', sm: '45%' },
         }}
       >
         Made with ❤️ by Brahma Vastu Team
@@ -436,8 +475,8 @@ export default function HomePageClient() {
           bottom: 0,
           right: 0,
           zIndex: 10,
-          py: 1.5,
-          px: 2.5,
+          py: { xs: 1, sm: 1.5 },
+          px: { xs: 1.5, sm: 2.5 },
           background: safeTheme.palette.mode === 'dark'
             ? 'linear-gradient(135deg, rgba(15, 23, 42, 0.8) 0%, rgba(30, 41, 59, 0.6) 100%)'
             : 'linear-gradient(135deg, rgba(255, 255, 255, 0.8) 0%, rgba(248, 250, 252, 0.6) 100%)',
@@ -447,11 +486,11 @@ export default function HomePageClient() {
             : '1px solid rgba(148, 163, 184, 0.2)',
           color: safeTheme.palette.mode === 'dark' ? '#e2e8f0' : '#475569',
           textAlign: "right",
-          fontSize: { xs: "0.7rem", sm: "0.75rem" },
+          fontSize: { xs: "0.6rem", sm: "0.7rem", md: "0.75rem" },
           fontWeight: 500,
           letterSpacing: 0.2,
-          borderRadius: '12px 0 0 0',
-          maxWidth: '45%',
+          borderRadius: { xs: '8px 0 0 0', sm: '12px 0 0 0' },
+          maxWidth: { xs: '50%', sm: '45%' },
         }}
       >
         Copyrights © 2025 Brahma Vastu – All rights reserved.

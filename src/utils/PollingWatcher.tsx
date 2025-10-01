@@ -15,25 +15,53 @@ export default function AutoPollingWatcher() {
       `${API_BASE_URL}/should-reload`, // Fixed endpoint name
     ];
 
-    const interval = setInterval(async () => {
-      try {
-        for (const endpoint of endpoints) {
-          const res = await api.get(endpoint);
-          const data = res.data;
-          if (data?.reload) {
-            // Use router.refresh() for client-side refresh instead of full page reload
-            // This preserves the current page state while refreshing data
-            router.refresh();
-            break;
+    // Use requestIdleCallback for polling to prevent blocking the main thread
+    const pollWithIdleCallback = () => {
+      if ('requestIdleCallback' in window) {
+        requestIdleCallback(async () => {
+          try {
+            for (const endpoint of endpoints) {
+              const res = await api.get(endpoint);
+              const data = res.data;
+              if (data?.reload) {
+                // Use requestAnimationFrame to batch router refresh
+                requestAnimationFrame(() => {
+                  router.refresh();
+                });
+                break;
+              }
+            }
+          } catch (err) {
+            // Only log errors in development
+            if (process.env.NODE_ENV === 'development') {
+              console.error("Polling error:", err);
+            }
           }
-        }
-      } catch (err) {
-        // Only log errors in development
-        if (process.env.NODE_ENV === 'development') {
-          console.error("Polling error:", err);
-        }
+        });
+      } else {
+        // Fallback for browsers without requestIdleCallback
+        setTimeout(async () => {
+          try {
+            for (const endpoint of endpoints) {
+              const res = await api.get(endpoint);
+              const data = res.data;
+              if (data?.reload) {
+                requestAnimationFrame(() => {
+                  router.refresh();
+                });
+                break;
+              }
+            }
+          } catch (err) {
+            if (process.env.NODE_ENV === 'development') {
+              console.error("Polling error:", err);
+            }
+          }
+        }, 0);
       }
-    }, 3001);
+    };
+
+    const interval = setInterval(pollWithIdleCallback, 3001);
 
     return () => clearInterval(interval);
   }, [router]);

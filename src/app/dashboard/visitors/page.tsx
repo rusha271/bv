@@ -7,7 +7,7 @@ import { useThemeContext } from "@/contexts/ThemeContext";
 import { Users, TrendingUp, Globe, Eye } from "lucide-react";
 
 export default function VisitorsPage() {
-  const { mode } = useThemeContext();
+  const { mode, isDarkMode, isLightMode } = useGlobalTheme();
 
   return (
     <DashboardLayout>

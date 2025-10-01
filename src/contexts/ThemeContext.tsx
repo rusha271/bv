@@ -46,18 +46,37 @@ const baseTheme = {
 
 export const ThemeProvider = ({ children }: { children: React.ReactNode }) => {
   const [mode, setMode] = useState<'light' | 'dark'>('light'); // Default to 'light' for SSR
+  const [isInitialized, setIsInitialized] = useState(false);
 
   useEffect(() => {
     // Sync mode with localStorage on client-side only
     const savedMode = localStorage.getItem('themeMode') as 'light' | 'dark';
-    if (savedMode && savedMode !== mode) {
+    if (savedMode) {
       setMode(savedMode);
+      console.log('Theme loaded from localStorage:', savedMode);
+    } else {
+      // Force light mode if no saved theme
+      setMode('light');
+      console.log('No saved theme found, forcing light mode');
     }
+    setIsInitialized(true);
   }, []);
 
   useEffect(() => {
-    localStorage.setItem('themeMode', mode);
-  }, [mode]);
+    if (isInitialized) {
+      localStorage.setItem('themeMode', mode);
+      console.log('Theme saved to localStorage:', mode);
+    }
+  }, [mode, isInitialized]);
+
+  // Force theme refresh when mode changes
+  useEffect(() => {
+    if (isInitialized) {
+      // Force a re-render by updating the document theme
+      document.documentElement.setAttribute('data-theme', mode);
+      console.log('Document theme attribute set to:', mode);
+    }
+  }, [mode, isInitialized]);
 
   const toggleTheme = () => setMode((prev) => (prev === 'light' ? 'dark' : 'light'));
 
@@ -83,6 +102,18 @@ export const ThemeProvider = ({ children }: { children: React.ReactNode }) => {
     [mode]
   );
 
+  // Prevent theme flickering by not rendering until initialized
+  if (!isInitialized) {
+    console.log('Theme not initialized, using light theme fallback');
+    return (
+      <ThemeContext.Provider value={{ mode: 'light', toggleTheme: () => {}, theme: createTheme(baseTheme) }}>
+        <MuiThemeProvider theme={createTheme(baseTheme)}>{children}</MuiThemeProvider>
+      </ThemeContext.Provider>
+    );
+  }
+
+  // console.log('ThemeProvider rendering with mode:', mode, 'isInitialized:', isInitialized);
+  
   return (
     <ThemeContext.Provider value={{ mode, toggleTheme, theme }}>
       <MuiThemeProvider theme={theme}>{children}</MuiThemeProvider>

@@ -8,7 +8,7 @@ import { useThemeContext } from "@/contexts/ThemeContext";
 import { BarChart3, TrendingUp, Activity, Target } from "lucide-react";
 
 export default function AnalyticsPage() {
-  const { mode } = useThemeContext();
+  const { mode, isDarkMode, isLightMode } = useGlobalTheme();
 
   return (
     <DashboardLayout>
