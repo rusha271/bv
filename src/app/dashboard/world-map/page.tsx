@@ -2,7 +2,7 @@
 
 import DashboardLayout from "@/components/ui/admin-dashboard/DashboardLayout";
 import WorldMapVisitors from "@/components/ui/admin-dashboard/WorldMapVisitors";
-import { useThemeContext } from "@/contexts/ThemeContext";
+import { useGlobalTheme } from "@/contexts/GlobalThemeContext";
 import { Globe, Users, TrendingUp, MapPin, ArrowLeft } from "lucide-react";
 import Link from "next/link";
 

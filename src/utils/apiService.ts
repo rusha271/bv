@@ -537,12 +537,12 @@ class ApiService {
     },
   
     analyze: async (id: string): Promise<VastuAnalysis> => {
-      return api.post<VastuAnalysis>(`/admin/floorplan/${id}/analyze`);
+      return api.post<VastuAnalysis>(`/api/admin/floorplan/${id}/analyze`);
     },
 
-    // Get all floor plan analyses from admin endp  oint
+    // Get all floor plan analyses from admin endpoint
     getAnalyses: async (): Promise<FloorPlanAnalysis[]> => {
-      return api.get<FloorPlanAnalysis[]>('/admin/floorplan-analyses');
+      return api.get<FloorPlanAnalysis[]>('/api/admin/floorplan-analyses');
     }
   };
 
@@ -947,16 +947,16 @@ class ApiService {
     },
   };
 
-  // Admin Endpoints (/admin)
+  // Admin Endpoints (/api/admin)
   admin = {
     getLogo: async (): Promise<{ image_url: string }> => {
-      return api.get<{ image_url: string }>('/get-image');
+      return api.get<{ image_url: string }>('/api/admin/get-image');
     },
 
     uploadLogo: async (imageFile: File): Promise<{ image_url: string }> => {
       const formData = new FormData();
       formData.append('file', imageFile);
-      return api.post<{ image_url: string }>('/admin/upload-image', formData, {
+      return api.post<{ image_url: string }>('/api/admin/upload-image', formData, {
         headers: {
           'Content-Type': 'multipart/form-data',
         },
@@ -964,26 +964,26 @@ class ApiService {
     }
   };
 
-  // Vastu Chakra Points Endpoints (/admin/chakra-points) - Admin endpoints
+  // Vastu Chakra Points Endpoints (/api/admin/chakra-points) - Admin endpoints
   vastuChakraPoints = {
     getChakraPoints: async (): Promise<{ [key: string]: any }> => {
-      return api.get<{ [key: string]: any }>('/admin/chakra-points');
+      return api.get<{ [key: string]: any }>('/api/admin/chakra-points');
     },
 
     getChakraPoint: async (chakraId: string): Promise<any> => {
-      return api.get<any>(`/admin/chakra-points/${chakraId}`);
+      return api.get<any>(`/api/admin/chakra-points/${chakraId}`);
     },
 
     updateChakraPoint: async (chakraId: string, chakraData: any): Promise<any> => {
-      return api.put<any>(`/admin/chakra-points/${chakraId}`, chakraData);
+      return api.put<any>(`/api/admin/chakra-points/${chakraId}`, chakraData);
     },
 
     createChakraPoint: async (chakraData: any): Promise<any> => {
-      return api.post<any>('/admin/chakra-points', chakraData);
+      return api.post<any>('/api/admin/chakra-points', chakraData);
     },
 
     deleteChakraPoint: async (chakraId: string): Promise<void> => {
-      return api.delete<void>(`/admin/chakra-points/${chakraId}`);
+      return api.delete<void>(`/api/admin/chakra-points/${chakraId}`);
     }
   };
 

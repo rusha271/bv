@@ -43,6 +43,11 @@ export const ChakraDetailsModal: React.FC<ChakraDetailsModalProps> = ({
 
   if (!chakraPoint) return null;
 
+  // Clean up display names by removing _outer and _inner suffixes
+  const getCleanDisplayName = (name: string) => {
+    return name.replace(/_outer$|_inner$/, '');
+  };
+
   const getStatusColor = () => {
     if (chakraPoint.should_avoid) return 'error';
     if (chakraPoint.is_auspicious) return 'success';
@@ -120,7 +125,7 @@ export const ChakraDetailsModal: React.FC<ChakraDetailsModalProps> = ({
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
               <AutoAwesomeIcon sx={{ fontSize: 28, opacity: 0.9 }} />
               <Typography variant="h4" component="div" sx={{ fontWeight: 800, letterSpacing: '-0.02em' }}>
-                {chakraPoint.name}
+                {getCleanDisplayName(chakraPoint.name)}
               </Typography>
             </Box>
             <IconButton
@@ -144,7 +149,7 @@ export const ChakraDetailsModal: React.FC<ChakraDetailsModalProps> = ({
             </IconButton>
           </Box>
           <Typography variant="h6" sx={{ opacity: 0.9, fontWeight: 500, letterSpacing: '0.02em', mb: 2 }}>
-            {chakraPoint.direction} • {chakraPoint.id}
+            {getCleanDisplayName(chakraPoint.direction)}
           </Typography>
           
           {/* Status Chip positioned in header */}

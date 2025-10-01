@@ -3,7 +3,7 @@
 import Sidebar from "./Sidebar";
 import { ReactNode, useState } from "react";
 import { Menu, X, Sparkles } from "lucide-react";
-import { useThemeContext } from "@/contexts/ThemeContext";
+import { useGlobalTheme } from "@/contexts/GlobalThemeContext";
 import ThemeSwitcher from "@/components/ThemeSwitcher";
 
 export default function DashboardLayout({ children }: { children: ReactNode }) {
@@ -45,7 +45,7 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
             ? 'bg-slate-800/80 hover:bg-slate-700/80 border border-slate-700/50' 
             : 'bg-white/80 hover:bg-white border border-white/50'
         }`}>
-          <ThemeSwitcher toggleTheme={toggleTheme} mode={mode} />
+          <ThemeSwitcher />
         </div>
       </div>
 
@@ -105,7 +105,7 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
                 ? 'bg-slate-700/50 border border-slate-600/50' 
                 : 'bg-slate-100/50 border border-slate-200/50'
             }`}>
-              <ThemeSwitcher toggleTheme={toggleTheme} mode={mode} />
+              <ThemeSwitcher />
             </div>
           </div>
         </header>

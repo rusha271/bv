@@ -18,8 +18,8 @@ import { useGlobalTheme } from '@/contexts/GlobalThemeContext';
 import { useRouter } from 'next/navigation';
 import { sessionStorageManager } from '@/utils/sessionStorage';
 import { apiService } from '@/utils/apiService';
-import { sessionCache } from '@/utils/apiCache';
-// import { useState, useEffect } from "react";
+// import { sessionCache } from '@/utils/apiCache';
+// import { useState, useEffect } from "react"  ;// eslint-disable-line @typescript-eslint/no-unused-vars
 
 const ProductTour = dynamic(() => import('@/components/Tour/ProductTour'), { 
   ssr: false,

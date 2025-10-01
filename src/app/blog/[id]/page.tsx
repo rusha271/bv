@@ -39,7 +39,7 @@ export async function generateMetadata({ params }: BlogPostPageProps): Promise<M
       };
     }
 
-    const metaTags = generateBlogMetaTags(blog as any);
+    const metaTags = generateBlogMetaTags(blog as unknown as Blog);
     
     return {
       title: metaTags.title,
@@ -48,7 +48,7 @@ export async function generateMetadata({ params }: BlogPostPageProps): Promise<M
       openGraph: {
         title: metaTags.openGraph.title,
         description: metaTags.openGraph.description,
-        type: metaTags.openGraph.type as any,
+        type: metaTags.openGraph.type as "article" | "website",
         url: metaTags.openGraph.url,
         images: [
           {
@@ -66,7 +66,7 @@ export async function generateMetadata({ params }: BlogPostPageProps): Promise<M
         tags: metaTags.openGraph.article?.tags,
       },
       twitter: {
-        card: metaTags.twitter.card as any,
+        card: metaTags.twitter.card as "summary_large_image" | "summary",
         title: metaTags.twitter.title,
         description: metaTags.twitter.description,
         images: [metaTags.twitter.image],
@@ -100,7 +100,7 @@ export default async function BlogPostPageRoute({ params }: BlogPostPageProps) {
       notFound();
     }
 
-    const structuredData = generateBlogStructuredData(blog as any);
+    const structuredData = generateBlogStructuredData(blog as unknown as Blog);
 
     return (
       <>
@@ -110,7 +110,7 @@ export default async function BlogPostPageRoute({ params }: BlogPostPageProps) {
             __html: JSON.stringify(structuredData),
           }}
         />
-        <BlogPostPage blog={blog as any} />
+        <BlogPostPage blog={blog as unknown as Blog} />
       </>
     );
   } catch (error) {

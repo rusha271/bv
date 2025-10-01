@@ -1,8 +1,24 @@
 import { Metadata } from 'next';
 import { notFound } from 'next/navigation';
-import { apiService } from '@/utils/apiService';
-import { generateVideoMetaTags, generateVideoStructuredData } from '@/utils/seoUtils';
+import { apiService, Video } from '@/utils/apiService';
+import { buildTimeApiService, isBuildTime, BuildTimeVideo } from '@/utils/buildTimeApiService';
+import { generateVideoMetaTags, generateVideoStructuredData, VideoSEOData } from '@/utils/seoUtils';
 import VideoPage from './VideoPage';
+
+// Type conversion function
+function convertToVideoSEOData(video: Video | BuildTimeVideo): VideoSEOData {
+  return {
+    id: video.id,
+    title: video.title,
+    description: video.description,
+    url: video.url,
+    thumbnail: video.thumbnail_url || video.thumbnail,
+    duration: video.duration || undefined,
+    views: video.views,
+    category: video.category,
+    created_at: video.created_at,
+  };
+}
 
 interface VideoPageProps {
   params: {
@@ -20,7 +36,25 @@ export async function generateMetadata({ params }: VideoPageProps): Promise<Meta
       };
     }
 
-    const video = await apiService.videos.getById(videoId);
+    let video;
+    
+    if (isBuildTime) {
+      // During build time, use mock data
+      try {
+        video = await buildTimeApiService.videos.getById(videoId);
+      } catch (error) {
+        console.warn(`Build time: Video ${videoId} not found, using fallback`);
+        video = null;
+      }
+    } else {
+      // During runtime, use real API
+      try {
+        video = await apiService.videos.getById(videoId);
+      } catch (error) {
+        console.warn(`Runtime: Video ${videoId} not found`);
+        video = null;
+      }
+    }
     
     if (!video) {
       return {
@@ -29,7 +63,8 @@ export async function generateMetadata({ params }: VideoPageProps): Promise<Meta
       };
     }
 
-    const metaTags = generateVideoMetaTags(video);
+    const seoData = convertToVideoSEOData(video);
+    const metaTags = generateVideoMetaTags(seoData);
     
     return {
       title: metaTags.title,
@@ -66,8 +101,8 @@ export async function generateMetadata({ params }: VideoPageProps): Promise<Meta
   } catch (error) {
     console.error('Error generating metadata for video:', error);
     return {
-      title: 'Video | Brahma Vastu',
-      description: 'Watch Vastu videos and tutorials.',
+      title: `Video ${params.id} | Brahma Vastu`,
+      description: 'Watch Vastu videos and tutorials to learn about ancient Indian architecture principles.',
     };
   }
 }
@@ -79,13 +114,32 @@ export default async function VideoPageRoute({ params }: VideoPageProps) {
       notFound();
     }
 
-    const video = await apiService.videos.getById(videoId);
+    let video;
+    
+    if (isBuildTime) {
+      // During build time, use mock data
+      try {
+        video = await buildTimeApiService.videos.getById(videoId);
+      } catch (error) {
+        console.warn(`Build time: Video ${videoId} not found, using fallback`);
+        video = null;
+      }
+    } else {
+      // During runtime, use real API
+      try {
+        video = await apiService.videos.getById(videoId);
+      } catch (error) {
+        console.warn(`Runtime: Video ${videoId} not found`);
+        video = null;
+      }
+    }
     
     if (!video) {
       notFound();
     }
 
-    const structuredData = generateVideoStructuredData(video);
+    const seoData = convertToVideoSEOData(video);
+    const structuredData = generateVideoStructuredData(seoData);
 
     return (
       <>
@@ -104,15 +158,39 @@ export default async function VideoPageRoute({ params }: VideoPageProps) {
   }
 }
 
-// Generate static params for popular videos (optional)
+// Generate static params for popular videos
 export async function generateStaticParams() {
   try {
+    if (isBuildTime) {
+      // During build time, use mock data
+      console.log('Build time detected: Using mock video data');
+      const videos = await buildTimeApiService.videos.getAll();
+      return videos.map((video) => ({
+        id: video.id.toString(),
+      }));
+    }
+
+    // Try to fetch videos from API
     const videos = await apiService.videos.getAll();
-    return videos.slice(0, 10).map((video) => ({
+    if (videos && videos.length > 0) {
+      return videos.slice(0, 10).map((video) => ({
+        id: video.id.toString(),
+      }));
+    }
+    
+    // Fallback to mock data if API returns empty
+    console.log('API returned empty results, using mock video data');
+    const mockVideos = await buildTimeApiService.videos.getAll();
+    return mockVideos.map((video) => ({
       id: video.id.toString(),
     }));
   } catch (error) {
     console.error('Error generating static params:', error);
-    return [];
+    console.log('Using fallback mock video data');
+    // Return mock video IDs as fallback
+    const mockVideos = await buildTimeApiService.videos.getAll();
+    return mockVideos.map((video) => ({
+      id: video.id.toString(),
+    }));
   }
 }

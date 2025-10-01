@@ -3,7 +3,7 @@
 import DashboardLayout from "@/components/ui/admin-dashboard/DashboardLayout";
 import { useEffect, useState } from "react";
 import { MessageSquare, Calendar, User, Phone, Clock, CheckCircle, AlertCircle, Sparkles } from "lucide-react";
-import { useThemeContext } from "@/contexts/ThemeContext";
+import { useGlobalTheme } from "@/contexts/GlobalThemeContext";
 
 interface Consultation {
   id: string;
@@ -99,7 +99,11 @@ export default function ConsultationsPage() {
   if (loading) {
     return (
       <DashboardLayout>
-        <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100 dark:from-slate-900 dark:via-slate-800 dark:to-slate-900">
+        <div className={`min-h-screen transition-all duration-300 ${
+          mode === 'dark' 
+            ? 'bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900' 
+            : 'bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100'
+        }`}>
           <div className="container mx-auto px-6 py-8">
             <div className="text-center lg:text-left mb-12">
               <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-gradient-to-br from-emerald-500 via-blue-500 to-purple-600 mb-6 shadow-lg lg:hidden">
@@ -149,7 +153,11 @@ export default function ConsultationsPage() {
 
   return (
     <DashboardLayout>
-      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100 dark:from-slate-900 dark:via-slate-800 dark:to-slate-900">
+      <div className={`min-h-screen transition-all duration-300 ${
+        mode === 'dark' 
+          ? 'bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900' 
+          : 'bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100'
+      }`}>
         <div className="container mx-auto px-6 py-8">
           {/* Modern Header Section */}
           <div className="text-center lg:text-left mb-12">

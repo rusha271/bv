@@ -5,7 +5,7 @@ import DashboardLayout from "@/components/ui/admin-dashboard/DashboardLayout";
 import { Plus, Edit, Delete, Search } from "lucide-react";
 import { toast } from "react-hot-toast";
 import { apiService } from "@/utils/apiService";
-import { useThemeContext } from "@/contexts/ThemeContext";
+import { useGlobalTheme } from "@/contexts/GlobalThemeContext";
 import ChakraForm from "@/components/Admin/ChakraForm";
 import { ChakraPoint, ChakraPointForm, convertBackendToFrontend, convertFrontendToBackend } from "@/types/chakra";
 

@@ -10,7 +10,7 @@ interface Tokenizer extends PreTrainedTokenizer {
 }
 
 interface CausalLMModel extends AutoModelForCausalLM {
-  generate(inputIds: number[], options: any): Promise<number[]>;
+  generate(inputIds: number[], options: Record<string, unknown>): Promise<number[]>;
 }
 
 // Global variables with proper typing
@@ -46,7 +46,7 @@ async function initializeModel() {
         cache_dir: './huggingface_cache',
       })) as CausalLMModel;
       // console.log('DialoGPT model loaded successfully from local files');
-    } catch (error: any) {
+    } catch {
       // console.error('Model loading failed:', error.message, error.stack);
       useFallbackMode = true;
       return { model: null, tokenizer: null, fallback: true };
@@ -104,7 +104,7 @@ export async function POST(request: NextRequest) {
           const randomIndex = Math.floor(Math.random() * fallbackResponses.length);
           botResponse = fallbackResponses[randomIndex];
         }
-      } catch (generationError: any) { // Explicitly type error as 'any' to resolve ts(18046)
+      } catch {
         //  console.error('Text generation error:', generationError);
         const randomIndex = Math.floor(Math.random() * fallbackResponses.length);
         botResponse = fallbackResponses[randomIndex];
@@ -116,7 +116,7 @@ export async function POST(request: NextRequest) {
       timestamp: new Date().toISOString(),
       mode: fallback ? 'fallback' : 'ai',
     });
-  } catch (error: any) { // Explicitly type error as 'any' to resolve ts(18046)
+  } catch (error) {
         // console.error('Chatbot API error:', error);
     return NextResponse.json(
       { error: 'An error occurred while processing your message', details: error instanceof Error ? error.message : 'Unknown error' },

@@ -1,9 +1,9 @@
 'use client';
 
-import React, { useEffect, useState, useRef, Suspense } from 'react';
+import React, { useEffect, useState } from 'react';
 import Navbar from '@/components/ui/Navbar';
 import Footer from '@/components/ui/Footer';
-import { Box, Container, Typography, CircularProgress, Skeleton } from '@mui/material';
+import { Box, Container, Typography, CircularProgress } from '@mui/material';
 import { sessionStorageManager } from '@/utils/sessionStorage';
 import dynamic from 'next/dynamic';
 
@@ -45,7 +45,6 @@ export default function ChakraOverlayPage() {
   const [floorPlanImageUrl, setFloorPlanImageUrl] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [isClient, setIsClient] = useState(false);
-
   // Prevent hydration mismatch
   useEffect(() => {
     setIsClient(true);
@@ -55,7 +54,7 @@ export default function ChakraOverlayPage() {
     // Clean up expired sessions
     sessionStorageManager.cleanupExpiredSessions();
     
-    // Get session data
+    // Get session data (eslint-disable-line @typescript-eslint/no-unused-vars)     
     const sessionData = sessionStorageManager.getSessionData();
     if (!sessionData) {
       setError('No floor plan session found. Please upload a floor plan first.');

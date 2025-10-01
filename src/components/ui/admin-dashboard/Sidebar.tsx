@@ -16,7 +16,7 @@ import {
   Zap,
   Image
 } from "lucide-react";
-import { useThemeContext } from "@/contexts/ThemeContext";
+import { useGlobalTheme } from "@/contexts/GlobalThemeContext";
 
 interface SidebarProps {
   onClose?: () => void;
@@ -46,13 +46,17 @@ export default function Sidebar({ onClose, collapsed = false, onToggleCollapse }
   };
 
   return (
-    <div className={`${collapsed ? 'w-16' : 'w-72'} shadow-2xl h-full backdrop-blur-xl border-r transition-all duration-500 ease-out ${
+    <div className={`${collapsed ? 'w-16' : 'w-72'} shadow-2xl h-full backdrop-blur-xl border-r transition-all duration-200 ease-out flex flex-col ${
       mode === 'dark' 
-        ? 'bg-slate-800/90 border-slate-700/50' 
-        : 'bg-white/90 border-slate-200/50'
+        ? 'bg-slate-800/95 border-slate-700/50' 
+        : 'bg-slate-50/95 border-slate-200/50'
     }`}>
       {/* Header */}
-      <div className={`${collapsed ? 'p-4' : 'p-8'} border-b border-slate-200/50 dark:border-slate-700/50 transition-all duration-500 ease-out`}>
+      <div className={`${collapsed ? 'p-4' : 'p-8'} border-b transition-all duration-200 ease-out ${
+        mode === 'dark' 
+          ? 'border-slate-700/50' 
+          : 'border-slate-200/50'
+      }`}>
         <div className="flex items-center justify-between">
           <div className="flex items-center space-x-3">
             <div className="relative w-10 h-10 rounded-2xl bg-gradient-to-br from-emerald-500 via-blue-500 to-purple-600 flex items-center justify-center shadow-lg group-hover:shadow-xl transition-all duration-300">
@@ -104,8 +108,8 @@ export default function Sidebar({ onClose, collapsed = false, onToggleCollapse }
       </div>
       
       {/* Navigation */}
-      <nav className={`mt-8 ${collapsed ? 'px-2' : 'px-4'} transition-all duration-500 ease-out`}>
-        <div className="space-y-3">
+      <nav className={`flex-1 overflow-y-auto mt-8 ${collapsed ? 'px-2' : 'px-4'} transition-all duration-200 ease-out scrollbar-thin`}>
+        <div className="space-y-3 pb-4">
           {navigation.map((item) => {
             const isActive = pathname === item.href;
             return (
@@ -113,7 +117,7 @@ export default function Sidebar({ onClose, collapsed = false, onToggleCollapse }
                 key={item.name}
                 href={item.href}
                 onClick={handleLinkClick}
-                className={`group relative flex items-center ${collapsed ? 'px-2 py-3 justify-center' : 'px-4 py-3'} text-sm font-medium rounded-2xl transition-all duration-300 ease-out ${
+                className={`group relative flex items-center ${collapsed ? 'px-2 py-3 justify-center' : 'px-4 py-3'} text-sm font-medium rounded-2xl transition-all duration-150 ease-out ${
                   isActive
                     ? mode === 'dark'
                       ? "bg-gradient-to-r from-emerald-500/20 via-blue-500/20 to-purple-500/20 text-emerald-300 border border-emerald-500/30 shadow-xl shadow-emerald-500/10"
@@ -162,7 +166,11 @@ export default function Sidebar({ onClose, collapsed = false, onToggleCollapse }
 
       {/* Footer */}
       {!collapsed && (
-        <div className="absolute bottom-0 left-0 right-0 p-6 border-t border-slate-200/50 dark:border-slate-700/50 transition-all duration-500 ease-out">
+        <div className={`p-6 border-t transition-all duration-200 ease-out ${
+          mode === 'dark' 
+            ? 'border-slate-700/50' 
+            : 'border-slate-200/50'
+        }`}>
           <div className={`text-center p-4 rounded-2xl transition-all duration-300 hover:scale-105 ${
             mode === 'dark' 
               ? 'bg-gradient-to-r from-slate-700/30 to-slate-600/30 border border-slate-600/30 hover:shadow-lg' 

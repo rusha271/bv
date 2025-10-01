@@ -6,7 +6,7 @@ import LinkedInIcon from '@mui/icons-material/LinkedIn';
 import InstagramIcon from '@mui/icons-material/Instagram';
 import WhatsAppIcon from '@mui/icons-material/WhatsApp';
 import YouTubeIcon from '@mui/icons-material/YouTube';
-import { useTheme } from '@mui/material/styles';
+import { useGlobalTheme } from '@/contexts/GlobalThemeContext';
 import { useDeviceType } from '@/utils/useDeviceType';
 
 const icons = [
@@ -17,9 +17,8 @@ const icons = [
 ];
 
 export default function SocialIcons({ direction = 'row' }: { direction?: 'row' | 'column' }) {
-  const theme = useTheme();
+  const { theme, isDarkMode } = useGlobalTheme();
   const { isMobile, isTablet } = useDeviceType();
-  const isDarkMode = theme.palette.mode === 'dark';
   
   // Responsive sizing
   const iconSize = isMobile ? 32 : isTablet ? 40 : 48;

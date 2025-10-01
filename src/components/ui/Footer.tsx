@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from 'react';
-import { Box, Typography, useMediaQuery, useTheme } from '@mui/material';
+import { Box, Typography, useMediaQuery } from '@mui/material';
 import { useGlobalTheme } from '@/contexts/GlobalThemeContext';
 import { useModalContext } from '@/contexts/ModalContext';
 import { Heart, Shield, FileText, Mail } from 'lucide-react';
@@ -15,7 +15,6 @@ interface FooterProps {
 export default function Footer({ onPrivacyClick, onTermsClick, onContactClick }: FooterProps) {
   const { theme, isDarkMode, isLightMode } = useGlobalTheme();
   const { openPrivacyModal, openTermsModal, openContactModal } = useModalContext();
-  const muiTheme = useTheme();
   const [isClient, setIsClient] = useState(false);
   
   // Prevent hydration mismatch
@@ -23,8 +22,8 @@ export default function Footer({ onPrivacyClick, onTermsClick, onContactClick }:
     setIsClient(true);
   }, []);
 
-  const isMobile = useMediaQuery(muiTheme.breakpoints.down('sm'));
-  const isTablet = useMediaQuery(muiTheme.breakpoints.between('sm', 'md'));
+  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
+  const isTablet = useMediaQuery(theme.breakpoints.between('sm', 'md'));
 
   // Responsive font sizes and padding - use consistent values on server
   const linkFontSize = isClient && isMobile ? '0.75rem' : isClient && isTablet ? '0.875rem' : '1rem';

@@ -5,7 +5,7 @@ import DashboardLayout from "@/components/ui/admin-dashboard/DashboardLayout";
 import { Upload, Image as ImageIcon, CheckCircle, AlertCircle, Trash2, Download, Eye, FileText, Video, Zap } from "lucide-react";
 import { toast } from "react-hot-toast";
 import { apiService, SiteSetting } from "@/utils/apiService";
-import { useThemeContext } from "@/contexts/ThemeContext";
+import { useGlobalTheme } from "@/contexts/GlobalThemeContext";
 
 type Category = 'logo' | 'tour_video' | 'chakra_points';
 
@@ -266,7 +266,11 @@ export default function SiteSettingsPage() {
 
   return (
     <DashboardLayout>
-      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100 dark:from-slate-900 dark:via-slate-800 dark:to-slate-900">
+      <div className={`min-h-screen transition-all duration-300 ${
+        mode === 'dark' 
+          ? 'bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900' 
+          : 'bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100'
+      }`}>
         <div className="container mx-auto px-6 py-8">
           {/* Modern Header Section */}
           <div className="text-center lg:text-left mb-12">

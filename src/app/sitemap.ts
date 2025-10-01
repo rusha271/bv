@@ -47,12 +47,14 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   try {
     // Dynamic video pages
     const videos = await apiService.videos.getAll();
-    const videoPages: MetadataRoute.Sitemap = videos.map((video) => ({
-      url: `${baseUrl}/video/${video.id}`,
-      lastModified: new Date(video.updated_at || video.created_at || new Date()),
-      changeFrequency: 'monthly',
-      priority: 0.7,
-    }));
+    const videoPages: MetadataRoute.Sitemap = videos
+      .filter(video => video && video.id) // Filter out invalid videos
+      .map((video) => ({
+        url: `${baseUrl}/video/${video.id}`,
+        lastModified: new Date(video.updated_at || video.created_at || new Date()),
+        changeFrequency: 'monthly',
+        priority: 0.7,
+      }));
 
     // Dynamic blog pages (if blog API is available)
     let blogPages: MetadataRoute.Sitemap = [];

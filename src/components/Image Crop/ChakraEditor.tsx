@@ -6,7 +6,7 @@ import DownloadIcon from '@mui/icons-material/Download';
 import Image from 'next/image';
 import CircularImagePoints from '@/components/CircularImagePoints';
 import ChakraDetailsModal from '@/components/Chakra/ChakraDetailsModal';
-import { getLegacyChakraPointsInOrder, getChakraPointsInOrder, getMainDirectionsData } from '@/utils/chakraCoordinateConverter';
+import { getLegacyChakraPointsInOrder, getChakraPointsInOrder, getMainDirectionsData, getAllChakraPointsData } from '@/utils/chakraCoordinateConverter';
 import { ChakraPoint } from '@/types/chakra';
 import { apiService } from '@/utils/apiService';
 
@@ -156,6 +156,7 @@ const ChakraEditor: React.FC<ChakraEditorProps> = ({ floorPlanImageUrl }) => {
   const legacyChakraPoints = getLegacyChakraPointsInOrder();
   const mainDirectionPoints = getChakraPointsInOrder();
   const mainDirectionsData = getMainDirectionsData();
+  const allChakraPointsData = getAllChakraPointsData();
   
   // Combine both systems for display
   const chakraPoints = [...legacyChakraPoints, ...mainDirectionPoints];
@@ -182,10 +183,10 @@ const ChakraEditor: React.FC<ChakraEditorProps> = ({ floorPlanImageUrl }) => {
     // First check API data
     let chakraPointData = chakraPointsData[point.id];
     
-    // If not found in API data, check static main directions data
+    // If not found in API data, check static all chakra points data
     if (!chakraPointData) {
-      chakraPointData = mainDirectionsData[point.id] as ChakraPoint;
-      console.log('ChakraEditor: Checking static main directions data for:', point.id);
+      chakraPointData = allChakraPointsData[point.id] as ChakraPoint;
+      console.log('ChakraEditor: Checking static all chakra points data for:', point.id);
       console.log('ChakraEditor: Found in static data:', chakraPointData);
     }
     

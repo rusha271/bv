@@ -43,7 +43,62 @@ html {
   scroll-behavior: smooth;
 }
 
+/* Custom scrollbar styles */
+.scrollbar-thin {
+  scrollbar-width: thin;
+}
+
+.scrollbar-thin::-webkit-scrollbar {
+  width: 6px;
+}
+
+.scrollbar-thin::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.scrollbar-thin::-webkit-scrollbar-thumb {
+  background-color: rgba(148, 163, 184, 0.3);
+  border-radius: 3px;
+  transition: background-color 0.2s ease;
+}
+
+.scrollbar-thin::-webkit-scrollbar-thumb:hover {
+  background-color: rgba(148, 163, 184, 0.5);
+}
+
+/* Dark mode scrollbar */
+.dark .scrollbar-thin::-webkit-scrollbar-thumb {
+  background-color: rgba(100, 116, 139, 0.4);
+}
+
+.dark .scrollbar-thin::-webkit-scrollbar-thumb:hover {
+  background-color: rgba(100, 116, 139, 0.6);
+}
+
 /* Optimize font loading - using system fonts for better performance */
+
+/* Fast theme transitions for better UX */
+.theme-transition {
+  transition: background-color 0.15s ease-out, color 0.15s ease-out, border-color 0.15s ease-out;
+}
+
+.theme-transition-fast {
+  transition: background-color 0.1s ease-out, color 0.1s ease-out, border-color 0.1s ease-out;
+}
+
+.theme-transition-slow {
+  transition: background-color 0.2s ease-out, color 0.2s ease-out, border-color 0.2s ease-out;
+}
+
+/* Optimize theme switching performance */
+* {
+  transition: background-color 0.15s ease-out, color 0.15s ease-out, border-color 0.15s ease-out;
+}
+
+/* Disable transitions during theme change for instant switching */
+.theme-changing * {
+  transition: none !important;
+}
 
 /* Global CSS Variables - Controlled by JavaScript Theme */
 :root {
@@ -74,5 +129,5 @@ body {
   margin: 0;
   padding: 0;
   overflow-x: hidden;
-  transition: background-color 0.3s ease, color 0.3s ease;
+  transition: background-color 0.15s ease-out, color 0.15s ease-out;
 }

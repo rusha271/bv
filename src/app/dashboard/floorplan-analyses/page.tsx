@@ -49,7 +49,7 @@ import {
 import { apiService } from '@/utils/apiService';
 import { FloorPlanAnalysis } from '@/utils/apiService';
 import DashboardLayout from "@/components/ui/admin-dashboard/DashboardLayout";
-import { useThemeContext } from "@/contexts/ThemeContext";
+import { useGlobalTheme } from "@/contexts/GlobalThemeContext";
 import { Image } from "lucide-react";
 
 export default function FloorPlanAnalysesPage() {
@@ -195,7 +195,11 @@ export default function FloorPlanAnalysesPage() {
   if (loading) {
     return (
       <DashboardLayout>
-        <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100 dark:from-slate-900 dark:via-slate-800 dark:to-slate-900 flex items-center justify-center">
+        <div className={`min-h-screen transition-all duration-300 flex items-center justify-center ${
+          mode === 'dark' 
+            ? 'bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900' 
+            : 'bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100'
+        }`}>
           <div className="text-center">
             <CircularProgress size={60} thickness={4} />
             <Typography variant="h6" color="text.secondary" sx={{ mt: 2 }}>
@@ -211,7 +215,11 @@ export default function FloorPlanAnalysesPage() {
   if (error) {
     return (
       <DashboardLayout>
-        <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100 dark:from-slate-900 dark:via-slate-800 dark:to-slate-900 flex items-center justify-center">
+        <div className={`min-h-screen transition-all duration-300 flex items-center justify-center ${
+          mode === 'dark' 
+            ? 'bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900' 
+            : 'bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100'
+        }`}>
           <div className="max-w-md mx-auto p-6">
             <Alert 
               severity="error" 
@@ -242,7 +250,11 @@ export default function FloorPlanAnalysesPage() {
 
   return (
     <DashboardLayout>
-      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100 dark:from-slate-900 dark:via-slate-800 dark:to-slate-900">
+      <div className={`min-h-screen transition-all duration-300 ${
+        mode === 'dark' 
+          ? 'bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900' 
+          : 'bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100'
+      }`}>
         <div className="container mx-auto px-6 py-8">
           {/* Modern Header Section */}
           <div className="text-center lg:text-left mb-12">

@@ -7,7 +7,7 @@ import { useDeviceType } from '@/utils/useDeviceType';
 import Navbar from '@/components/ui/Navbar';
 import Footer from '@/components/ui/Footer';
 // Removed ImageCropper import - using only AdvancedImageCropper
-import { Box, Typography, Container, Skeleton, CircularProgress, Button } from '@mui/material';
+import { Box, Typography, Container, Skeleton, CircularProgress } from '@mui/material';
 import { useRouter } from 'next/navigation';
 import styles from './cropPage.module.css';
 import Disclaimer from '@/components/Policies/Disclaimer';
@@ -72,7 +72,7 @@ function useLazyLoad() {
 }
 
 export default function CropPage() {
-  const { theme, isDarkMode, isLightMode } = useGlobalTheme();
+  const { theme, isDarkMode } = useGlobalTheme();
   const { isMobile, isTablet } = useDeviceType();
   const router = useRouter();
   
@@ -416,7 +416,7 @@ export default function CropPage() {
               }}
             >
               <span className={styles.buttonContent}>
-                {hasCropped ? '✨ Proceed with Cropped Image' : '✨ Next Step'}
+                {hasCropped ? '✨ Next Step' : '✨ Next Step'}
               </span>
               <div className={styles.shimmerEffect} />
             </button>

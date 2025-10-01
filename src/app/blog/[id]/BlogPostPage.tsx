@@ -19,14 +19,14 @@ interface Blog {
 import Navbar from '@/components/ui/Navbar';
 import Footer from '@/components/ui/Footer';
 import { generateBreadcrumbStructuredData } from '@/utils/seoUtils';
+import Link from 'next/link';
 
 interface BlogPostPageProps {
   blog: Blog;
 }
 
 export default function BlogPostPage({ blog }: BlogPostPageProps) {
-  const { theme, isDarkMode, isLightMode } = useGlobalTheme();
-  const { isMobile, isTablet } = useDeviceType();
+  const { theme } = useGlobalTheme();
 
   // Generate breadcrumb structured data
   const breadcrumbData = generateBreadcrumbStructuredData([
@@ -65,31 +65,31 @@ export default function BlogPostPage({ blog }: BlogPostPageProps) {
           borderColor: theme.palette.divider,
           color: theme.palette.text.primary,
           minHeight: '80vh',
-          marginTop: isMobile ? '4.5rem' : '5.5rem',
-          marginBottom: isMobile ? '1.5rem' : '2.5rem',
+          marginTop: '5.5rem',
+          marginBottom: '2.5rem',
         }}
       >
         {/* Breadcrumb */}
         <nav className="mb-6" aria-label="Breadcrumb">
           <ol className="flex items-center space-x-2 text-sm">
             <li>
-              <a
+              <Link
                 href="/"
                 className="hover:underline"
                 style={{ color: theme.palette.primary.main }}
               >
                 Home
-              </a>
+              </Link>
             </li>
             <li className="text-gray-500">/</li>
             <li>
-              <a
+              <Link
                 href="/blog"
                 className="hover:underline"
                 style={{ color: theme.palette.primary.main }}
               >
                 Blog
-              </a>
+              </Link>
             </li>
             <li className="text-gray-500">/</li>
             <li className="text-gray-500 truncate">{blog.title}</li>

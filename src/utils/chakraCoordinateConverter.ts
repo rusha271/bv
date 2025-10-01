@@ -388,3 +388,73 @@ export const getMainDirectionsData = (): { [key: string]: ChakraPointData } => {
   
   return dataObject;
 };
+
+// Helper function to get all legacy 32-point system as ChakraPointData objects with static content
+export const getLegacyPointsWithContent = (): ChakraPointData[] => {
+  const allPoints = convertGimpToCircular();
+  
+  // Define the order of segments as they appear on the chakra (clockwise from North)
+  const segmentOrder = [
+    'N1', 'N2', 'N3', 'N4' , 'N5', 'N6', 'N7', 'N8', 'E1', 'E2', 'E3', 'E4', 'E5', 'E6', 'E7', 'E8',
+    'S1', 'S2', 'S3', 'S4', 'S5', 'S6', 'S7', 'S8', 'W1', 'W2', 'W3', 'W4',
+    'W5', 'W6', 'W7', 'W8'
+  ];
+  
+  return segmentOrder.map(id => {
+    const point = allPoints.find(point => point.id === `${id}_outer`);
+    
+    if (point) {
+      // Create basic content for legacy points
+      const direction = id.charAt(0); // N, E, S, W
+      const number = id.substring(1); // 1, 2, 3, etc.
+      
+      // Determine if this is an auspicious point based on the legacy color logic
+      const isAuspicious = (id === 'N3' || id === 'N4' || id === 'N5' || 
+                           id === 'E3' || id === 'E4' || 
+                           id === 'S3' || id === 'S4' || 
+                           id === 'W3' || id === 'W4');
+      
+      const shouldAvoid = (id === 'E7' || id === 'E8' || 
+                          id === 'S5' || id === 'S6' || id === 'S7' || id === 'S8' ||
+                          id === 'W1' || id === 'W8' || 
+                          id === 'N1' || id === 'N2' || id === 'N7' || id === 'N8');
+      
+      return {
+        id: point.id,
+        name: `${direction}${number}`,
+        direction: `${direction}${number}`,
+        description: `Legacy chakra point ${direction}${number} - ${isAuspicious ? 'Auspicious' : shouldAvoid ? 'Avoid' : 'Neutral'} energy`,
+        remedies: isAuspicious ? 
+          `Place positive energy elements in this direction. Keep this area clean and well-lit.` :
+          shouldAvoid ? 
+          `Avoid heavy furniture or negative energy in this direction. Use light, positive elements.` :
+          `This direction has neutral energy. Use balanced elements.`,
+        is_auspicious: isAuspicious,
+        should_avoid: shouldAvoid,
+        image_url: undefined,
+        created_at: undefined,
+        updated_at: undefined
+      } as ChakraPointData;
+    }
+    return null;
+  }).filter(Boolean) as ChakraPointData[];
+};
+
+// Helper function to get all chakra points (both main directions and legacy points) as a data object
+export const getAllChakraPointsData = (): { [key: string]: ChakraPointData } => {
+  const mainDirections = getMainDirectionsData();
+  const legacyPoints = getLegacyPointsWithContent();
+  const dataObject: { [key: string]: ChakraPointData } = {};
+  
+  // Add main directions
+  Object.entries(mainDirections).forEach(([key, value]) => {
+    dataObject[key] = value;
+  });
+  
+  // Add legacy points
+  legacyPoints.forEach(point => {
+    dataObject[point.id] = point;
+  });
+  
+  return dataObject;
+};

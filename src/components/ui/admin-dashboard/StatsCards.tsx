@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { Users, MessageSquare, TrendingUp, TrendingDown } from "lucide-react";
-import { useThemeContext } from "@/contexts/ThemeContext";
+import { useGlobalTheme } from "@/contexts/GlobalThemeContext";
 
 interface StatsData {
   totalVisitors: number;

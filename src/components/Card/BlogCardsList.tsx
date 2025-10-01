@@ -2,14 +2,13 @@
 
 import React, { useEffect, useRef } from "react";
 import BlogCard from "@/components/Card/BlogCard";
-import { useThemeContext } from "@/contexts/ThemeContext";
+import { useGlobalTheme } from "@/contexts/GlobalThemeContext";
 import { useDeviceType } from "@/utils/useDeviceType";
 import { useAppDispatch, useAppSelector } from "@/store";
 import { fetchTips, clearTipsError } from "@/store/slices/blogSlice";
 import ErrorDisplay from "@/components/Error/ErrorDisplay";
 import { CircularProgress, Box, Typography } from "@mui/material";
 import { Lightbulb, Sparkles } from "lucide-react";
-import { useGlobalTheme } from "@/contexts/GlobalThemeContext";
 
 const LoadingSpinner = () => {
   const { theme, isDarkMode, isLightMode } = useGlobalTheme();

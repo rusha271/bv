@@ -9,7 +9,7 @@ import {
   Marker
 } from "react-simple-maps";
 import { Globe, Users, Plus, Minus } from "lucide-react";
-import { useThemeContext } from "@/contexts/ThemeContext";
+import { useGlobalTheme } from "@/contexts/GlobalThemeContext";
 
 // Dummy visitor data by country
 const dummyVisitorData = [

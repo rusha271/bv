@@ -10,6 +10,9 @@ const API_CONFIG = {
     'Accept': 'application/json',
   },
 };
+
+// Check if we're in build time (no API server available)
+const isBuildTime = process.env.NODE_ENV === 'production' && !process.env.NEXT_PUBLIC_API_URL;
 interface InternalAxiosRequestConfig extends AxiosRequestConfig {
   _retry?: boolean;
   headers: any; 
@@ -54,6 +57,12 @@ const apiClient: AxiosInstance = axios.create(API_CONFIG);
 // Request interceptor - Dynamic token fetching
 apiClient.interceptors.request.use(
   (config) => {
+    // During build time, reject API calls to prevent 404 errors
+    if (isBuildTime) {
+      console.log(`Build time detected: Skipping API call to ${config.url}`);
+      return Promise.reject(new Error('API not available during build time'));
+    }
+
     const token = getToken();
     if (token) {
       config.headers = config.headers || {};

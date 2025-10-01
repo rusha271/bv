@@ -32,8 +32,6 @@ import Typography from '@mui/material/Typography';
 import Button from '@mui/material/Button';
 import Card from '@mui/material/Card';
 import CardContent from '@mui/material/CardContent';
-import CardActions from '@mui/material/CardActions';
-import TextField from '@mui/material/TextField';
 import Dialog from '@mui/material/Dialog';
 import DialogTitle from '@mui/material/DialogTitle';
 import DialogContent from '@mui/material/DialogContent';
@@ -41,12 +39,12 @@ import DialogActions from '@mui/material/DialogActions';
 import IconButton from '@mui/material/IconButton';
 import Chip from '@mui/material/Chip';
 import CircularProgress from '@mui/material/CircularProgress';
-import { apiService, BlogPost, PostContent as ApiPostContent } from '@/utils/apiService';
+import { apiService } from '@/utils/apiService';
 import { api } from '@/utils/apiClient';
 import { useAuth } from '@/contexts/AuthContext';
 import { isAdminUser } from '@/utils/permissions';
 import PostUploadSection from '@/components/forms/PostUploadSection';
-import { BookOpen, Video, Headphones, Lightbulb, Sparkles, FileText, Plus, Edit, Trash2, Image as ImageIcon, Link, Upload, Eye } from 'lucide-react';
+import { BookOpen, Video, Headphones, Lightbulb, Sparkles, FileText, Plus, Image as ImageIcon, Eye } from 'lucide-react';
 
 // Hook to prevent hydration issues
 const useIsClient = () => {
@@ -134,7 +132,7 @@ function FadeInSection({ children }: { children: React.ReactNode }) {
 
 // Tips Cards List with Popup Functionality
 function TipsCardsList() {
-  const { theme, isDarkMode, isLightMode } = useGlobalTheme();
+  const { theme, isDarkMode } = useGlobalTheme();
   const { user } = useAuth();
   const [tips, setTips] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
@@ -244,9 +242,9 @@ function TipsCardsList() {
           }, 
           gap: 2 
         }}>
-          {tips.map((tip) => (
+          {tips.map((tip, index) => (
             <Card
-            key={tip.id}
+            key={tip.id || index}
               sx={{
                 background: isDarkMode
                   ? 'rgba(15, 23, 42, 0.8)'
@@ -270,7 +268,7 @@ function TipsCardsList() {
               <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 2 }}>
                 <Lightbulb size={20} style={{ color: theme.palette.primary.main }} />
                 <Typography variant="h6" sx={{ color: theme.palette.text.primary, flex: 1 }}>
-                  {tip.title}
+                  {tip.title || 'Untitled'}
                   </Typography>
                 <IconButton size="small" color="primary">
                   <Eye size={16} />
@@ -280,15 +278,15 @@ function TipsCardsList() {
               {tip.image_url ? (
                 <Box sx={{ mb: 2, borderRadius: 1, overflow: 'hidden' }}>
                   <img 
-                    src={tip.image_url.startsWith('http') ? tip.image_url : `${api.getBaseURL()}${tip.image_url}`}
-                    alt={tip.title}
+                    src={String(tip.image_url).startsWith('http') ? String(tip.image_url) : `${api.getBaseURL()}${tip.image_url}`}
+                    alt={tip.title || 'Tip image'}
                     style={{ 
                       width: '100%', 
                       height: '120px', 
                       objectFit: 'cover' 
                     }}
                     onError={(e) => {
-                      const fullUrl = tip.image_url.startsWith('http') ? tip.image_url : `${api.getBaseURL()}${tip.image_url}`;
+                      const fullUrl = String(tip.image_url).startsWith('http') ? String(tip.image_url) : `${api.getBaseURL()}${tip.image_url}`;
                       console.error('Image failed to load:', {
                         original: tip.image_url,
                         fullUrl: fullUrl,
@@ -325,12 +323,12 @@ function TipsCardsList() {
                   overflow: 'hidden',
                 }}
               >
-                {tip.details || tip.description || tip.content}
+                {String(tip.details || tip.description || tip.content || 'No description available')}
               </Typography>
               
               {tip.category && (
                 <Chip 
-                  label={tip.category} 
+                  label={String(tip.category)} 
                   size="small" 
                   variant="outlined" 
                   sx={{ 
@@ -368,7 +366,7 @@ function TipsCardsList() {
               <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
                 <Lightbulb size={24} style={{ color: theme.palette.primary.main }} />
                 <Typography variant="h5" sx={{ color: theme.palette.text.primary }}>
-                  {selectedTip.title}
+                  {selectedTip.title || 'Untitled'}
                 </Typography>
               </Box>
             </DialogTitle>
@@ -376,15 +374,15 @@ function TipsCardsList() {
               {selectedTip.image_url && (
                 <Box sx={{ mb: 3, borderRadius: 2, overflow: 'hidden' }}>
                   <img 
-                    src={selectedTip.image_url.startsWith('http') ? selectedTip.image_url : `${api.getBaseURL()}${selectedTip.image_url}`}
-                    alt={selectedTip.title}
+                    src={String(selectedTip.image_url).startsWith('http') ? String(selectedTip.image_url) : `${api.getBaseURL()}${selectedTip.image_url}`}
+                    alt={selectedTip.title || 'Tip image'}
                     style={{ 
                       width: '100%', 
                       height: '300px', 
                       objectFit: 'cover' 
                     }}
                     onError={(e) => {
-                      const fullUrl = selectedTip.image_url.startsWith('http') ? selectedTip.image_url : `${api.getBaseURL()}${selectedTip.image_url}`;
+                      const fullUrl = String(selectedTip.image_url).startsWith('http') ? String(selectedTip.image_url) : `${api.getBaseURL()}${selectedTip.image_url}`;
                       console.error('Popup image failed to load:', {
                         original: selectedTip.image_url,
                         fullUrl: fullUrl,
@@ -404,13 +402,13 @@ function TipsCardsList() {
                   whiteSpace: 'pre-wrap'
                 }}
               >
-                {selectedTip.details || selectedTip.description || selectedTip.content}
+                {String(selectedTip.details || selectedTip.description || selectedTip.content || 'No description available')}
               </Typography>
               
               {selectedTip.category && (
                 <Box sx={{ mt: 3 }}>
                   <Chip 
-                    label={selectedTip.category} 
+                    label={String(selectedTip.category)} 
                     variant="outlined" 
                     sx={{ 
                       background: theme.palette.primary.main + '20',
@@ -517,7 +515,7 @@ function TipsCardsList() {
 
 // Simple Admin-Only Posts Management Component
 function PostsManagement() {
-  const { theme, isDarkMode, isLightMode } = useGlobalTheme();
+  const { theme, isDarkMode } = useGlobalTheme();
   const { user } = useAuth();
 
   // Check if user is admin
@@ -571,17 +569,12 @@ function PostsManagement() {
 
 
 function BlogTabs() {
-  const { theme, isDarkMode, isLightMode } = useGlobalTheme();
+  const { theme, isDarkMode } = useGlobalTheme();
   const { user } = useAuth();
   const [tab, setTab] = useState(0);
-  const isClient = useIsClient();
 
   // Check if user is admin
   const isAdmin = isAdminUser(user);
-
-  // Use static responsive values to prevent hydration issues
-  const tabFontSize = '1rem';
-  const tabPaddingX = 2;
 
   // Define tabs - Posts tab only visible to admin
   const allTabs = [
@@ -735,7 +728,7 @@ function BlogTabs() {
 }
 
 export default function BlogPage() {
-  const { theme, isDarkMode, isLightMode } = useGlobalTheme();
+  const { theme, isDarkMode } = useGlobalTheme();
   const isClient = useIsClient();
   const [mounted, setMounted] = useState(false);
 

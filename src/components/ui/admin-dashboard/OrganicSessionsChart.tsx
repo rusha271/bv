@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { BarChart3, TrendingUp } from "lucide-react";
-import { useThemeContext } from "@/contexts/ThemeContext";
+import { useGlobalTheme } from "@/contexts/GlobalThemeContext";
 
 
 // Dummy data for visitor sessions over the last 30 days

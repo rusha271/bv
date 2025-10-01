@@ -2,7 +2,7 @@
 
 import React from "react";
 import Image from "next/image";
-import { useThemeContext } from "@/contexts/ThemeContext";
+import { useGlobalTheme } from "@/contexts/GlobalThemeContext";
 import { useDeviceType } from "@/utils/useDeviceType"; // Import the hook
 
 interface BlogCardProps {

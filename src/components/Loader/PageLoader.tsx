@@ -2,7 +2,8 @@
 
 import React, { useState, useEffect } from 'react';
 import { ScaleLoader } from 'react-spinners';
-import { Box, useTheme } from '@mui/material';
+import { Box } from '@mui/material';
+import { useGlobalTheme } from '@/contexts/GlobalThemeContext';
 
 interface PageLoaderProps {
   loading: boolean;
@@ -25,7 +26,7 @@ const PageLoader: React.FC<PageLoaderProps> = ({
   margin = 2,
   speedMultiplier = 1,
 }) => {
-  const theme = useTheme();
+  const { theme } = useGlobalTheme();
   const [isClient, setIsClient] = useState(false);
 
   // Prevent hydration mismatch by only rendering after client mount
