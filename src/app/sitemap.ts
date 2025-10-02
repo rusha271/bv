@@ -2,7 +2,7 @@ import { MetadataRoute } from 'next';
 import { apiService } from '@/utils/apiService';
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
-  const baseUrl = 'http://localhost:3000';
+  const baseUrl = process.env.NODE_ENV === 'production' ? 'https://bharmaspace.com' : 'http://localhost:3000';
   
   // Static pages
   const staticPages: MetadataRoute.Sitemap = [

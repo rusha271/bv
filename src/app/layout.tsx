@@ -47,7 +47,7 @@ export const metadata: Metadata = {
     address: false,
     telephone: false,
   },
-  metadataBase: new URL('http://localhost:3000'),
+  metadataBase: new URL(process.env.NODE_ENV === 'production' ? 'https://bharmaspace.com' : 'http://localhost:3000'),
   alternates: {
     canonical: '/',
   },
@@ -65,7 +65,7 @@ export const metadata: Metadata = {
   openGraph: {
     type: "website",
     locale: "en_US",
-    url: "http://localhost:3000",
+    url: process.env.NODE_ENV === 'production' ? 'https://bharmaspace.com' : 'http://localhost:3000',
     siteName: "Brahma Vastu",
     title: "Brahma Vastu - Professional Vastu Consultation & Floor Plan Analysis",
     description: "Professional Vastu Shastra consultation services. Get instant Vastu analysis of your floor plan, expert tips, remedies, and comprehensive guidance.",

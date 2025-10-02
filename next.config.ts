@@ -41,6 +41,16 @@ const nextConfig: NextConfig = {
   // ✅ Optimize for Vercel deployment
   output: 'standalone',
   
+  // ✅ Configure for bharmaspace.com domain
+  env: {
+    NEXT_PUBLIC_SITE_URL: process.env.NODE_ENV === 'production' 
+      ? 'https://bharmaspace.com' 
+      : 'http://localhost:3000',
+    NEXT_PUBLIC_API_URL: process.env.NODE_ENV === 'production'
+      ? 'https://api.bharmaspace.com'
+      : 'http://localhost:8000',
+  },
+  
   // ✅ Enable experimental features for better performance
   // experimental: {
   //   serverComponentsExternalPackages: ['@xenova/transformers'],
@@ -60,6 +70,16 @@ const nextConfig: NextConfig = {
         protocol: 'http',
         hostname: '127.0.0.1',
         port: '8000',
+        pathname: '/static/**',
+      },
+      {
+        protocol: 'https',
+        hostname: 'bharmaspace.com',
+        pathname: '/static/**',
+      },
+      {
+        protocol: 'https',
+        hostname: 'api.bharmaspace.com',
         pathname: '/static/**',
       },
     ],

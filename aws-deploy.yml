@@ -1,0 +1,48 @@
+# AWS Deployment Configuration for bharmaspace.com
+# This file contains the configuration for deploying to AWS
+
+# Environment Variables for Production
+production_env:
+  NODE_ENV: production
+  NEXT_PUBLIC_SITE_URL: https://bharmaspace.com
+  NEXT_PUBLIC_API_URL: https://api.bharmaspace.com
+  NEXT_PUBLIC_TWITTER_HANDLE: "@divyavastu"
+  NEXT_PUBLIC_FACEBOOK_PAGE: "https://facebook.com/divyavastu"
+  NEXT_PUBLIC_INSTAGRAM_PAGE: "https://instagram.com/divyavastu"
+  NEXT_PUBLIC_SITE_NAME: "Brahma Vastu"
+  NEXT_PUBLIC_SITE_DESCRIPTION: "Professional Vastu Shastra consultation services. Get instant Vastu analysis of your floor plan, expert tips, remedies, and comprehensive guidance for your home and office."
+  NEXT_PUBLIC_SITE_KEYWORDS: "Vastu Shastra,Vastu Consultation,Floor Plan Analysis,Home Vastu,Office Vastu,Vastu Expert,Vastu Tips,Vastu Remedies,Brahma Vastu,Vastu Analysis,Vastu Check,Vastu Services"
+  NEXT_PUBLIC_CONTACT_EMAIL: "contact@bharmaspace.com"
+  NEXT_PUBLIC_COMPANY_NAME: "Brahma Vastu"
+  NEXT_PUBLIC_COMPANY_ADDRESS: "India"
+  NEXT_PUBLIC_COMPANY_FOUNDED: "2024"
+
+# Docker Configuration
+docker_config:
+  image_name: "rushabh046/brahma_vastu"
+  tag: "latest"
+  port: 3000
+  host_port: 80
+
+# Domain Configuration
+domain_config:
+  primary_domain: "bharmaspace.com"
+  api_subdomain: "api.bharmaspace.com"
+  ssl_enabled: true
+  force_https: true
+
+# Deployment Instructions
+deployment_steps:
+  1: "Configure your AWS EC2 instance"
+  2: "Set up Docker on your AWS instance"
+  3: "Configure your domain bharmaspace.com to point to your AWS instance IP"
+  4: "Set up SSL certificate using Let's Encrypt or AWS Certificate Manager"
+  5: "Configure your backend API at api.bharmaspace.com"
+  6: "Run the GitHub Actions workflow to deploy"
+
+# Required AWS Setup
+aws_requirements:
+  - "EC2 instance with Docker installed"
+  - "Domain bharmaspace.com pointing to your EC2 instance"
+  - "SSL certificate for HTTPS"
+  - "Backend API server for api.bharmaspace.com"

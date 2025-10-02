@@ -40,7 +40,7 @@ export interface SEOConfig {
 
 const defaultSEOConfig: SEOConfig = {
   siteName: 'Brahma Vastu',
-  siteUrl: 'http://localhost:3000',
+  siteUrl: process.env.NODE_ENV === 'production' ? 'https://bharmaspace.com' : 'http://localhost:3000',
   defaultImage: '/images/bv.png',
   twitterHandle: '@divyavastu'
 };

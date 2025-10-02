@@ -13,6 +13,6 @@ export default function robots(): MetadataRoute.Robots {
         '/private/',
       ],
     },
-    sitemap: 'http://localhost:3000/sitemap.xml',
+    sitemap: process.env.NODE_ENV === 'production' ? 'https://bharmaspace.com/sitemap.xml' : 'http://localhost:3000/sitemap.xml',
   };
 }
