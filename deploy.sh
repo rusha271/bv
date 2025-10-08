@@ -6,7 +6,7 @@ echo "🚀 Starting deployment for bharmaspace.com..."
 # Set production environment
 export NODE_ENV=production
 export NEXT_PUBLIC_SITE_URL=https://bharmaspace.com
-export NEXT_PUBLIC_API_URL=https://api.bharmaspace.com
+export NEXT_PUBLIC_API_URL=http://43.205.120.197:8000
 
 # Clean previous builds
 echo "🧹 Cleaning previous builds..."
@@ -31,12 +31,12 @@ if [ $? -eq 0 ]; then
     echo "1. Upload the .next folder to your hosting provider"
     echo "2. Configure your domain bharmaspace.com to point to your server"
     echo "3. Set up SSL certificate for HTTPS"
-    echo "4. Configure your backend API at api.bharmaspace.com"
+    echo "4. Configure your backend API at http://43.205.120.197:8000"
     echo ""
     echo "🔧 Environment variables to set on your hosting provider:"
     echo "NODE_ENV=production"
     echo "NEXT_PUBLIC_SITE_URL=https://bharmaspace.com"
-    echo "NEXT_PUBLIC_API_URL=https://api.bharmaspace.com"
+    echo "NEXT_PUBLIC_API_URL=http://43.205.120.197:8000"
 else
     echo "❌ Build failed! Please check the errors above."
     exit 1

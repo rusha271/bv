@@ -5,7 +5,7 @@
 production_env:
   NODE_ENV: production
   NEXT_PUBLIC_SITE_URL: https://bharmaspace.com
-  NEXT_PUBLIC_API_URL: https://api.bharmaspace.com
+  NEXT_PUBLIC_API_URL: http://43.205.120.197:8000
   NEXT_PUBLIC_TWITTER_HANDLE: "@divyavastu"
   NEXT_PUBLIC_FACEBOOK_PAGE: "https://facebook.com/divyavastu"
   NEXT_PUBLIC_INSTAGRAM_PAGE: "https://instagram.com/divyavastu"
@@ -27,7 +27,7 @@ docker_config:
 # Domain Configuration
 domain_config:
   primary_domain: "bharmaspace.com"
-  api_subdomain: "api.bharmaspace.com"
+  api_subdomain: "43.205.120.197:8000"
   ssl_enabled: true
   force_https: true
 
@@ -37,7 +37,7 @@ deployment_steps:
   2: "Set up Docker on your AWS instance"
   3: "Configure your domain bharmaspace.com to point to your AWS instance IP"
   4: "Set up SSL certificate using Let's Encrypt or AWS Certificate Manager"
-  5: "Configure your backend API at api.bharmaspace.com"
+  5: "Configure your backend API at http://43.205.120.197:8000"
   6: "Run the GitHub Actions workflow to deploy"
 
 # Required AWS Setup
@@ -45,4 +45,4 @@ aws_requirements:
   - "EC2 instance with Docker installed"
   - "Domain bharmaspace.com pointing to your EC2 instance"
   - "SSL certificate for HTTPS"
-  - "Backend API server for api.bharmaspace.com"
+  - "Backend API server for http://43.205.120.197:8000"

@@ -16,7 +16,7 @@
   "env": {
     "NODE_ENV": "production",
     "NEXT_PUBLIC_SITE_URL": "https://bharmaspace.com",
-    "NEXT_PUBLIC_API_URL": "https://api.bharmaspace.com"
+    "NEXT_PUBLIC_API_URL": "http://43.205.120.197:8000"
   },
   "headers": [
     {
