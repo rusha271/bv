@@ -10,7 +10,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4x
+        uses: actions/checkout@v4
 
       - name: Create .env file
         run: |
@@ -41,6 +41,9 @@ jobs:
     needs: build
     runs-on: ubuntu-latest
     steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
       - name: Fix Docker permissions
         run: |
           sudo chmod 666 /var/run/docker.sock || true
