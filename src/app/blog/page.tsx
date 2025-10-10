@@ -37,13 +37,13 @@ export const metadata: Metadata = {
   openGraph: {
     type: "website",
     locale: "en_US",
-    url: "http://localhost:3000/blog",
+    url: process.env.NODE_ENV === 'production' ? 'https://bharmaspace.com/blog' : 'http://localhost:3000/blog',
     siteName: "Brahma Vastu",
     title: "Vastu Resources - Videos, Books, Tips & Posts",
     description: "Explore comprehensive Vastu resources including educational videos, books, expert tips, and community posts. Learn Vastu Shastra principles and best practices.",
     images: [
       {
-        url: "http://localhost:3000/images/bv.png",
+        url: `${process.env.NODE_ENV === 'production' ? 'https://bharmaspace.com' : 'http://localhost:3000'}/images/bv.png`,
         width: 1200,
         height: 630,
         alt: "Brahma Vastu - Vastu Resources and Learning",
@@ -54,11 +54,11 @@ export const metadata: Metadata = {
     card: "summary_large_image",
     title: "Vastu Resources - Videos, Books, Tips & Posts",
     description: "Explore comprehensive Vastu resources including educational videos, books, expert tips, and community posts.",
-    images: ["http://localhost:3000/images/bv.png"],
+    images: [`${process.env.NODE_ENV === 'production' ? 'https://bharmaspace.com' : 'http://localhost:3000'}/images/bv.png`],
     creator: "@divyavastu",
   },
   alternates: {
-    canonical: "http://localhost:3000/blog",
+    canonical: process.env.NODE_ENV === 'production' ? 'https://bharmaspace.com/blog' : 'http://localhost:3000/blog',
   },
   category: "Vastu Education",
   classification: "Vastu Learning Resources",

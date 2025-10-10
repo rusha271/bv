@@ -4,19 +4,35 @@ import IconButton from '@mui/material/IconButton';
 import Tooltip from '@mui/material/Tooltip';  
 import LinkedInIcon from '@mui/icons-material/LinkedIn';
 import InstagramIcon from '@mui/icons-material/Instagram';
-import WhatsAppIcon from '@mui/icons-material/WhatsApp';
+// import WhatsAppIcon from '@mui/icons-material/WhatsApp';
 import YouTubeIcon from '@mui/icons-material/YouTube';
+// import ShareIcon from '@mui/icons-material/Share';
 import { useGlobalTheme } from '@/contexts/GlobalThemeContext';
 import { useDeviceType } from '@/utils/useDeviceType';
+import ShareButton from '@/components/ui/ShareButton';
 
 const icons = [
   { icon: <LinkedInIcon />, label: 'Linked In', href: 'https://www.linkedin.com/in/karishmakori/?originalSubdomain=in' },
   { icon: <InstagramIcon />, label: 'Instagram', href: 'https://www.instagram.com/brahmavastu.in?igsh=MTZqYWc3eDdzeXBhMg==' },
-  { icon: <WhatsAppIcon />, label: 'WhatsApp', href: '9152293717' },
+  // { icon: <WhatsAppIcon />, label: 'WhatsApp', href: '9152293717' },
   { icon:<YouTubeIcon/> , label:'YouTube' , href:'https://www.youtube.com/@Brahmavastu'}
 ];
 
-export default function SocialIcons({ direction = 'row' }: { direction?: 'row' | 'column' }) {
+interface SocialIconsProps {
+  direction?: 'row' | 'column';
+  showShareButton?: boolean;
+  shareTitle?: string;
+  shareDescription?: string;
+  shareUrl?: string;
+}
+
+export default function SocialIcons({ 
+  direction = 'row',
+  showShareButton = true,
+  shareTitle = 'Brahma Vastu - Professional Vastu Consultation',
+  shareDescription = 'Get instant Vastu analysis of your floor plan, expert tips, and remedies.',
+  shareUrl = ''
+}: SocialIconsProps) {
   const { theme, isDarkMode } = useGlobalTheme();
   const { isMobile, isTablet } = useDeviceType();
   
@@ -89,6 +105,49 @@ export default function SocialIcons({ direction = 'row' }: { direction?: 'row' |
           </IconButton>
         </Tooltip>
       ))}
+      
+      {showShareButton && (
+        <Tooltip title="Share this page" placement="top">
+          <Box
+            sx={{
+              width: iconSize,
+              height: iconSize,
+              borderRadius: isMobile ? 2 : 3,
+              background: isDarkMode
+                ? 'linear-gradient(135deg, rgba(34, 197, 94, 0.1) 0%, rgba(16, 185, 129, 0.1) 100%)'
+                : 'linear-gradient(135deg, rgba(34, 197, 94, 0.05) 0%, rgba(16, 185, 129, 0.05) 100%)',
+              border: isDarkMode
+                ? '1px solid rgba(34, 197, 94, 0.2)'
+                : '1px solid rgba(34, 197, 94, 0.1)',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+              '&:hover': {
+                transform: isMobile ? 'scale(1.05) translateY(-2px)' : 'scale(1.1) translateY(-4px) rotate(5deg)',
+                background: isDarkMode
+                  ? 'linear-gradient(135deg, rgba(34, 197, 94, 0.2) 0%, rgba(16, 185, 129, 0.2) 100%)'
+                  : 'linear-gradient(135deg, rgba(34, 197, 94, 0.1) 0%, rgba(16, 185, 129, 0.1) 100%)',
+                boxShadow: isDarkMode
+                  ? '0 12px 40px rgba(34, 197, 94, 0.3)'
+                  : '0 12px 40px rgba(34, 197, 94, 0.2)',
+                border: isDarkMode
+                  ? '1px solid rgba(34, 197, 94, 0.4)'
+                  : '1px solid rgba(34, 197, 94, 0.3)',
+              },
+            }}
+          >
+            <ShareButton
+              title={shareTitle}
+              description={shareDescription}
+              url={shareUrl}
+              variant="icon"
+              size={isMobile ? "sm" : "md"}
+              className="!p-0 !bg-transparent !border-0 !shadow-none"
+            />
+          </Box>
+        </Tooltip>
+      )}
     </Box>
   );
 } 

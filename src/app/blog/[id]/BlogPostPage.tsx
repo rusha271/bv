@@ -20,6 +20,7 @@ import Navbar from '@/components/ui/Navbar';
 import Footer from '@/components/ui/Footer';
 import { generateBreadcrumbStructuredData } from '@/utils/seoUtils';
 import Link from 'next/link';
+import { BlogShareButton } from '@/components/ui/ShareButton';
 
 interface BlogPostPageProps {
   blog: Blog;
@@ -107,28 +108,40 @@ export default function BlogPostPage({ blog }: BlogPostPageProps) {
               {blog.title}
             </h1>
             
-            <div className="flex flex-wrap items-center gap-4 mb-6 text-sm">
-              {blog.author && (
-                <span style={{ color: theme.palette.text.secondary }}>
-                  By {blog.author}
-                </span>
-              )}
-              {blog.published_date && (
-                <span style={{ color: theme.palette.text.secondary }}>
-                  {new Date(blog.published_date).toLocaleDateString()}
-                </span>
-              )}
-              {blog.category && (
-                <span
-                  className="px-3 py-1 rounded-full text-xs font-medium"
-                  style={{
-                    backgroundColor: theme.palette.primary.main,
-                    color: theme.palette.primary.contrastText,
-                  }}
-                >
-                  {blog.category}
-                </span>
-              )}
+            <div className="flex flex-wrap items-center justify-between gap-4 mb-6">
+              <div className="flex flex-wrap items-center gap-4 text-sm">
+                {blog.author && (
+                  <span style={{ color: theme.palette.text.secondary }}>
+                    By {blog.author}
+                  </span>
+                )}
+                {blog.published_date && (
+                  <span style={{ color: theme.palette.text.secondary }}>
+                    {new Date(blog.published_date).toLocaleDateString()}
+                  </span>
+                )}
+                {blog.category && (
+                  <span
+                    className="px-3 py-1 rounded-full text-xs font-medium"
+                    style={{
+                      backgroundColor: theme.palette.primary.main,
+                      color: theme.palette.primary.contrastText,
+                    }}
+                  >
+                    {blog.category}
+                  </span>
+                )}
+              </div>
+              
+              {/* Share Button */}
+              <BlogShareButton
+                title={blog.title}
+                description={blog.excerpt || blog.content.substring(0, 160)}
+                postId={blog.id}
+                variant="button"
+                size="sm"
+                className="!bg-green-600 hover:!bg-green-700 !text-white"
+              />
             </div>
 
             {/* Featured Image */}

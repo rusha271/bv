@@ -129,9 +129,9 @@ export default function RootLayout({
         <meta name="geo.placename" content="India" />
         <meta name="geo.position" content="20.5937;78.9629" />
         <meta name="ICBM" content="20.5937, 78.9629" />
-        <link rel="canonical" href="http://localhost:3000" />
-        <link rel="alternate" hrefLang="en" href="http://localhost:3000" />
-        <link rel="alternate" hrefLang="x-default" href="http://localhost:3000" />
+        <link rel="canonical" href={process.env.NODE_ENV === 'production' ? 'https://bharmaspace.com' : 'http://localhost:3000'} />
+        <link rel="alternate" hrefLang="en" href={process.env.NODE_ENV === 'production' ? 'https://bharmaspace.com' : 'http://localhost:3000'} />
+        <link rel="alternate" hrefLang="x-default" href={process.env.NODE_ENV === 'production' ? 'https://bharmaspace.com' : 'http://localhost:3000'} />
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{
@@ -140,8 +140,8 @@ export default function RootLayout({
               "@type": "Organization",
               "name": "Brahma Vastu",
               "alternateName": "Brahma Vastu",
-              "url": "http://localhost:3000",
-              "logo": "http://localhost:3000/images/bv.png",
+              "url": process.env.NODE_ENV === 'production' ? 'https://bharmaspace.com' : 'http://localhost:3000',
+              "logo": `${process.env.NODE_ENV === 'production' ? 'https://bharmaspace.com' : 'http://localhost:3000'}/images/bv.png`,
               "description": "Professional Vastu Shastra consultation services. Get instant Vastu analysis of your floor plan, expert tips, remedies, and comprehensive guidance for your home and office.",
               "foundingDate": "2024",
               "founder": {
@@ -199,19 +199,19 @@ export default function RootLayout({
               "@type": "WebSite",
               "name": "Brahma Vastu",
               "alternateName": "Brahma Vastu",
-              "url": "http://localhost:3000",
+              "url": process.env.NODE_ENV === 'production' ? 'https://bharmaspace.com' : 'http://localhost:3000',
               "description": "Get instant Vastu analysis of your floor plan. Upload your floor plan image and receive comprehensive Vastu recommendations for your home or office.",
               "publisher": {
                 "@type": "Organization",
                 "name": "Brahma Vastu",
                 "logo": {
                   "@type": "ImageObject",
-                  "url": "http://localhost:3000/images/bv.png"
+                  "url": `${process.env.NODE_ENV === 'production' ? 'https://bharmaspace.com' : 'http://localhost:3000'}/images/bv.png`
                 }
               },
               "potentialAction": {
                 "@type": "SearchAction",
-                "target": "http://localhost:3000/search?q={search_term_string}",
+                "target": `${process.env.NODE_ENV === 'production' ? 'https://bharmaspace.com' : 'http://localhost:3000'}/search?q={search_term_string}`,
                 "query-input": "required name=search_term_string"
               },
               "mainEntity": {
