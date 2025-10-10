@@ -7,7 +7,7 @@ This guide will help you deploy your Brahma Vastu application to AWS with your d
 
 ### 1. Domain Configuration
 - **Primary Domain**: `bharmaspace.com`
-- **API Subdomain**: `http://43.205.120.197:8000`
+- **API Subdomain**: `https://api.bharmaspace.com`
 - **Environment Variables**: All configured for production
 - **SEO & Meta Tags**: Updated for your domain
 - **Sitemap & Robots**: Configured for bharmaspace.com
@@ -33,7 +33,7 @@ sudo usermod -aG docker $USER
 1. **Point your domain to AWS**:
    - Go to your GoDaddy DNS settings
    - Create an A record: `bharmaspace.com` → `YOUR_AWS_IP`
-   - Configure your backend API at `http://43.205.120.197:8000`
+   - Configure your backend API at `https://api.bharmaspace.com`
 
 ### 3. SSL Certificate Setup
 ```bash
@@ -66,7 +66,7 @@ docker run -d -p 80:3000 \
   --name bv-container \
   -e NODE_ENV=production \
   -e NEXT_PUBLIC_SITE_URL=https://bharmaspace.com \
-  -e NEXT_PUBLIC_API_URL=http://43.205.120.197:8000 \
+  -e NEXT_PUBLIC_API_URL=https://api.bharmaspace.com \
   -e NEXT_PUBLIC_TWITTER_HANDLE=@divyavastu \
   -e NEXT_PUBLIC_FACEBOOK_PAGE=https://facebook.com/divyavastu \
   -e NEXT_PUBLIC_INSTAGRAM_PAGE=https://instagram.com/divyavastu \
@@ -130,7 +130,7 @@ All these variables are automatically set in your deployment:
 ```bash
 NODE_ENV=production
 NEXT_PUBLIC_SITE_URL=https://bharmaspace.com
-NEXT_PUBLIC_API_URL=http://43.205.120.197:8000
+NEXT_PUBLIC_API_URL=https://api.bharmaspace.com
 NEXT_PUBLIC_TWITTER_HANDLE=@divyavastu
 NEXT_PUBLIC_FACEBOOK_PAGE=https://facebook.com/divyavastu
 NEXT_PUBLIC_INSTAGRAM_PAGE=https://instagram.com/divyavastu

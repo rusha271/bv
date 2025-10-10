@@ -47,7 +47,7 @@ const nextConfig: NextConfig = {
       ? 'https://bharmaspace.com' 
       : 'http://localhost:3000',
     NEXT_PUBLIC_API_URL: process.env.NODE_ENV === 'production'
-      ? 'http://43.205.120.197:8000'
+      ? 'https://api.bharmaspace.com'
       : 'http://localhost:8000',
   },
   
@@ -78,9 +78,8 @@ const nextConfig: NextConfig = {
         pathname: '/static/**',
       },
       {
-        protocol: 'http',
-        hostname: '43.205.120.197',
-        port: '8000',
+        protocol: 'https',
+        hostname: 'api.bharmaspace.com',
         pathname: '/static/**',
       },
     ],

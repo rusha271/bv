@@ -16,7 +16,7 @@ jobs:
         run: |
           echo "NODE_ENV=production" >> .env
           echo "NEXT_PUBLIC_SITE_URL=https://bharmaspace.com" >> .env
-          echo "NEXT_PUBLIC_API_URL=http://43.205.120.197:8000" >> .env
+          echo "NEXT_PUBLIC_API_URL=https://api.bharmaspace.com" >> .env
           echo "NEXT_PUBLIC_TWITTER_HANDLE=@divyavastu" >> .env
           echo "NEXT_PUBLIC_FACEBOOK_PAGE=https://facebook.com/divyavastu" >> .env
           echo "NEXT_PUBLIC_INSTAGRAM_PAGE=https://instagram.com/divyavastu" >> .env
