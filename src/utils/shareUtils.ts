@@ -6,6 +6,24 @@ export interface ShareData {
   title: string;
   text?: string;
   url: string;
+  image?: string;
+  hashtags?: string[];
+}
+
+export interface SocialShareData {
+  platform: 'facebook' | 'twitter' | 'linkedin' | 'whatsapp' | 'telegram' | 'email';
+  url: string;
+  title: string;
+  description?: string;
+  image?: string;
+  hashtags?: string[];
+}
+
+export interface ShareResult {
+  success: boolean;
+  method: 'web-share' | 'clipboard' | 'social' | 'error';
+  message: string;
+  platform?: string;
 }
 
 /**
@@ -46,7 +64,7 @@ export function isWebShareSupported(): boolean {
 /**
  * Share content using Web Share API or fallback to copying URL
  */
-export async function shareContent(shareData: ShareData): Promise<boolean> {
+export async function shareContent(shareData: ShareData): Promise<ShareResult> {
   try {
     if (isWebShareSupported()) {
       // Use Web Share API with production URL
@@ -56,18 +74,28 @@ export async function shareContent(shareData: ShareData): Promise<boolean> {
         text: shareData.text,
         url: shareUrl,
       });
-      return true;
+      
+      // Track share event
+      trackShareEvent('web-share', shareData.title);
+      
+      return {
+        success: true,
+        method: 'web-share',
+        message: 'Content shared successfully!',
+      };
     } else {
       // Fallback: copy URL to clipboard
       const shareUrl = getShareUrl(shareData.url);
       await navigator.clipboard.writeText(shareUrl);
       
-      // Show a toast or notification that URL was copied
-      if (typeof window !== 'undefined' && 'Notification' in window) {
-        // You can integrate with your toast system here
-        console.log('URL copied to clipboard:', shareUrl);
-      }
-      return false; // Indicates fallback was used
+      // Track share event
+      trackShareEvent('clipboard', shareData.title);
+      
+      return {
+        success: true,
+        method: 'clipboard',
+        message: 'URL copied to clipboard!',
+      };
     }
   } catch (error) {
     console.error('Error sharing content:', error);
@@ -76,10 +104,20 @@ export async function shareContent(shareData: ShareData): Promise<boolean> {
     try {
       const shareUrl = getShareUrl(shareData.url);
       await navigator.clipboard.writeText(shareUrl);
-      return false;
+      
+      return {
+        success: true,
+        method: 'clipboard',
+        message: 'URL copied to clipboard!',
+      };
     } catch (clipboardError) {
       console.error('Error copying to clipboard:', clipboardError);
-      return false;
+      
+      return {
+        success: false,
+        method: 'error',
+        message: 'Failed to share content. Please try again.',
+      };
     }
   }
 }
@@ -104,8 +142,8 @@ export function generatePageShareData(
  */
 export function generateBlogShareData(
   title: string,
-  description?: string,
-  postId: string
+  postId: string,
+  description?: string
 ): ShareData {
   return generatePageShareData(title, description, `/blog/${postId}`);
 }
@@ -115,8 +153,158 @@ export function generateBlogShareData(
  */
 export function generateVideoShareData(
   title: string,
-  description?: string,
-  videoId: string
+  videoId: string,
+  description?: string
 ): ShareData {
   return generatePageShareData(title, description, `/video/${videoId}`);
+}
+
+/**
+ * Share to specific social media platform
+ */
+export async function shareToSocial(socialData: SocialShareData): Promise<ShareResult> {
+  try {
+    const shareUrl = getShareUrl(socialData.url);
+    let platformUrl = '';
+    
+    switch (socialData.platform) {
+      case 'facebook':
+        platformUrl = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(shareUrl)}`;
+        break;
+      case 'twitter':
+        const twitterText = `${socialData.title}${socialData.hashtags ? ' ' + socialData.hashtags.map(tag => `#${tag}`).join(' ') : ''}`;
+        platformUrl = `https://twitter.com/intent/tweet?text=${encodeURIComponent(twitterText)}&url=${encodeURIComponent(shareUrl)}`;
+        break;
+      case 'linkedin':
+        platformUrl = `https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(shareUrl)}`;
+        break;
+      case 'whatsapp':
+        const whatsappText = `${socialData.title}${socialData.description ? '\n\n' + socialData.description : ''}\n\n${shareUrl}`;
+        platformUrl = `https://wa.me/?text=${encodeURIComponent(whatsappText)}`;
+        break;
+      case 'telegram':
+        const telegramText = `${socialData.title}${socialData.description ? '\n\n' + socialData.description : ''}\n\n${shareUrl}`;
+        platformUrl = `https://t.me/share/url?url=${encodeURIComponent(shareUrl)}&text=${encodeURIComponent(telegramText)}`;
+        break;
+      case 'email':
+        const emailSubject = socialData.title;
+        const emailBody = `${socialData.description || ''}\n\n${shareUrl}`;
+        platformUrl = `mailto:?subject=${encodeURIComponent(emailSubject)}&body=${encodeURIComponent(emailBody)}`;
+        break;
+      default:
+        throw new Error(`Unsupported platform: ${socialData.platform}`);
+    }
+    
+    // Open in new window/tab
+    window.open(platformUrl, '_blank', 'width=600,height=400');
+    
+    // Track share event
+    trackShareEvent('social', socialData.title, socialData.platform);
+    
+    return {
+      success: true,
+      method: 'social',
+      message: `Shared to ${socialData.platform}!`,
+      platform: socialData.platform,
+    };
+  } catch (error) {
+    console.error('Error sharing to social media:', error);
+    
+    return {
+      success: false,
+      method: 'error',
+      message: `Failed to share to ${socialData.platform}. Please try again.`,
+      platform: socialData.platform,
+    };
+  }
+}
+
+/**
+ * Track share events for analytics
+ */
+export function trackShareEvent(method: string, title: string, platform?: string) {
+  try {
+    // Track with Google Analytics if available
+    if (typeof window !== 'undefined' && (window as any).gtag) {
+      (window as any).gtag('event', 'share', {
+        method: method,
+        content_type: 'page',
+        item_id: title,
+        platform: platform,
+      });
+    }
+    
+    // Simple local tracking
+    if (typeof window !== 'undefined') {
+      const shareData = {
+        method,
+        title,
+        platform,
+        timestamp: new Date().toISOString(),
+        url: window.location.href,
+      };
+      
+      // Store in localStorage for basic tracking
+      const existingShares = JSON.parse(localStorage.getItem('share_analytics') || '[]');
+      existingShares.push(shareData);
+      
+      // Keep only last 50 shares
+      if (existingShares.length > 50) {
+        existingShares.splice(0, existingShares.length - 50);
+      }
+      
+      localStorage.setItem('share_analytics', JSON.stringify(existingShares));
+    }
+  } catch (error) {
+    console.error('Error tracking share event:', error);
+  }
+}
+
+/**
+ * Get share analytics data
+ */
+export function getShareAnalytics(): any[] {
+  try {
+    if (typeof window !== 'undefined') {
+      return JSON.parse(localStorage.getItem('share_analytics') || '[]');
+    }
+    return [];
+  } catch (error) {
+    console.error('Error getting share analytics:', error);
+    return [];
+  }
+}
+
+/**
+ * Show toast notification
+ */
+export function showShareToast(message: string, type: 'success' | 'error' | 'info' = 'success') {
+  try {
+    // Create toast element
+    const toast = document.createElement('div');
+    toast.className = `fixed top-4 right-4 z-50 px-6 py-3 rounded-lg shadow-lg transition-all duration-300 transform translate-x-full ${
+      type === 'success' ? 'bg-green-500 text-white' :
+      type === 'error' ? 'bg-red-500 text-white' :
+      'bg-blue-500 text-white'
+    }`;
+    toast.textContent = message;
+    
+    // Add to DOM
+    document.body.appendChild(toast);
+    
+    // Animate in
+    setTimeout(() => {
+      toast.classList.remove('translate-x-full');
+    }, 100);
+    
+    // Remove after 3 seconds
+    setTimeout(() => {
+      toast.classList.add('translate-x-full');
+      setTimeout(() => {
+        document.body.removeChild(toast);
+      }, 300);
+    }, 3000);
+  } catch (error) {
+    console.error('Error showing toast:', error);
+  }
 }
