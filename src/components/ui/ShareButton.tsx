@@ -118,7 +118,7 @@ export default function ShareButton({
       case 'text':
         return `${baseClasses} text-blue-600 hover:text-blue-700 underline flex items-center gap-1 hover:scale-105`;
       default:
-        return `${baseClasses} hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg hover:scale-105 shadow-sm hover:shadow-md`;
+        return `${baseClasses} hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg hover:scale-105 shadow-sm hover:shadow-md text-inherit`;
     }
   };
 
@@ -126,9 +126,9 @@ export default function ShareButton({
     if (copied) {
       return (
         <div className="relative">
-          <Check className="w-4 h-4 text-green-600 animate-bounce" />
+          <Check className="w-4 h-4 text-green-600 dark:text-green-400 animate-bounce" />
           {showAnimation && (
-            <div className="absolute inset-0 w-4 h-4 border-2 border-green-400 rounded-full animate-ping opacity-75" />
+            <div className="absolute inset-0 w-4 h-4 border-2 border-green-400 dark:border-green-300 rounded-full animate-ping opacity-75" />
           )}
         </div>
       );
@@ -136,18 +136,18 @@ export default function ShareButton({
     if (isSharing) {
       return (
         <div className="relative">
-          <div className="w-4 h-4 border-2 border-blue-600 border-t-transparent rounded-full animate-spin" />
+          <div className="w-4 h-4 border-2 border-blue-600 dark:border-blue-400 border-t-transparent rounded-full animate-spin" />
           {showAnimation && (
-            <div className="absolute inset-0 w-4 h-4 border-2 border-blue-400 rounded-full animate-pulse" />
+            <div className="absolute inset-0 w-4 h-4 border-2 border-blue-400 dark:border-blue-300 rounded-full animate-pulse" />
           )}
         </div>
       );
     }
     return (
       <div className="relative">
-        <Share2 className={`w-4 h-4 transition-transform duration-200 ${isHovered ? 'rotate-12 scale-110' : ''}`} />
+        <Share2 className={`w-4 h-4 transition-transform duration-200 text-inherit ${isHovered ? 'rotate-12 scale-110' : ''}`} />
         {showAnimation && isHovered && (
-          <Sparkles className="absolute -top-1 -right-1 w-2 h-2 text-yellow-400 animate-pulse" />
+          <Sparkles className="absolute -top-1 -right-1 w-2 h-2 text-yellow-400 dark:text-yellow-300 animate-pulse" />
         )}
       </div>
     );

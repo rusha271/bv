@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+  import React, { useState } from 'react';
 import Box from '@mui/material/Box';
 import IconButton from '@mui/material/IconButton';
 import Tooltip from '@mui/material/Tooltip';  
@@ -6,32 +6,44 @@ import LinkedInIcon from '@mui/icons-material/LinkedIn';
 import InstagramIcon from '@mui/icons-material/Instagram';
 // import WhatsAppIcon from '@mui/icons-material/WhatsApp';
 import YouTubeIcon from '@mui/icons-material/YouTube';
-// import ShareIcon from '@mui/icons-material/Share';
+import { Share2 } from 'lucide-react';
 import { useGlobalTheme } from '@/contexts/GlobalThemeContext';
 import { useDeviceType } from '@/utils/useDeviceType';
-import { GradientShareButton, FloatingShareButton } from '@/components/ui/ShareButton';
+import ShareModal from '@/components/Modals/ShareModal';
 
 const icons = [
   { 
     icon: <LinkedInIcon />, 
     label: 'LinkedIn', 
     href: 'https://www.linkedin.com/in/karishmakori/?originalSubdomain=in',
-    color: 'from-blue-600 to-blue-700',
-    hoverColor: 'from-blue-500 to-blue-600'
+    color: 'rgba(0, 119, 181, 0.1)',
+    hoverColor: 'rgba(0, 119, 181, 0.2)',
+    borderColor: 'rgba(0, 119, 181, 0.2)',
+    hoverBorderColor: 'rgba(0, 119, 181, 0.4)',
+    textColor: '#0077b5',
+    shadowColor: 'rgba(0, 119, 181, 0.3)'
   },
   { 
     icon: <InstagramIcon />, 
     label: 'Instagram', 
     href: 'https://www.instagram.com/brahmavastu.in?igsh=MTZqYWc3eDdzeXBhMg==',
-    color: 'from-pink-500 to-purple-600',
-    hoverColor: 'from-pink-400 to-purple-500'
+    color: 'rgba(238, 42, 123, 0.1)',
+    hoverColor: 'rgba(238, 42, 123, 0.2)',
+    borderColor: 'rgba(238, 42, 123, 0.2)',
+    hoverBorderColor: 'rgba(238, 42, 123, 0.4)',
+    textColor: '#ee2a7b',
+    shadowColor: 'rgba(238, 42, 123, 0.3)'
   },
   { 
     icon: <YouTubeIcon/>, 
     label: 'YouTube', 
     href: 'https://www.youtube.com/@Brahmavastu',
-    color: 'from-red-500 to-red-600',
-    hoverColor: 'from-red-400 to-red-500'
+    color: 'rgba(255, 0, 0, 0.1)',
+    hoverColor: 'rgba(255, 0, 0, 0.2)',
+    borderColor: 'rgba(255, 0, 0, 0.2)',
+    hoverBorderColor: 'rgba(255, 0, 0, 0.4)',
+    textColor: '#ff0000',
+    shadowColor: 'rgba(255, 0, 0, 0.3)'
   }
 ];
 
@@ -52,18 +64,19 @@ export default function SocialIcons({
   shareTitle = 'Brahma Vastu - Professional Vastu Consultation',
   shareDescription = 'Get instant Vastu analysis of your floor plan, expert tips, and remedies.',
   shareUrl = '',
-  variant = 'modern',
+  variant = 'classic',
   showLabels = false,
   animated = true
 }: SocialIconsProps) {
   const { theme, isDarkMode } = useGlobalTheme();
   const { isMobile, isTablet } = useDeviceType();
   const [hoveredIcon, setHoveredIcon] = useState<string | null>(null);
+  const [showShareModal, setShowShareModal] = useState(false);
   
-  // Responsive sizing
-  const iconSize = isMobile ? 40 : isTablet ? 48 : 56;
-  const containerPadding = isMobile ? 4 : 6;
-  const gap = isMobile ? 3 : 4;
+  // Responsive sizing - restored to original sizes
+  const iconSize = isMobile ? 32 : isTablet ? 40 : 48;
+  const containerPadding = isMobile ? 1 : 2;
+  const gap = isMobile ? 1 : 2;
 
   const getContainerStyles = () => {
     switch (variant) {
@@ -107,7 +120,7 @@ export default function SocialIcons({
     const baseStyles = {
       width: iconSize,
       height: iconSize,
-      borderRadius: isMobile ? 12 : 16,
+      borderRadius: isMobile ? 8 : 12,
       transition: animated ? 'all 0.4s cubic-bezier(0.4, 0, 0.2, 1)' : 'none',
       position: 'relative' as const,
       overflow: 'hidden' as const,
@@ -127,33 +140,30 @@ export default function SocialIcons({
       case 'classic':
         return {
           ...baseStyles,
-          background: isDarkMode
-            ? 'linear-gradient(135deg, rgba(59, 130, 246, 0.1) 0%, rgba(147, 51, 234, 0.1) 100%)'
-            : 'linear-gradient(135deg, rgba(59, 130, 246, 0.05) 0%, rgba(147, 51, 234, 0.05) 100%)',
-          border: isDarkMode
-            ? '1px solid rgba(59, 130, 246, 0.2)'
-            : '1px solid rgba(59, 130, 246, 0.1)',
-          color: isDarkMode ? '#60a5fa' : '#1e40af',
+          background: isDarkMode ? iconData.color : iconData.color,
+          border: isDarkMode ? `1px solid ${iconData.borderColor}` : `1px solid ${iconData.borderColor}`,
+          color: isDarkMode ? iconData.textColor : iconData.textColor,
           '&:hover': animated ? {
             transform: isMobile ? 'scale(1.05) translateY(-2px)' : 'scale(1.1) translateY(-4px) rotate(5deg)',
-            background: isDarkMode
-              ? 'linear-gradient(135deg, rgba(59, 130, 246, 0.2) 0%, rgba(147, 51, 234, 0.2) 100%)'
-              : 'linear-gradient(135deg, rgba(59, 130, 246, 0.1) 0%, rgba(147, 51, 234, 0.1) 100%)',
+            background: isDarkMode ? iconData.hoverColor : iconData.hoverColor,
             boxShadow: isDarkMode
-              ? '0 12px 40px rgba(59, 130, 246, 0.3)'
-              : '0 12px 40px rgba(59, 130, 246, 0.2)',
+              ? `0 12px 40px ${iconData.shadowColor}`
+              : `0 12px 40px ${iconData.shadowColor}`,
+            border: isDarkMode ? `1px solid ${iconData.hoverBorderColor}` : `1px solid ${iconData.hoverBorderColor}`,
           } : {},
         };
       default: // modern
         return {
           ...baseStyles,
-          background: `linear-gradient(135deg, ${iconData.color})`,
-          color: 'white',
+          background: isDarkMode ? iconData.color : iconData.color,
+          border: isDarkMode ? `1px solid ${iconData.borderColor}` : `1px solid ${iconData.borderColor}`,
+          color: isDarkMode ? iconData.textColor : iconData.textColor,
           boxShadow: `0 8px 32px rgba(0, 0, 0, 0.2), 0 0 0 1px rgba(255, 255, 255, 0.1)`,
           '&:hover': animated ? {
             transform: isMobile ? 'scale(1.05) translateY(-2px)' : 'scale(1.1) translateY(-4px)',
-            background: `linear-gradient(135deg, ${iconData.hoverColor})`,
-            boxShadow: `0 16px 48px rgba(0, 0, 0, 0.3), 0 0 0 1px rgba(255, 255, 255, 0.2)`,
+            background: isDarkMode ? iconData.hoverColor : iconData.hoverColor,
+            boxShadow: `0 16px 48px ${iconData.shadowColor}, 0 0 0 1px rgba(255, 255, 255, 0.2)`,
+            border: isDarkMode ? `1px solid ${iconData.hoverBorderColor}` : `1px solid ${iconData.hoverBorderColor}`,
           } : {},
         };
     }
@@ -167,11 +177,11 @@ export default function SocialIcons({
         gap: gap,
         justifyContent: 'center',
         alignItems: 'center',
-        width: isMobile ? '100%' : 'auto',
+        width: isMobile ? '100%' : '50%',
         p: containerPadding,
-        borderRadius: isMobile ? 16 : 24,
-        minWidth: { xs: "90vw", sm: 320 },
-        maxWidth: { xs: "90vw", sm: 600 },
+        borderRadius: isMobile ? 12 : 16,
+        minWidth: { xs: "90vw", sm: 480 },
+        maxWidth: { xs: "90vw", sm: 480 },
         ...getContainerStyles(),
       }}
     >
@@ -213,37 +223,67 @@ export default function SocialIcons({
       
       {showShareButton && (
         <Tooltip title="Share this page" placement="top" arrow>
-          <Box
+          <IconButton
+            onClick={() => setShowShareModal(true)}
+            onMouseEnter={() => setHoveredIcon('Share')}
+            onMouseLeave={() => setHoveredIcon(null)}
             sx={{
               width: iconSize,
               height: iconSize,
-              borderRadius: isMobile ? 12 : 16,
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
+              borderRadius: isMobile ? 8 : 12,
               transition: animated ? 'all 0.4s cubic-bezier(0.4, 0, 0.2, 1)' : 'none',
-              ...(variant === 'modern' && {
-                background: 'linear-gradient(135deg, from-emerald-500 to-teal-600)',
-                boxShadow: '0 8px 32px rgba(0, 0, 0, 0.2), 0 0 0 1px rgba(255, 255, 255, 0.1)',
-                '&:hover': animated ? {
-                  transform: isMobile ? 'scale(1.05) translateY(-2px)' : 'scale(1.1) translateY(-4px)',
-                  boxShadow: '0 16px 48px rgba(0, 0, 0, 0.3), 0 0 0 1px rgba(255, 255, 255, 0.2)',
-                } : {},
-              }),
+              position: 'relative' as const,
+              overflow: 'hidden' as const,
+              background: isDarkMode
+                ? 'rgba(255, 0, 0, 0.1)'
+                : 'rgba(255, 0, 0, 0.05)',
+              border: isDarkMode
+                ? '1px solid rgba(255, 0, 0, 0.2)'
+                : '1px solid rgba(255, 0, 0, 0.1)',
+              color: isDarkMode ? '#ff0000' : '#dc2626',
+              '&:hover': animated ? {
+                transform: isMobile ? 'scale(1.05) translateY(-2px)' : 'scale(1.1) translateY(-4px) rotate(5deg)',
+                background: isDarkMode
+                  ? 'rgba(255, 0, 0, 0.2)'
+                  : 'rgba(255, 0, 0, 0.1)',
+                boxShadow: isDarkMode
+                  ? '0 12px 40px rgba(255, 0, 0, 0.3)'
+                  : '0 12px 40px rgba(255, 0, 0, 0.2)',
+                border: isDarkMode
+                  ? '1px solid rgba(255, 0, 0, 0.4)'
+                  : '1px solid rgba(255, 0, 0, 0.3)',
+              } : {},
             }}
+            size={isMobile ? "medium" : "large"}
+            aria-label="Share this page"
           >
-            <FloatingShareButton
-              title={shareTitle}
-              description={shareDescription}
-              url={shareUrl}
-              variant="icon"
-              size={isMobile ? "sm" : "md"}
-              className="!p-0 !bg-transparent !border-0 !shadow-none"
-              showAnimation={animated}
-            />
-          </Box>
+            {animated && hoveredIcon === 'Share' && (
+              <Box
+                sx={{
+                  position: 'absolute',
+                  inset: 0,
+                  background: 'radial-gradient(circle, rgba(255,255,255,0.2) 0%, transparent 70%)',
+                  animation: 'pulse 1.5s ease-in-out infinite',
+                  '@keyframes pulse': {
+                    '0%, 100%': { opacity: 0.5 },
+                    '50%': { opacity: 1 },
+                  },
+                }}
+              />
+            )}
+            <Share2 className="w-5 h-5" />
+          </IconButton>
         </Tooltip>
       )}
+      
+      {/* Share Modal */}
+      <ShareModal
+        isOpen={showShareModal}
+        onClose={() => setShowShareModal(false)}
+        title={shareTitle}
+        description={shareDescription}
+        url={shareUrl}
+      />
     </Box>
   );
 } 
