@@ -5,6 +5,7 @@ import { useGlobalTheme } from '@/contexts/GlobalThemeContext';
 import { useDeviceType } from '@/utils/useDeviceType';
 import { Video } from '@/utils/apiService';
 import { startVideoTracking, updateVideoWatchTime, trackVideoView, stopVideoTracking } from '@/utils/videoTracking';
+import { getImageUrl } from '@/utils/imageUtils';
 
 interface VideoModalProps {
   video: Video | null;
@@ -36,14 +37,9 @@ export default function VideoModal({ video, isOpen, onClose }: VideoModalProps) 
 
   if (!isOpen || !video) return null;
 
-  // Construct full URLs from backend response
-  const videoUrl = video.url?.startsWith('/') 
-    ? `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}${video.url}`
-    : video.url;
-
-  const thumbnailUrl = (video.thumbnail_url || video.thumbnail)?.startsWith('/')
-    ? `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}${video.thumbnail_url || video.thumbnail}`
-    : (video.thumbnail_url || video.thumbnail);
+  // Construct full URLs from backend response using utility function
+  const videoUrl = getImageUrl(video.url || '');
+  const thumbnailUrl = getImageUrl(video.thumbnail_url || video.thumbnail || '');
 
   const handleBackdropClick = (e: React.MouseEvent) => {
     if (e.target === e.currentTarget) {
@@ -97,6 +93,39 @@ export default function VideoModal({ video, isOpen, onClose }: VideoModalProps) 
       } else if (videoDuration >= 15 && (watchTime >= 30 || percentage >= 50)) {
         trackVideoView(video.id, watchTime, videoDuration, video.category);
         stopVideoTracking(video.id);
+      }
+    }
+  };
+
+  const handleVideoError = (e: React.SyntheticEvent<HTMLVideoElement, Event>) => {
+    const video = e.currentTarget;
+    const error = video.error;
+    
+    if (error) {
+      console.error('Video error:', {
+        code: error.code,
+        message: error.message,
+        networkState: video.networkState,
+        readyState: video.readyState,
+        src: video.src
+      });
+      
+      // Handle specific error cases
+      switch (error.code) {
+        case MediaError.MEDIA_ERR_ABORTED:
+          console.warn('Video loading was aborted');
+          break;
+        case MediaError.MEDIA_ERR_NETWORK:
+          console.warn('Network error occurred while loading video');
+          break;
+        case MediaError.MEDIA_ERR_DECODE:
+          console.warn('Error occurred while decoding video');
+          break;
+        case MediaError.MEDIA_ERR_SRC_NOT_SUPPORTED:
+          console.warn('Video format not supported or blocked');
+          break;
+        default:
+          console.warn('Unknown video error occurred');
       }
     }
   };
@@ -170,6 +199,7 @@ export default function VideoModal({ video, isOpen, onClose }: VideoModalProps) 
               onTimeUpdate={handleVideoTimeUpdate}
               onEnded={handleVideoEnded}
               onPause={handleVideoPause}
+              onError={handleVideoError}
             >
               <source src={videoUrl} type="video/mp4" />
               <source src={videoUrl} type="video/webm" />

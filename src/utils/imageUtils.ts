@@ -18,14 +18,20 @@ export const getImageUrl = (imagePath: string, baseURL?: string): string => {
     return imagePath;
   }
 
-  // If it's a relative path starting with /, return as is (for local images)
+  // If it's a relative path starting with /, check if it's a local image or API path
   if (imagePath.startsWith('/')) {
+    // If it starts with /static/, it's an API path that needs the base URL
+    if (imagePath.startsWith('/static/')) {
+      const apiBaseURL = baseURL || process.env.NEXT_PUBLIC_API_URL || 'https://api.bharmaspace.com';
+      return `${apiBaseURL}${imagePath}`;
+    }
+    // Otherwise, it's a local image path
     return imagePath;
   }
 
-  // For external API paths, construct full URL
+  // For external API paths without leading slash, construct full URL
   const apiBaseURL = baseURL || process.env.NEXT_PUBLIC_API_URL || 'https://api.bharmaspace.com';
-  return `${apiBaseURL}${imagePath.startsWith('/') ? '' : '/'}${imagePath}`;
+  return `${apiBaseURL}/${imagePath}`;
 };
 
 /**
