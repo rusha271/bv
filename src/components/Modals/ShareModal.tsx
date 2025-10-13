@@ -144,11 +144,28 @@ export default function ShareModal({
 
   const handleCopyUrl = async () => {
     try {
-      await navigator.clipboard.writeText(shareUrl);
+      // Try modern clipboard API first
+      if (navigator.clipboard && window.isSecureContext) {
+        await navigator.clipboard.writeText(shareUrl);
+      } else {
+        // Fallback for older browsers or non-secure contexts
+        const textArea = document.createElement('textarea');
+        textArea.value = shareUrl;
+        textArea.style.position = 'fixed';
+        textArea.style.left = '-999999px';
+        textArea.style.top = '-999999px';
+        document.body.appendChild(textArea);
+        textArea.focus();
+        textArea.select();
+        document.execCommand('copy');
+        document.body.removeChild(textArea);
+      }
+      
       setCopied(true);
       showShareToast('URL copied to clipboard!', 'success');
-      setTimeout(() => setCopied(false), 2000);
+      setTimeout(() => setCopied(false), 3000);
     } catch (error) {
+      console.error('Copy failed:', error);
       showShareToast('Failed to copy URL. Please try again.', 'error');
     }
   };
@@ -244,7 +261,9 @@ export default function ShareModal({
                     type="text"
                     value={shareUrl}
                     readOnly
-                    className="flex-1 px-2 py-1.5 border border-gray-300 dark:border-gray-600 rounded-md bg-gray-50 dark:bg-gray-700 text-xs text-gray-600 dark:text-gray-300 sm:px-3 sm:py-2 sm:rounded-lg sm:text-sm"
+                    onClick={(e) => e.currentTarget.select()}
+                    className="flex-1 px-2 py-1.5 border border-gray-300 dark:border-gray-600 rounded-md bg-gray-50 dark:bg-gray-700 text-xs text-gray-600 dark:text-gray-300 sm:px-3 sm:py-2 sm:rounded-lg sm:text-sm cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors"
+                    title="Click to select all text"
                   />
                   <button
                     onClick={handleCopyUrl}
@@ -253,6 +272,7 @@ export default function ShareModal({
                         ? 'bg-green-500 text-white'
                         : 'bg-gray-200 dark:bg-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-500'
                     }`}
+                    title={copied ? 'Copied!' : 'Copy to clipboard'}
                   >
                     {copied ? <Check className="w-3 h-3 sm:w-4 sm:h-4" /> : <Copy className="w-3 h-3 sm:w-4 sm:h-4" />}
                   </button>

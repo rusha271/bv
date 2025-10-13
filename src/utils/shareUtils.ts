@@ -86,7 +86,23 @@ export async function shareContent(shareData: ShareData): Promise<ShareResult> {
     } else {
       // Fallback: copy URL to clipboard
       const shareUrl = getShareUrl(shareData.url);
-      await navigator.clipboard.writeText(shareUrl);
+      
+      // Try modern clipboard API first
+      if (navigator.clipboard && window.isSecureContext) {
+        await navigator.clipboard.writeText(shareUrl);
+      } else {
+        // Fallback for older browsers or non-secure contexts
+        const textArea = document.createElement('textarea');
+        textArea.value = shareUrl;
+        textArea.style.position = 'fixed';
+        textArea.style.left = '-999999px';
+        textArea.style.top = '-999999px';
+        document.body.appendChild(textArea);
+        textArea.focus();
+        textArea.select();
+        document.execCommand('copy');
+        document.body.removeChild(textArea);
+      }
       
       // Track share event
       trackShareEvent('clipboard', shareData.title);
@@ -103,7 +119,23 @@ export async function shareContent(shareData: ShareData): Promise<ShareResult> {
     // Final fallback: try to copy to clipboard
     try {
       const shareUrl = getShareUrl(shareData.url);
-      await navigator.clipboard.writeText(shareUrl);
+      
+      // Try modern clipboard API first
+      if (navigator.clipboard && window.isSecureContext) {
+        await navigator.clipboard.writeText(shareUrl);
+      } else {
+        // Fallback for older browsers or non-secure contexts
+        const textArea = document.createElement('textarea');
+        textArea.value = shareUrl;
+        textArea.style.position = 'fixed';
+        textArea.style.left = '-999999px';
+        textArea.style.top = '-999999px';
+        document.body.appendChild(textArea);
+        textArea.focus();
+        textArea.select();
+        document.execCommand('copy');
+        document.body.removeChild(textArea);
+      }
       
       return {
         success: true,
@@ -280,30 +312,49 @@ export function getShareAnalytics(): any[] {
  */
 export function showShareToast(message: string, type: 'success' | 'error' | 'info' = 'success') {
   try {
+    // Remove any existing toasts first
+    const existingToasts = document.querySelectorAll('.share-toast');
+    existingToasts.forEach(toast => toast.remove());
+    
     // Create toast element
     const toast = document.createElement('div');
-    toast.className = `fixed top-4 right-4 z-50 px-6 py-3 rounded-lg shadow-lg transition-all duration-300 transform translate-x-full ${
-      type === 'success' ? 'bg-green-500 text-white' :
-      type === 'error' ? 'bg-red-500 text-white' :
-      'bg-blue-500 text-white'
+    toast.className = `share-toast fixed top-4 right-4 z-[9999] px-6 py-4 rounded-xl shadow-2xl transition-all duration-500 transform translate-x-full border-2 ${
+      type === 'success' ? 'bg-green-500 text-white border-green-400' :
+      type === 'error' ? 'bg-red-500 text-white border-red-400' :
+      'bg-blue-500 text-white border-blue-400'
     }`;
-    toast.textContent = message;
+    
+    // Create toast content with icon
+    const icon = type === 'success' ? '✓' : type === 'error' ? '✕' : 'ℹ';
+    toast.innerHTML = `
+      <div class="flex items-center gap-3">
+        <div class="text-xl font-bold">${icon}</div>
+        <div class="font-medium text-sm">${message}</div>
+      </div>
+    `;
     
     // Add to DOM
     document.body.appendChild(toast);
     
+    // Force reflow
+    toast.offsetHeight;
+    
     // Animate in
     setTimeout(() => {
       toast.classList.remove('translate-x-full');
-    }, 100);
+      toast.classList.add('translate-x-0');
+    }, 50);
     
-    // Remove after 3 seconds
+    // Remove after 4 seconds
     setTimeout(() => {
+      toast.classList.remove('translate-x-0');
       toast.classList.add('translate-x-full');
       setTimeout(() => {
-        document.body.removeChild(toast);
-      }, 300);
-    }, 3000);
+        if (document.body.contains(toast)) {
+          document.body.removeChild(toast);
+        }
+      }, 500);
+    }, 4000);
   } catch (error) {
     console.error('Error showing toast:', error);
   }

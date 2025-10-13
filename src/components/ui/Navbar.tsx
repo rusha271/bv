@@ -9,7 +9,7 @@ import Button from '@mui/material/Button';
 import IconButton from '@mui/material/IconButton';
 import useScrollTrigger from '@mui/material/useScrollTrigger';
 import Slide from '@mui/material/Slide';
-import Image from 'next/image';
+import RobustImage from './RobustImage';
 import { useGlobalTheme } from '@/contexts/GlobalThemeContext';
 import { apiService } from '@/utils/apiService';
 import { sessionCache } from '@/utils/apiCache';
@@ -68,19 +68,6 @@ const Navbar = memo(function Navbar() {
   const isAuthenticated = !!user;
   const isAdmin = isAuthenticated && user?.role?.name === 'admin';
 
-  // Helper function to construct proper image URL
-  const getImageUrl = (imagePath: string) => {
-    if (imagePath.startsWith('http')) {
-      // console.log('Using full URL:', imagePath);
-      return imagePath;
-    }
-    // If the path doesn't start with http, it's likely a relative path from the API
-    // We need to construct the full URL using the same base URL as the apiService
-    const baseURL = apiService.getBaseURL();
-    const fullUrl = imagePath.startsWith('/') ? `${baseURL}${imagePath}` : `${baseURL}/${imagePath}`;
-    // console.log('Constructed URL:', fullUrl, 'from path:', imagePath, 'baseURL:', baseURL);
-    return fullUrl;
-  };
 
   useEffect(() => {
     // Fetch uploaded logo from site settings with caching - optimized
@@ -234,11 +221,12 @@ const Navbar = memo(function Navbar() {
                       minHeight: 40,
                     }}
                   >
-                    <Image
-                      src={uploadedLogo ? getImageUrl(uploadedLogo) : "/images/bv.png"}
+                    <RobustImage
+                      src={uploadedLogo || "/images/bv.png"}
                       alt="Brahma Vastu Logo"
                       width={32}
                       height={32}
+                      fallbackSrc="/images/bv.png"
                       style={{ 
                         borderRadius: 6,
                         width: "32px",
@@ -246,10 +234,7 @@ const Navbar = memo(function Navbar() {
                         objectFit: "contain",
                         display: "block"
                       }}
-                      onError={(e) => {
-                        const target = e.target as HTMLImageElement;
-                        target.src = "/images/bv.png";
-                      }}
+                      priority={true}
                     />
                   </Box>
                   <Typography 

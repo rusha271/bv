@@ -1,6 +1,9 @@
 "use client";
 
 import React, { useState, useEffect } from 'react';
+import dynamic from 'next/dynamic';
+import RobustImage from '@/components/ui/RobustImage';
+
 // Make Navbar and Footer client-only to prevent hydration issues
 const ClientNavbar = dynamic(() => import('@/components/ui/Navbar'), { 
   ssr: false,
@@ -23,7 +26,6 @@ const ClientFooter = dynamic(() => import('@/components/ui/Footer'), {
   ssr: false,
   loading: () => null
 });
-import dynamic from 'next/dynamic';
 import { useGlobalTheme } from '@/contexts/GlobalThemeContext';
 import Tabs from '@mui/material/Tabs';
 import Tab from '@mui/material/Tab';
@@ -277,22 +279,16 @@ function TipsCardsList() {
               
               {tip.image_url ? (
                 <Box sx={{ mb: 2, borderRadius: 1, overflow: 'hidden' }}>
-                  <img 
-                    src={String(tip.image_url).startsWith('http') ? String(tip.image_url) : `${api.getBaseURL()}${tip.image_url}`}
+                  <RobustImage
+                    src={String(tip.image_url)}
                     alt={tip.title || 'Tip image'}
+                    width={300}
+                    height={120}
+                    fallbackSrc="/images/bv.png"
                     style={{ 
                       width: '100%', 
                       height: '120px', 
                       objectFit: 'cover' 
-                    }}
-                    onError={(e) => {
-                      const fullUrl = String(tip.image_url).startsWith('http') ? String(tip.image_url) : `${api.getBaseURL()}${tip.image_url}`;
-                      console.error('Image failed to load:', {
-                        original: tip.image_url,
-                        fullUrl: fullUrl,
-                        apiBaseUrl: api.getBaseURL()
-                      });
-                      e.currentTarget.style.display = 'none';
                     }}
                   />
                 </Box>

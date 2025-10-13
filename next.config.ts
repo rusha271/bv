@@ -82,8 +82,15 @@ const nextConfig: NextConfig = {
         hostname: 'api.bharmaspace.com',
         pathname: '/static/**',
       },
+      {
+        protocol: 'https',
+        hostname: 'api.bharmaspace.com',
+        pathname: '/**',
+      },
     ],
     unoptimized: false,
+    dangerouslyAllowSVG: true,
+    contentSecurityPolicy: "default-src 'self'; script-src 'none'; sandbox;",
   },
 
   // ✅ Suppress hydration warnings in development

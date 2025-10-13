@@ -62,7 +62,7 @@ export default function SocialIcons({
   direction = 'row',
   showShareButton = true,
   shareTitle = 'Brahma Vastu - Professional Vastu Consultation',
-  shareDescription = 'Get instant Vastu analysis of your floor plan, expert tips, and remedies.',
+  shareDescription = 'Get instant vastu analysis of your floor plan, expert tips and remedies.',
   shareUrl = '',
   variant = 'classic',
   showLabels = false,
