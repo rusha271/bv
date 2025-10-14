@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useRef, useState, useEffect } from 'react';
-import { Box, Typography, Slider, FormControlLabel, Switch, Button, Paper, TextField } from '@mui/material';
+import { Box, Typography, Slider, FormControlLabel, Switch, Button, Paper, TextField, Tabs, Tab } from '@mui/material';
 import DownloadIcon from '@mui/icons-material/Download';
 import Image from 'next/image';
 import CircularImagePoints from '@/components/CircularImagePoints';
@@ -14,6 +14,13 @@ interface ChakraEditorProps {
   floorPlanImageUrl: string | null;
 }
 
+// Define available chakra types
+const CHAKRA_TYPES = [
+  { id: 'modern', label: 'Modern Vastu', imagePath: '/images/Shakti Chakra_Size.png' },
+  // { id: 'shakti', label: 'Shakti Chakra', imagePath: '/images/Shakti Chakra_Size.png' },
+  { id: 'vedic', label: 'Vedic Chakra', imagePath: '/images/Shakti Chakra_Vedic VAstu or 81 Pad Vastu-modified.png' }
+];
+
 const ChakraEditor: React.FC<ChakraEditorProps> = ({ floorPlanImageUrl }) => {
   const [rotation, setRotation] = useState(0);
   const [zoom, setZoom] = useState(1);
@@ -23,6 +30,14 @@ const ChakraEditor: React.FC<ChakraEditorProps> = ({ floorPlanImageUrl }) => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [chakraPointsData, setChakraPointsData] = useState<{ [key: string]: ChakraPoint }>({});
   const [isLoadingChakraPoints, setIsLoadingChakraPoints] = useState(true);
+  const [selectedChakraType, setSelectedChakraType] = useState(0); // 0 = Modern, 1 = Vedic
+
+  // Ensure selectedChakraType is always valid
+  useEffect(() => {
+    if (selectedChakraType >= CHAKRA_TYPES.length) {
+      setSelectedChakraType(0);
+    }
+  }, [selectedChakraType]);
 
   const floorPlanRef = useRef<HTMLDivElement>(null);
   const [isDragging, setIsDragging] = useState(false);
@@ -288,9 +303,14 @@ const ChakraEditor: React.FC<ChakraEditorProps> = ({ floorPlanImageUrl }) => {
       ctx.fillRect(0, 0, containerRect.width, containerRect.height);
 
       // Find the chakra image and floor plan image
-      const chakraImg = chakraViewerElement.querySelector('img[alt="Vastu Chakra"]') as HTMLImageElement;
+      const chakraImg = chakraViewerElement.querySelector('img[alt*="Chakra"]') as HTMLImageElement;
       const floorPlanImg = chakraViewerElement.querySelector('img[alt="Floor Plan"]') as HTMLImageElement;
       const centerMark = chakraViewerElement.querySelector('[style*="backgroundColor: red"]') as HTMLElement;
+      
+      console.log('Download Debug - Chakra Image Found:', !!chakraImg);
+      console.log('Download Debug - Floor Plan Image Found:', !!floorPlanImg);
+      console.log('Download Debug - Chakra Image Alt:', chakraImg?.alt);
+      console.log('Download Debug - Chakra Image Complete:', chakraImg?.complete);
 
       // Get the transform container to understand positioning
       const transformContainer = chakraViewerElement.querySelector('[style*="transform: translate"]') as HTMLElement;
@@ -305,10 +325,13 @@ const ChakraEditor: React.FC<ChakraEditorProps> = ({ floorPlanImageUrl }) => {
       const scale = zoom;
 
       // Draw chakra image if it exists - maintain exact dimensions with high quality
-      if (chakraImg && chakraImg.complete) {
+      if (chakraImg && chakraImg.complete && chakraImg.naturalWidth > 0) {
+        console.log('Download Debug - Drawing Chakra Image');
         // Use the natural dimensions of the chakra image to maintain exact size
         const chakraNaturalWidth = chakraImg.naturalWidth;
         const chakraNaturalHeight = chakraImg.naturalHeight;
+        
+        console.log('Download Debug - Chakra Natural Dimensions:', chakraNaturalWidth, 'x', chakraNaturalHeight);
         
         // Calculate the display size based on the container and natural aspect ratio
         const maxChakraSize = Math.min(containerRect.width, containerRect.height) * 0.8; // 80% of container
@@ -329,6 +352,8 @@ const ChakraEditor: React.FC<ChakraEditorProps> = ({ floorPlanImageUrl }) => {
         chakraDisplayWidth *= scale;
         chakraDisplayHeight *= scale;
         
+        console.log('Download Debug - Chakra Display Size:', chakraDisplayWidth, 'x', chakraDisplayHeight);
+        
         ctx.save();
         ctx.translate(containerCenterX + transformX, containerCenterY + transformY);
         ctx.rotate((-rotation * Math.PI) / 180);
@@ -346,13 +371,22 @@ const ChakraEditor: React.FC<ChakraEditorProps> = ({ floorPlanImageUrl }) => {
           chakraDisplayHeight
         );
         ctx.restore();
+        console.log('Download Debug - Chakra Image Drawn Successfully');
+      } else {
+        console.log('Download Debug - Chakra Image Not Ready or Not Found');
+        console.log('Download Debug - Chakra Image Complete:', chakraImg?.complete);
+        console.log('Download Debug - Chakra Image Natural Width:', chakraImg?.naturalWidth);
       }
 
       // Draw floor plan image if it exists with high quality
       if (floorPlanImg && floorPlanImg.complete) {
+        console.log('Download Debug - Drawing Floor Plan Image');
         const floorPlanRect = floorPlanImg.getBoundingClientRect();
         const floorPlanX = containerCenterX + transformX - (floorPlanRect.width * scale) / 2;
         const floorPlanY = containerCenterY + transformY - (floorPlanRect.height * scale) / 2;
+        
+        console.log('Download Debug - Floor Plan Position:', floorPlanX, floorPlanY);
+        console.log('Download Debug - Floor Plan Size:', floorPlanRect.width * scale, 'x', floorPlanRect.height * scale);
         
         ctx.globalAlpha = 0.75;
         
@@ -368,6 +402,10 @@ const ChakraEditor: React.FC<ChakraEditorProps> = ({ floorPlanImageUrl }) => {
           floorPlanRect.height * scale
         );
         ctx.globalAlpha = 1;
+        console.log('Download Debug - Floor Plan Image Drawn Successfully');
+      } else {
+        console.log('Download Debug - Floor Plan Image Not Ready or Not Found');
+        console.log('Download Debug - Floor Plan Image Complete:', floorPlanImg?.complete);
       }
 
       // Draw center mark if it exists and is enabled
@@ -383,6 +421,7 @@ const ChakraEditor: React.FC<ChakraEditorProps> = ({ floorPlanImageUrl }) => {
 
       // Get the canvas data as base64
       const canvasDataURL = downloadCanvas.toDataURL('image/png', 1.0);
+      console.log('Download Debug - Canvas Data URL Generated:', canvasDataURL.substring(0, 50) + '...');
       
       // Prepare the data to send to backend
       const chakraOverlayData = {
@@ -394,7 +433,9 @@ const ChakraEditor: React.FC<ChakraEditorProps> = ({ floorPlanImageUrl }) => {
           zoom: zoom,
           chakra_opacity: chakraOpacity,
           show_center_mark: showCenterMark,
-          position: position
+          position: position,
+          chakra_type: CHAKRA_TYPES[selectedChakraType]?.id || CHAKRA_TYPES[0].id,
+          chakra_label: CHAKRA_TYPES[selectedChakraType]?.label || CHAKRA_TYPES[0].label
         },
         floor_plan_url: floorPlanImageUrl,
         timestamp: new Date().toISOString()
@@ -431,7 +472,7 @@ const ChakraEditor: React.FC<ChakraEditorProps> = ({ floorPlanImageUrl }) => {
       // Create download link with high quality
       const link = document.createElement('a');
       link.href = canvasDataURL;
-      link.download = 'floorplan-chakra-hq.png';
+      link.download = `floorplan-${CHAKRA_TYPES[selectedChakraType]?.id || CHAKRA_TYPES[0].id}-chakra-hq.png`;
       link.click();
       
     } catch (error) {
@@ -533,9 +574,9 @@ const ChakraEditor: React.FC<ChakraEditorProps> = ({ floorPlanImageUrl }) => {
             </Box>
           ) : (
             <CircularImagePoints
-              imageSrc="/images/Shakti Chakra_Size.png"
-              points={chakraPoints}
-              imageAlt="Vastu Chakra"
+              imageSrc={CHAKRA_TYPES[selectedChakraType]?.imagePath || CHAKRA_TYPES[0].imagePath}
+              points={selectedChakraType === 1 ? [] : chakraPoints} // Don't show chakra points for Vedic (index 1)
+              imageAlt={`${CHAKRA_TYPES[selectedChakraType]?.label || CHAKRA_TYPES[0].label} Chakra`}
               rotation={rotation}
               onPointClick={handleChakraPointClick}
               containerClassName="w-full h-full"
@@ -624,6 +665,52 @@ const ChakraEditor: React.FC<ChakraEditorProps> = ({ floorPlanImageUrl }) => {
       >
         <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', pb: 1 }}>
           <Typography variant="h6">Controls</Typography>
+        </Box>
+
+        {/* Chakra Type Tabs */}
+        <Box sx={{ mb: 2 }}>
+          <Typography variant="body2" gutterBottom sx={{ mb: 1 }}>
+            Chakra Type
+          </Typography>
+          <Tabs
+            value={selectedChakraType}
+            onChange={(_, newValue) => setSelectedChakraType(newValue)}
+            variant="fullWidth"
+            sx={{
+              '& .MuiTab-root': {
+                minHeight: 36,
+                fontSize: '0.75rem',
+                textTransform: 'none',
+                fontWeight: 500,
+                color: 'text.secondary',
+                '&.Mui-selected': {
+                  color: '#FDD835',
+                  fontWeight: 600,
+                },
+              },
+              '& .MuiTabs-indicator': {
+                backgroundColor: '#FDD835',
+                height: 2,
+              },
+            }}
+          >
+            {CHAKRA_TYPES.map((type, index) => (
+              <Tab
+                key={type.id}
+                label={type.label}
+                value={index}
+                sx={{
+                  minWidth: 'auto',
+                  px: 1,
+                }}
+              />
+            ))}
+          </Tabs>
+          <Box sx={{ mt: 1, p: 1, backgroundColor: 'rgba(253, 216, 53, 0.1)', borderRadius: 1 }}>
+            <Typography variant="caption" sx={{ color: '#FDD835', fontWeight: 500 }}>
+              Selected: {CHAKRA_TYPES[selectedChakraType]?.label || CHAKRA_TYPES[0].label}
+            </Typography>
+          </Box>
         </Box>
 
         <Box sx={{ mb: 2 }}>
